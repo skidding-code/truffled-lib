@@ -1,0 +1,5 @@
+# HCR shader program cache.
+# One program hash per line. Appended to automatically by the game
+# (localStorage hcrProgs) and merged in index.html at startup.
+# Leave empty on first deploy: an empty 200 avoids the /404 redirect
+# that used to be ingested as program list and compiled as garbage.
