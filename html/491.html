@@ -201,6 +201,18 @@
             if (typeof input === 'string' || input instanceof URL) input = m;
             else input = new Request(m, input);
           }
+          if (C.o && String(m).indexOf(CDN + '/gh/' + C.o + '/') === 0 && String((init && init.method) || (input && input.method) || 'GET').toUpperCase() === 'GET') {
+            var tries = 0, inp = input;
+            var again = function () {
+              return origFetch(typeof inp === 'string' ? inp : inp.clone ? inp.clone() : inp, init).then(function (r) {
+                if ((r.status === 403 || r.status === 429 || r.status >= 500) && ++tries < 4) {
+                  return new Promise(function (ok) { setTimeout(ok, 700 * tries); }).then(again);
+                }
+                return r;
+              });
+            };
+            return again();
+          }
         }
       } catch (e) {}
       return origFetch(input, init);
@@ -473,7 +485,7 @@
       }
     }).observe(document, { childList: true, subtree: true });
   }
-})({"c":"https://cdn.jsdelivr.net","o":"skidding-code","p":19000000,"b":"https://cdn.jsdelivr.net/gh/web-ports/SLENDYTUBBIES/1/","r":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-01@main/","u":{"/gamefile/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-01@main/"},"x":{"cdn.r9x.in/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-17@main/_ext/cdn.r9x.in/","ep2.adtrafficquality.google/sodar/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-04@main/_ext/ep2.adtrafficquality.google/sodar/","ep2.adtrafficquality.google/sodar/sodar2/257/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-04@main/_ext/ep2.adtrafficquality.google/sodar/sodar2/257/"},"s":{}});</script>
+})({"c":"https://cdn.jsdelivr.net","o":"skidding-code","p":19000000,"b":"https://cdn.jsdelivr.net/gh/web-ports/SLENDYTUBBIES/1/","r":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-01@8cffb1f6db513d6ac3856b94032364303f1a7042/","u":{"/gamefile/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-01@8cffb1f6db513d6ac3856b94032364303f1a7042/"},"x":{"cdn.r9x.in/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-17@5171ff2fe3e6082be3dee81fc602673bf81bd8c6/_ext/cdn.r9x.in/","ep2.adtrafficquality.google/sodar/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-04@227917a55929b8ddf7b21d7753b1ee576a1015b8/_ext/ep2.adtrafficquality.google/sodar/","ep2.adtrafficquality.google/sodar/sodar2/257/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-04@227917a55929b8ddf7b21d7753b1ee576a1015b8/_ext/ep2.adtrafficquality.google/sodar/sodar2/257/"},"s":{}});</script>
 
     
     <meta charset="utf-8">

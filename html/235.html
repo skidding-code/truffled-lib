@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
-	<head><base href="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-16@main/games/fused240/"><script>(function (C) {
+	<head><base href="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-16@821c09d1a25d4d1d3ba46a7eabc0156aaafc698f/games/fused240/"><script>(function (C) {
   var G = typeof self !== 'undefined' ? self : this;
   if (G.__tz) return;
   var IS_DOC = typeof document !== 'undefined' && typeof Element !== 'undefined';
@@ -200,6 +200,18 @@
           if (m !== url) {
             if (typeof input === 'string' || input instanceof URL) input = m;
             else input = new Request(m, input);
+          }
+          if (C.o && String(m).indexOf(CDN + '/gh/' + C.o + '/') === 0 && String((init && init.method) || (input && input.method) || 'GET').toUpperCase() === 'GET') {
+            var tries = 0, inp = input;
+            var again = function () {
+              return origFetch(typeof inp === 'string' ? inp : inp.clone ? inp.clone() : inp, init).then(function (r) {
+                if ((r.status === 403 || r.status === 429 || r.status >= 500) && ++tries < 4) {
+                  return new Promise(function (ok) { setTimeout(ok, 700 * tries); }).then(again);
+                }
+                return r;
+              });
+            };
+            return again();
           }
         }
       } catch (e) {}
@@ -473,7 +485,7 @@
       }
     }).observe(document, { childList: true, subtree: true });
   }
-})({"c":"https://cdn.jsdelivr.net","o":"skidding-code","p":19000000,"b":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-16@main/games/fused240/","r":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-16@main/","u":{"/games/fused240/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-16@main/"},"x":{},"s":{"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-16@main/games/fused240/Fused%20240.pck":[13,"application/octet-stream",235238304],"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-16@main/games/fused240/Fused%20240.wasm":[3,"application/wasm",52126319]}});</script>
+})({"c":"https://cdn.jsdelivr.net","o":"skidding-code","p":19000000,"b":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-16@821c09d1a25d4d1d3ba46a7eabc0156aaafc698f/games/fused240/","r":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-16@821c09d1a25d4d1d3ba46a7eabc0156aaafc698f/","u":{"/games/fused240/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-16@821c09d1a25d4d1d3ba46a7eabc0156aaafc698f/"},"x":{},"s":{"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-16@821c09d1a25d4d1d3ba46a7eabc0156aaafc698f/games/fused240/Fused%20240.pck":[13,"application/octet-stream",235238304],"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-16@821c09d1a25d4d1d3ba46a7eabc0156aaafc698f/games/fused240/Fused%20240.wasm":[3,"application/wasm",52126319]}});</script>
 
 		<meta charset="utf-8">
 		<meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0">

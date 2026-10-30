@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="en">
-   <head><base href="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-18@main/games/gtasan/"><script>(function (C) {
+   <head><base href="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-18@4f6e4d8555909637aa6007c1da0d9ee5c03c097f/games/gtasan/"><script>(function (C) {
   var G = typeof self !== 'undefined' ? self : this;
   if (G.__tz) return;
   var IS_DOC = typeof document !== 'undefined' && typeof Element !== 'undefined';
@@ -200,6 +200,18 @@
           if (m !== url) {
             if (typeof input === 'string' || input instanceof URL) input = m;
             else input = new Request(m, input);
+          }
+          if (C.o && String(m).indexOf(CDN + '/gh/' + C.o + '/') === 0 && String((init && init.method) || (input && input.method) || 'GET').toUpperCase() === 'GET') {
+            var tries = 0, inp = input;
+            var again = function () {
+              return origFetch(typeof inp === 'string' ? inp : inp.clone ? inp.clone() : inp, init).then(function (r) {
+                if ((r.status === 403 || r.status === 429 || r.status >= 500) && ++tries < 4) {
+                  return new Promise(function (ok) { setTimeout(ok, 700 * tries); }).then(again);
+                }
+                return r;
+              });
+            };
+            return again();
           }
         }
       } catch (e) {}
@@ -473,7 +485,7 @@
       }
     }).observe(document, { childList: true, subtree: true });
   }
-})({"c":"https://cdn.jsdelivr.net","o":"skidding-code","p":19000000,"b":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-18@main/games/gtasan/","r":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-18@main/","u":{"/games/gtasan/index.html":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-18@main/","/games/gtasan/Play.js":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-18@main/","/games/gtasan/Play.wasm":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-18@main/","/games/gtasan/gtasan.ISO":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-19@main/","/games/gtasan/static/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-20@main/"},"x":{},"s":{"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-19@main/games/gtasan/gtasan.ISO":[237,"application/octet-stream",4499767296,[[1,"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-19@main/games/gtasan/gtasan.ISO"],[132,"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-39@main/games/gtasan/gtasan.ISO"]]]}});</script>
+})({"c":"https://cdn.jsdelivr.net","o":"skidding-code","p":19000000,"b":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-18@4f6e4d8555909637aa6007c1da0d9ee5c03c097f/games/gtasan/","r":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-18@4f6e4d8555909637aa6007c1da0d9ee5c03c097f/","u":{"/games/gtasan/index.html":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-18@4f6e4d8555909637aa6007c1da0d9ee5c03c097f/","/games/gtasan/Play.js":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-18@4f6e4d8555909637aa6007c1da0d9ee5c03c097f/","/games/gtasan/Play.wasm":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-18@4f6e4d8555909637aa6007c1da0d9ee5c03c097f/","/games/gtasan/gtasan.ISO":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-19@de35b8a5a6f82bfabc7cd24ecb193eff7f4de3f2/","/games/gtasan/static/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-20@b8146ae69d932be709a02ee33bfac36c0afb7795/"},"x":{},"s":{"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-19@de35b8a5a6f82bfabc7cd24ecb193eff7f4de3f2/games/gtasan/gtasan.ISO":[237,"application/octet-stream",4499767296,[[1,"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-19@de35b8a5a6f82bfabc7cd24ecb193eff7f4de3f2/games/gtasan/gtasan.ISO"],[132,"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-39@7f78615958ee42412d676cd49acf43332ff18f7e/games/gtasan/gtasan.ISO"]]]}});</script>
 
       <meta charset="utf-8"/>
       <link rel="icon" href="/favicon.ico"/>
@@ -483,8 +495,8 @@
       <link rel="apple-touch-icon" href="/logo192.png"/>
       <link rel="manifest" href="/manifest.json"/>
       <title>Play!.js</title>
-      <script defer="defer" src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-20@main/games/gtasan/static/js/main.fb6e8aea.js"></script>
-      <link href="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-20@main/games/gtasan/static/css/main.5a525eca.css" rel="stylesheet">
+      <script defer="defer" src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-20@b8146ae69d932be709a02ee33bfac36c0afb7795/games/gtasan/static/js/main.fb6e8aea.js"></script>
+      <link href="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-20@b8146ae69d932be709a02ee33bfac36c0afb7795/games/gtasan/static/css/main.5a525eca.css" rel="stylesheet">
       <style>
          * { margin: 0; padding: 0; box-sizing: border-box; }
          html, body { width: 100vw; height: 100vh; overflow: hidden; background: #000; }
@@ -565,7 +577,7 @@
             let bar = document.getElementById('autoload-bar')
             async function autoload() {
                try {
-                  let res = await fetch('https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-19@main/games/gtasan/gtasan.ISO')
+                  let res = await fetch('https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-19@de35b8a5a6f82bfabc7cd24ecb193eff7f4de3f2/games/gtasan/gtasan.ISO')
                   if (!res.ok) throw new Error('failed to fetch gtasan.ISO (' + res.status + ')')
                   let total = parseInt(res.headers.get('content-length') || '0')
                   let loaded = 0
@@ -583,7 +595,7 @@
                      }
                   }
                   let blob = new Blob(chunks)
-                  let file = new File([blob], 'https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-19@main/games/gtasan/gtasan.ISO', { type: 'application/octet-stream' })
+                  let file = new File([blob], 'https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-19@de35b8a5a6f82bfabc7cd24ecb193eff7f4de3f2/games/gtasan/gtasan.ISO', { type: 'application/octet-stream' })
                   status.textContent = 'waiting for emulator...'
                   bar.style.width = '100%'
                   let input = await waitForInput()

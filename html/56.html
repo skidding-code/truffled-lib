@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html>
-  <head><base href="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-05@main/games/basket-random/"><script>(function (C) {
+  <head><base href="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-05@92fb8d31a7319b923d163c8b7f10595d5d5a3f33/games/basket-random/"><script>(function (C) {
   var G = typeof self !== 'undefined' ? self : this;
   if (G.__tz) return;
   var IS_DOC = typeof document !== 'undefined' && typeof Element !== 'undefined';
@@ -200,6 +200,18 @@
           if (m !== url) {
             if (typeof input === 'string' || input instanceof URL) input = m;
             else input = new Request(m, input);
+          }
+          if (C.o && String(m).indexOf(CDN + '/gh/' + C.o + '/') === 0 && String((init && init.method) || (input && input.method) || 'GET').toUpperCase() === 'GET') {
+            var tries = 0, inp = input;
+            var again = function () {
+              return origFetch(typeof inp === 'string' ? inp : inp.clone ? inp.clone() : inp, init).then(function (r) {
+                if ((r.status === 403 || r.status === 429 || r.status >= 500) && ++tries < 4) {
+                  return new Promise(function (ok) { setTimeout(ok, 700 * tries); }).then(again);
+                }
+                return r;
+              });
+            };
+            return again();
           }
         }
       } catch (e) {}
@@ -473,7 +485,7 @@
       }
     }).observe(document, { childList: true, subtree: true });
   }
-})({"c":"https://cdn.jsdelivr.net","o":"skidding-code","p":19000000,"b":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-05@main/games/basket-random/","r":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-05@main/","u":{"/games/basket-random/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-05@main/","/js/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-01@main/"},"x":{},"s":{}});</script>
+})({"c":"https://cdn.jsdelivr.net","o":"skidding-code","p":19000000,"b":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-05@92fb8d31a7319b923d163c8b7f10595d5d5a3f33/games/basket-random/","r":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-05@92fb8d31a7319b923d163c8b7f10595d5d5a3f33/","u":{"/games/basket-random/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-05@92fb8d31a7319b923d163c8b7f10595d5d5a3f33/","/js/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-01@8cffb1f6db513d6ac3856b94032364303f1a7042/"},"x":{},"s":{}});</script>
 
     <meta charset="UTF-8" />
     <title>Basket Random</title>
@@ -483,7 +495,7 @@
     <link rel="manifest" href="appmanifest.json" />
     <link rel="icon" href="./splash.jpeg">
     <link rel="stylesheet" href="style.css" />
-    <script src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-01@main/js/main.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-01@8cffb1f6db513d6ac3856b94032364303f1a7042/js/main.js"></script>
     <script>
       window.addEventListener(
         "keydown",

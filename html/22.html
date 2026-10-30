@@ -1,4 +1,4 @@
-<base href="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-01@main/gamefile/"><script>(function (C) {
+<base href="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-01@8cffb1f6db513d6ac3856b94032364303f1a7042/gamefile/"><script>(function (C) {
   var G = typeof self !== 'undefined' ? self : this;
   if (G.__tz) return;
   var IS_DOC = typeof document !== 'undefined' && typeof Element !== 'undefined';
@@ -198,6 +198,18 @@
           if (m !== url) {
             if (typeof input === 'string' || input instanceof URL) input = m;
             else input = new Request(m, input);
+          }
+          if (C.o && String(m).indexOf(CDN + '/gh/' + C.o + '/') === 0 && String((init && init.method) || (input && input.method) || 'GET').toUpperCase() === 'GET') {
+            var tries = 0, inp = input;
+            var again = function () {
+              return origFetch(typeof inp === 'string' ? inp : inp.clone ? inp.clone() : inp, init).then(function (r) {
+                if ((r.status === 403 || r.status === 429 || r.status >= 500) && ++tries < 4) {
+                  return new Promise(function (ok) { setTimeout(ok, 700 * tries); }).then(again);
+                }
+                return r;
+              });
+            };
+            return again();
           }
         }
       } catch (e) {}
@@ -471,12 +483,12 @@
       }
     }).observe(document, { childList: true, subtree: true });
   }
-})({"c":"https://cdn.jsdelivr.net","o":"skidding-code","p":19000000,"b":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-01@main/gamefile/","r":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-01@main/","u":{"/gamefile/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-01@main/"},"x":{"cdn.jsdelivr.net/gh/paigerodeghero/academicwebsite@897c910c65e6c68b04c44a6b6eba0b99d0f2f2cf/TemplateData/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-03@main/_ext/cdn.jsdelivr.net/gh/paigerodeghero/academicwebsite@897c910c65e6c68b04c44a6b6eba0b99d0f2f2cf/TemplateData/","cdn.jsdelivr.net/gh/lee2sman/everyday@d45d601d2c4d60adf809a0b677c00b7d12aba7e9/96/TemplateData/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-03@main/_ext/cdn.jsdelivr.net/gh/lee2sman/everyday@d45d601d2c4d60adf809a0b677c00b7d12aba7e9/96/TemplateData/","cdn.jsdelivr.net/gh/gertdoro/UnityExplorer@cffa09e09790018403c996d37adb6c4450e8f6c6/Runtime/birds/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-03@main/_ext/cdn.jsdelivr.net/gh/gertdoro/UnityExplorer@cffa09e09790018403c996d37adb6c4450e8f6c6/Runtime/birds/"},"s":{}});</script>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-03@main/_ext/cdn.jsdelivr.net/gh/paigerodeghero/academicwebsite@897c910c65e6c68b04c44a6b6eba0b99d0f2f2cf/TemplateData/style.css">
-<script src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-03@main/_ext/cdn.jsdelivr.net/gh/lee2sman/everyday@d45d601d2c4d60adf809a0b677c00b7d12aba7e9/96/TemplateData/UnityProgress.js"></script>
-<script src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-03@main/_ext/cdn.jsdelivr.net/gh/gertdoro/UnityExplorer@cffa09e09790018403c996d37adb6c4450e8f6c6/Runtime/birds/birds.js"></script>
+})({"c":"https://cdn.jsdelivr.net","o":"skidding-code","p":19000000,"b":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-01@8cffb1f6db513d6ac3856b94032364303f1a7042/gamefile/","r":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-01@8cffb1f6db513d6ac3856b94032364303f1a7042/","u":{"/gamefile/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-01@8cffb1f6db513d6ac3856b94032364303f1a7042/"},"x":{"cdn.jsdelivr.net/gh/paigerodeghero/academicwebsite@897c910c65e6c68b04c44a6b6eba0b99d0f2f2cf/TemplateData/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-03@3fd8154ac491decc79fa94ffb9c14756b4eba0b6/_ext/cdn.jsdelivr.net/gh/paigerodeghero/academicwebsite@897c910c65e6c68b04c44a6b6eba0b99d0f2f2cf/TemplateData/","cdn.jsdelivr.net/gh/lee2sman/everyday@d45d601d2c4d60adf809a0b677c00b7d12aba7e9/96/TemplateData/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-03@3fd8154ac491decc79fa94ffb9c14756b4eba0b6/_ext/cdn.jsdelivr.net/gh/lee2sman/everyday@d45d601d2c4d60adf809a0b677c00b7d12aba7e9/96/TemplateData/","cdn.jsdelivr.net/gh/gertdoro/UnityExplorer@cffa09e09790018403c996d37adb6c4450e8f6c6/Runtime/birds/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-03@3fd8154ac491decc79fa94ffb9c14756b4eba0b6/_ext/cdn.jsdelivr.net/gh/gertdoro/UnityExplorer@cffa09e09790018403c996d37adb6c4450e8f6c6/Runtime/birds/"},"s":{}});</script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-03@3fd8154ac491decc79fa94ffb9c14756b4eba0b6/_ext/cdn.jsdelivr.net/gh/paigerodeghero/academicwebsite@897c910c65e6c68b04c44a6b6eba0b99d0f2f2cf/TemplateData/style.css">
+<script src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-03@3fd8154ac491decc79fa94ffb9c14756b4eba0b6/_ext/cdn.jsdelivr.net/gh/lee2sman/everyday@d45d601d2c4d60adf809a0b677c00b7d12aba7e9/96/TemplateData/UnityProgress.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-03@3fd8154ac491decc79fa94ffb9c14756b4eba0b6/_ext/cdn.jsdelivr.net/gh/gertdoro/UnityExplorer@cffa09e09790018403c996d37adb6c4450e8f6c6/Runtime/birds/birds.js"></script>
 <script>
-    var gameInstance = UnityLoader.instantiate("gameContainer", "https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-03@main/_ext/cdn.jsdelivr.net/gh/gertdoro/UnityExplorer@cffa09e09790018403c996d37adb6c4450e8f6c6/Runtime/birds/birds.json", {
+    var gameInstance = UnityLoader.instantiate("gameContainer", "https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-03@3fd8154ac491decc79fa94ffb9c14756b4eba0b6/_ext/cdn.jsdelivr.net/gh/gertdoro/UnityExplorer@cffa09e09790018403c996d37adb6c4450e8f6c6/Runtime/birds/birds.json", {
         onProgress: UnityProgress,
         Module: {
             onRuntimeInitialized: function () {

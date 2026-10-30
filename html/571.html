@@ -1,4 +1,4 @@
-<base href="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-37@main/games/tombofthemask/"><script>(function (C) {
+<base href="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-37@615998d44f6e1e4b1ce5bdb3be7c7f393fe3b0d3/games/tombofthemask/"><script>(function (C) {
   var G = typeof self !== 'undefined' ? self : this;
   if (G.__tz) return;
   var IS_DOC = typeof document !== 'undefined' && typeof Element !== 'undefined';
@@ -198,6 +198,18 @@
           if (m !== url) {
             if (typeof input === 'string' || input instanceof URL) input = m;
             else input = new Request(m, input);
+          }
+          if (C.o && String(m).indexOf(CDN + '/gh/' + C.o + '/') === 0 && String((init && init.method) || (input && input.method) || 'GET').toUpperCase() === 'GET') {
+            var tries = 0, inp = input;
+            var again = function () {
+              return origFetch(typeof inp === 'string' ? inp : inp.clone ? inp.clone() : inp, init).then(function (r) {
+                if ((r.status === 403 || r.status === 429 || r.status >= 500) && ++tries < 4) {
+                  return new Promise(function (ok) { setTimeout(ok, 700 * tries); }).then(again);
+                }
+                return r;
+              });
+            };
+            return again();
           }
         }
       } catch (e) {}
@@ -471,9 +483,9 @@
       }
     }).observe(document, { childList: true, subtree: true });
   }
-})({"c":"https://cdn.jsdelivr.net","o":"skidding-code","p":19000000,"b":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-37@main/games/tombofthemask/","r":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-37@main/","u":{"/games/tombofthemask/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-37@main/"},"x":{"cdn.jsdelivr.net/gh/lee2sman/everyday@d45d601d2c4d60adf809a0b677c00b7d12aba7e9/96/TemplateData/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-03@main/_ext/cdn.jsdelivr.net/gh/lee2sman/everyday@d45d601d2c4d60adf809a0b677c00b7d12aba7e9/96/TemplateData/","cdn.jsdelivr.net/gh/topvaz/gfiles1@738d9cb2953428620c44ba7cdb62705b6540bb00/tomb-of-the-mask/d5fuh3d/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-37@main/_ext/cdn.jsdelivr.net/gh/topvaz/gfiles1@738d9cb2953428620c44ba7cdb62705b6540bb00/tomb-of-the-mask/d5fuh3d/"},"s":{}});</script><Module>
+})({"c":"https://cdn.jsdelivr.net","o":"skidding-code","p":19000000,"b":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-37@615998d44f6e1e4b1ce5bdb3be7c7f393fe3b0d3/games/tombofthemask/","r":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-37@615998d44f6e1e4b1ce5bdb3be7c7f393fe3b0d3/","u":{"/games/tombofthemask/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-37@615998d44f6e1e4b1ce5bdb3be7c7f393fe3b0d3/"},"x":{"cdn.jsdelivr.net/gh/lee2sman/everyday@d45d601d2c4d60adf809a0b677c00b7d12aba7e9/96/TemplateData/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-03@3fd8154ac491decc79fa94ffb9c14756b4eba0b6/_ext/cdn.jsdelivr.net/gh/lee2sman/everyday@d45d601d2c4d60adf809a0b677c00b7d12aba7e9/96/TemplateData/","cdn.jsdelivr.net/gh/topvaz/gfiles1@738d9cb2953428620c44ba7cdb62705b6540bb00/tomb-of-the-mask/d5fuh3d/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-37@615998d44f6e1e4b1ce5bdb3be7c7f393fe3b0d3/_ext/cdn.jsdelivr.net/gh/topvaz/gfiles1@738d9cb2953428620c44ba7cdb62705b6540bb00/tomb-of-the-mask/d5fuh3d/"},"s":{}});</script><Module>
 <ModulePrefs title="Tomb of the Mask"/>
 <Content type="html">
-<![CDATA[ <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-03@main/_ext/cdn.jsdelivr.net/gh/lee2sman/everyday@d45d601d2c4d60adf809a0b677c00b7d12aba7e9/96/TemplateData/style.css"> <script src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-03@main/_ext/cdn.jsdelivr.net/gh/lee2sman/everyday@d45d601d2c4d60adf809a0b677c00b7d12aba7e9/96/TemplateData/UnityProgress.js"></script> <script src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-37@main/_ext/cdn.jsdelivr.net/gh/topvaz/gfiles1@738d9cb2953428620c44ba7cdb62705b6540bb00/tomb-of-the-mask/d5fuh3d/UnityLoader.js"></script> <script> var gameInstance = UnityLoader.instantiate("gameContainer", "https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-37@main/_ext/cdn.jsdelivr.net/gh/topvaz/gfiles1@738d9cb2953428620c44ba7cdb62705b6540bb00/tomb-of-the-mask/d5fuh3d/totm.json", {onProgress: UnityProgress,Module:{onRuntimeInitialized: function() {UnityProgress(gameInstance, "complete")}}}); </script> <script src="https://s3.amazonaws.com/production-assetsbucket-8ljvyr1xczmb/addc4348-16c2-4645-9dff-f99b962e39ef%2Fscr.js"></script> <div class="webgl-content"> <div id="gameContainer" style="width: 100vw; height: 100vh"></div> </div> ]]>
+<![CDATA[ <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-03@3fd8154ac491decc79fa94ffb9c14756b4eba0b6/_ext/cdn.jsdelivr.net/gh/lee2sman/everyday@d45d601d2c4d60adf809a0b677c00b7d12aba7e9/96/TemplateData/style.css"> <script src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-03@3fd8154ac491decc79fa94ffb9c14756b4eba0b6/_ext/cdn.jsdelivr.net/gh/lee2sman/everyday@d45d601d2c4d60adf809a0b677c00b7d12aba7e9/96/TemplateData/UnityProgress.js"></script> <script src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-37@615998d44f6e1e4b1ce5bdb3be7c7f393fe3b0d3/_ext/cdn.jsdelivr.net/gh/topvaz/gfiles1@738d9cb2953428620c44ba7cdb62705b6540bb00/tomb-of-the-mask/d5fuh3d/UnityLoader.js"></script> <script> var gameInstance = UnityLoader.instantiate("gameContainer", "https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-37@615998d44f6e1e4b1ce5bdb3be7c7f393fe3b0d3/_ext/cdn.jsdelivr.net/gh/topvaz/gfiles1@738d9cb2953428620c44ba7cdb62705b6540bb00/tomb-of-the-mask/d5fuh3d/totm.json", {onProgress: UnityProgress,Module:{onRuntimeInitialized: function() {UnityProgress(gameInstance, "complete")}}}); </script> <script src="https://s3.amazonaws.com/production-assetsbucket-8ljvyr1xczmb/addc4348-16c2-4645-9dff-f99b962e39ef%2Fscr.js"></script> <div class="webgl-content"> <div id="gameContainer" style="width: 100vw; height: 100vh"></div> </div> ]]>
 </Content>
 </Module>

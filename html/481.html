@@ -11,7 +11,7 @@
 
 <!DOCTYPE html>
 <html lang="en-us">
-  <head><base href="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-33@main/_ext/cdn.jsdelivr.net/gh/slqntdevss/ShiftAtMidnightPort@9d5cffa1e1b7ca2e35e1fb6154c77eb87c4f0a4a/"><script>(function (C) {
+  <head><base href="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-33@150709e18337dcc2fff3da2cbcbacd9c7ff50bee/_ext/cdn.jsdelivr.net/gh/slqntdevss/ShiftAtMidnightPort@9d5cffa1e1b7ca2e35e1fb6154c77eb87c4f0a4a/"><script>(function (C) {
   var G = typeof self !== 'undefined' ? self : this;
   if (G.__tz) return;
   var IS_DOC = typeof document !== 'undefined' && typeof Element !== 'undefined';
@@ -211,6 +211,18 @@
           if (m !== url) {
             if (typeof input === 'string' || input instanceof URL) input = m;
             else input = new Request(m, input);
+          }
+          if (C.o && String(m).indexOf(CDN + '/gh/' + C.o + '/') === 0 && String((init && init.method) || (input && input.method) || 'GET').toUpperCase() === 'GET') {
+            var tries = 0, inp = input;
+            var again = function () {
+              return origFetch(typeof inp === 'string' ? inp : inp.clone ? inp.clone() : inp, init).then(function (r) {
+                if ((r.status === 403 || r.status === 429 || r.status >= 500) && ++tries < 4) {
+                  return new Promise(function (ok) { setTimeout(ok, 700 * tries); }).then(again);
+                }
+                return r;
+              });
+            };
+            return again();
           }
         }
       } catch (e) {}
@@ -484,7 +496,7 @@
       }
     }).observe(document, { childList: true, subtree: true });
   }
-})({"c":"https://cdn.jsdelivr.net","o":"skidding-code","p":19000000,"b":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-33@main/_ext/cdn.jsdelivr.net/gh/slqntdevss/ShiftAtMidnightPort@9d5cffa1e1b7ca2e35e1fb6154c77eb87c4f0a4a/","r":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-01@main/","u":{"/gamefile/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-01@main/"},"x":{"cdn.jsdelivr.net/gh/slqntdevss/ShiftAtMidnightPort@9d5cffa1e1b7ca2e35e1fb6154c77eb87c4f0a4a/Build/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-33@main/_ext/cdn.jsdelivr.net/gh/slqntdevss/ShiftAtMidnightPort@9d5cffa1e1b7ca2e35e1fb6154c77eb87c4f0a4a/Build/"},"s":{"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-33@main/_ext/cdn.jsdelivr.net/gh/slqntdevss/ShiftAtMidnightPort@9d5cffa1e1b7ca2e35e1fb6154c77eb87c4f0a4a/Build/ShiftAtMidnightPort.data.part1":[2,"application/octet-stream",20866662],"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-33@main/_ext/cdn.jsdelivr.net/gh/slqntdevss/ShiftAtMidnightPort@9d5cffa1e1b7ca2e35e1fb6154c77eb87c4f0a4a/Build/ShiftAtMidnightPort.data.part2":[2,"application/octet-stream",20866662],"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-33@main/_ext/cdn.jsdelivr.net/gh/slqntdevss/ShiftAtMidnightPort@9d5cffa1e1b7ca2e35e1fb6154c77eb87c4f0a4a/Build/ShiftAtMidnightPort.data.part3":[2,"application/octet-stream",20866662],"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-33@main/_ext/cdn.jsdelivr.net/gh/slqntdevss/ShiftAtMidnightPort@9d5cffa1e1b7ca2e35e1fb6154c77eb87c4f0a4a/Build/ShiftAtMidnightPort.data.part4":[2,"application/octet-stream",20866662],"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-33@main/_ext/cdn.jsdelivr.net/gh/slqntdevss/ShiftAtMidnightPort@9d5cffa1e1b7ca2e35e1fb6154c77eb87c4f0a4a/Build/ShiftAtMidnightPort.data.part5":[2,"application/octet-stream",19984028],"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-33@main/_ext/cdn.jsdelivr.net/gh/slqntdevss/ShiftAtMidnightPort@9d5cffa1e1b7ca2e35e1fb6154c77eb87c4f0a4a/Build/ShiftAtMidnightPort.wasm.part1":[2,"application/octet-stream",20866662]}});</script>
+})({"c":"https://cdn.jsdelivr.net","o":"skidding-code","p":19000000,"b":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-33@150709e18337dcc2fff3da2cbcbacd9c7ff50bee/_ext/cdn.jsdelivr.net/gh/slqntdevss/ShiftAtMidnightPort@9d5cffa1e1b7ca2e35e1fb6154c77eb87c4f0a4a/","r":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-01@8cffb1f6db513d6ac3856b94032364303f1a7042/","u":{"/gamefile/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-01@8cffb1f6db513d6ac3856b94032364303f1a7042/"},"x":{"cdn.jsdelivr.net/gh/slqntdevss/ShiftAtMidnightPort@9d5cffa1e1b7ca2e35e1fb6154c77eb87c4f0a4a/Build/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-33@150709e18337dcc2fff3da2cbcbacd9c7ff50bee/_ext/cdn.jsdelivr.net/gh/slqntdevss/ShiftAtMidnightPort@9d5cffa1e1b7ca2e35e1fb6154c77eb87c4f0a4a/Build/"},"s":{"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-33@150709e18337dcc2fff3da2cbcbacd9c7ff50bee/_ext/cdn.jsdelivr.net/gh/slqntdevss/ShiftAtMidnightPort@9d5cffa1e1b7ca2e35e1fb6154c77eb87c4f0a4a/Build/ShiftAtMidnightPort.data.part1":[2,"application/octet-stream",20866662],"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-33@150709e18337dcc2fff3da2cbcbacd9c7ff50bee/_ext/cdn.jsdelivr.net/gh/slqntdevss/ShiftAtMidnightPort@9d5cffa1e1b7ca2e35e1fb6154c77eb87c4f0a4a/Build/ShiftAtMidnightPort.data.part2":[2,"application/octet-stream",20866662],"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-33@150709e18337dcc2fff3da2cbcbacd9c7ff50bee/_ext/cdn.jsdelivr.net/gh/slqntdevss/ShiftAtMidnightPort@9d5cffa1e1b7ca2e35e1fb6154c77eb87c4f0a4a/Build/ShiftAtMidnightPort.data.part3":[2,"application/octet-stream",20866662],"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-33@150709e18337dcc2fff3da2cbcbacd9c7ff50bee/_ext/cdn.jsdelivr.net/gh/slqntdevss/ShiftAtMidnightPort@9d5cffa1e1b7ca2e35e1fb6154c77eb87c4f0a4a/Build/ShiftAtMidnightPort.data.part4":[2,"application/octet-stream",20866662],"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-33@150709e18337dcc2fff3da2cbcbacd9c7ff50bee/_ext/cdn.jsdelivr.net/gh/slqntdevss/ShiftAtMidnightPort@9d5cffa1e1b7ca2e35e1fb6154c77eb87c4f0a4a/Build/ShiftAtMidnightPort.data.part5":[2,"application/octet-stream",19984028],"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-33@150709e18337dcc2fff3da2cbcbacd9c7ff50bee/_ext/cdn.jsdelivr.net/gh/slqntdevss/ShiftAtMidnightPort@9d5cffa1e1b7ca2e35e1fb6154c77eb87c4f0a4a/Build/ShiftAtMidnightPort.wasm.part1":[2,"application/octet-stream",20866662]}});</script>
     
     <meta charset="utf-8">
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">

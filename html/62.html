@@ -2,7 +2,7 @@
 
 <!DOCTYPE html>
 <html manifest="offline.appcache">
-  <head><base href="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-06@main/games/btts/"><script>(function (C) {
+  <head><base href="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-06@c5ef6db54cb61ab468a5a57ae9594d2eb2ba4435/games/btts/"><script>(function (C) {
   var G = typeof self !== 'undefined' ? self : this;
   if (G.__tz) return;
   var IS_DOC = typeof document !== 'undefined' && typeof Element !== 'undefined';
@@ -202,6 +202,18 @@
           if (m !== url) {
             if (typeof input === 'string' || input instanceof URL) input = m;
             else input = new Request(m, input);
+          }
+          if (C.o && String(m).indexOf(CDN + '/gh/' + C.o + '/') === 0 && String((init && init.method) || (input && input.method) || 'GET').toUpperCase() === 'GET') {
+            var tries = 0, inp = input;
+            var again = function () {
+              return origFetch(typeof inp === 'string' ? inp : inp.clone ? inp.clone() : inp, init).then(function (r) {
+                if ((r.status === 403 || r.status === 429 || r.status >= 500) && ++tries < 4) {
+                  return new Promise(function (ok) { setTimeout(ok, 700 * tries); }).then(again);
+                }
+                return r;
+              });
+            };
+            return again();
           }
         }
       } catch (e) {}
@@ -475,8 +487,8 @@
       }
     }).observe(document, { childList: true, subtree: true });
   }
-})({"c":"https://cdn.jsdelivr.net","o":"skidding-code","p":19000000,"b":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-06@main/games/btts/","r":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-06@main/","u":{"/games/btts/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-06@main/","/js/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-01@main/"},"x":{},"s":{}});</script>
-    <script src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-01@main/js/main.js"></script>
+})({"c":"https://cdn.jsdelivr.net","o":"skidding-code","p":19000000,"b":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-06@c5ef6db54cb61ab468a5a57ae9594d2eb2ba4435/games/btts/","r":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-06@c5ef6db54cb61ab468a5a57ae9594d2eb2ba4435/","u":{"/games/btts/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-06@c5ef6db54cb61ab468a5a57ae9594d2eb2ba4435/","/js/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-01@8cffb1f6db513d6ac3856b94032364303f1a7042/"},"x":{},"s":{}});</script>
+    <script src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-01@8cffb1f6db513d6ac3856b94032364303f1a7042/js/main.js"></script>
     <meta charset="UTF-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
     <title>Big Tower Tiny Square | 3kh0</title>
@@ -598,6 +610,6 @@
         }
       };
     </script>
-    <script type="application/javascript" src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-01@main/js/main.js"></script>
+    <script type="application/javascript" src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-01@8cffb1f6db513d6ac3856b94032364303f1a7042/js/main.js"></script>
   </body>
 </html>

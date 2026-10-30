@@ -1,4 +1,4 @@
-<html><head><base href="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-31@main/games/raft-wars/"><script>(function (C) {
+<html><head><base href="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-31@4dc57249f4dfdf036419b954e76a6aa32522a93a/games/raft-wars/"><script>(function (C) {
   var G = typeof self !== 'undefined' ? self : this;
   if (G.__tz) return;
   var IS_DOC = typeof document !== 'undefined' && typeof Element !== 'undefined';
@@ -198,6 +198,18 @@
           if (m !== url) {
             if (typeof input === 'string' || input instanceof URL) input = m;
             else input = new Request(m, input);
+          }
+          if (C.o && String(m).indexOf(CDN + '/gh/' + C.o + '/') === 0 && String((init && init.method) || (input && input.method) || 'GET').toUpperCase() === 'GET') {
+            var tries = 0, inp = input;
+            var again = function () {
+              return origFetch(typeof inp === 'string' ? inp : inp.clone ? inp.clone() : inp, init).then(function (r) {
+                if ((r.status === 403 || r.status === 429 || r.status >= 500) && ++tries < 4) {
+                  return new Promise(function (ok) { setTimeout(ok, 700 * tries); }).then(again);
+                }
+                return r;
+              });
+            };
+            return again();
           }
         }
       } catch (e) {}
@@ -471,7 +483,7 @@
       }
     }).observe(document, { childList: true, subtree: true });
   }
-})({"c":"https://cdn.jsdelivr.net","o":"skidding-code","p":19000000,"b":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-31@main/games/raft-wars/","r":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-31@main/","u":{"/games/raft-wars/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-31@main/"},"x":{"script.4dex.io/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-31@main/_ext/script.4dex.io/","script.4dex.io/a/latest/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-31@main/_ext/script.4dex.io/a/latest/"},"s":{}});</script><script type="text/javascript" async="" src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-31@main/_ext/script.4dex.io/localstore.js"></script>
+})({"c":"https://cdn.jsdelivr.net","o":"skidding-code","p":19000000,"b":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-31@4dc57249f4dfdf036419b954e76a6aa32522a93a/games/raft-wars/","r":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-31@4dc57249f4dfdf036419b954e76a6aa32522a93a/","u":{"/games/raft-wars/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-31@4dc57249f4dfdf036419b954e76a6aa32522a93a/"},"x":{"script.4dex.io/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-31@4dc57249f4dfdf036419b954e76a6aa32522a93a/_ext/script.4dex.io/","script.4dex.io/a/latest/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-31@4dc57249f4dfdf036419b954e76a6aa32522a93a/_ext/script.4dex.io/a/latest/"},"s":{}});</script><script type="text/javascript" async="" src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-31@4dc57249f4dfdf036419b954e76a6aa32522a93a/_ext/script.4dex.io/localstore.js"></script>
 	<title>Raft Wars  Unblocked - ClassRoom6x</title>
 	<meta name="description" content="Raft Wars is a fun, level-based shooting game created by Martijn Kunst.">
 	<meta name="website" content="classroom6x.gitlab.io" />
@@ -529,7 +541,7 @@
 	left: 0;
 	width: 100%;
 	height: 100%;
-	background: url('https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-33@main/_ext/a.poki.com/images/thumb_anim_2x.gif') 50% 50% no-repeat;
+	background: url('https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-33@150709e18337dcc2fff3da2cbcbacd9c7ff50bee/_ext/a.poki.com/images/thumb_anim_2x.gif') 50% 50% no-repeat;
 	user-select: none;
 }
 

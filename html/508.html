@@ -3,7 +3,7 @@
 <!-- The .NET Foundation licenses this file to you under the MIT license. -->
 <html>
 
-<head><base href="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-34@main/games/sonic4/"><script>(function (C) {
+<head><base href="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-34@15492068264e5e760c7b2c51eb81e9dc7ff497bf/games/sonic4/"><script>(function (C) {
   var G = typeof self !== 'undefined' ? self : this;
   if (G.__tz) return;
   var IS_DOC = typeof document !== 'undefined' && typeof Element !== 'undefined';
@@ -203,6 +203,18 @@
           if (m !== url) {
             if (typeof input === 'string' || input instanceof URL) input = m;
             else input = new Request(m, input);
+          }
+          if (C.o && String(m).indexOf(CDN + '/gh/' + C.o + '/') === 0 && String((init && init.method) || (input && input.method) || 'GET').toUpperCase() === 'GET') {
+            var tries = 0, inp = input;
+            var again = function () {
+              return origFetch(typeof inp === 'string' ? inp : inp.clone ? inp.clone() : inp, init).then(function (r) {
+                if ((r.status === 403 || r.status === 429 || r.status >= 500) && ++tries < 4) {
+                  return new Promise(function (ok) { setTimeout(ok, 700 * tries); }).then(again);
+                }
+                return r;
+              });
+            };
+            return again();
           }
         }
       } catch (e) {}
@@ -476,7 +488,7 @@
       }
     }).observe(document, { childList: true, subtree: true });
   }
-})({"c":"https://cdn.jsdelivr.net","o":"skidding-code","p":19000000,"b":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-34@main/games/sonic4/","r":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-34@main/","u":{"/games/sonic4/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-34@main/"},"x":{"stats.wamwoowam.co.uk/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-33@main/_ext/stats.wamwoowam.co.uk/"},"s":{"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-34@main/games/sonic4/Content.tar.gz":[14,"application/octet-stream",247450717]}});</script>
+})({"c":"https://cdn.jsdelivr.net","o":"skidding-code","p":19000000,"b":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-34@15492068264e5e760c7b2c51eb81e9dc7ff497bf/games/sonic4/","r":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-34@15492068264e5e760c7b2c51eb81e9dc7ff497bf/","u":{"/games/sonic4/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-34@15492068264e5e760c7b2c51eb81e9dc7ff497bf/"},"x":{"stats.wamwoowam.co.uk/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-33@150709e18337dcc2fff3da2cbcbacd9c7ff50bee/_ext/stats.wamwoowam.co.uk/"},"s":{"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-34@15492068264e5e760c7b2c51eb81e9dc7ff497bf/games/sonic4/Content.tar.gz":[14,"application/octet-stream",247450717]}});</script>
     <title>Sonic the Hedgehog 4 - Episode I</title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -552,7 +564,7 @@
 
     <script type='module' src="js/index.js"></script>
     <script>navigator.serviceWorker.register('service-worker.js');</script>
-    <script defer src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-33@main/_ext/stats.wamwoowam.co.uk/script.js" data-website-id="64a797d9-e86f-4f0d-a6de-705e6ea54e1f"></script>
+    <script defer src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-33@150709e18337dcc2fff3da2cbcbacd9c7ff50bee/_ext/stats.wamwoowam.co.uk/script.js" data-website-id="64a797d9-e86f-4f0d-a6de-705e6ea54e1f"></script>
 </body>
 
 </html>

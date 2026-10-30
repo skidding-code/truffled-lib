@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
-	<head><base href="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-37@main/games/windowkill/"><script>(function (C) {
+	<head><base href="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-37@615998d44f6e1e4b1ce5bdb3be7c7f393fe3b0d3/games/windowkill/"><script>(function (C) {
   var G = typeof self !== 'undefined' ? self : this;
   if (G.__tz) return;
   var IS_DOC = typeof document !== 'undefined' && typeof Element !== 'undefined';
@@ -200,6 +200,18 @@
           if (m !== url) {
             if (typeof input === 'string' || input instanceof URL) input = m;
             else input = new Request(m, input);
+          }
+          if (C.o && String(m).indexOf(CDN + '/gh/' + C.o + '/') === 0 && String((init && init.method) || (input && input.method) || 'GET').toUpperCase() === 'GET') {
+            var tries = 0, inp = input;
+            var again = function () {
+              return origFetch(typeof inp === 'string' ? inp : inp.clone ? inp.clone() : inp, init).then(function (r) {
+                if ((r.status === 403 || r.status === 429 || r.status >= 500) && ++tries < 4) {
+                  return new Promise(function (ok) { setTimeout(ok, 700 * tries); }).then(again);
+                }
+                return r;
+              });
+            };
+            return again();
           }
         }
       } catch (e) {}
@@ -473,7 +485,7 @@
       }
     }).observe(document, { childList: true, subtree: true });
   }
-})({"c":"https://cdn.jsdelivr.net","o":"skidding-code","p":19000000,"b":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-37@main/games/windowkill/","r":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-37@main/","u":{"/games/windowkill/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-37@main/"},"x":{},"s":{"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-37@main/games/windowkill/index.wasm":[3,"application/wasm",48954223]}});</script>
+})({"c":"https://cdn.jsdelivr.net","o":"skidding-code","p":19000000,"b":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-37@615998d44f6e1e4b1ce5bdb3be7c7f393fe3b0d3/games/windowkill/","r":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-37@615998d44f6e1e4b1ce5bdb3be7c7f393fe3b0d3/","u":{"/games/windowkill/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-37@615998d44f6e1e4b1ce5bdb3be7c7f393fe3b0d3/"},"x":{},"s":{"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-37@615998d44f6e1e4b1ce5bdb3be7c7f393fe3b0d3/games/windowkill/index.wasm":[2,"application/wasm",35376909]}});</script>
 
 		<meta charset="utf-8">
 		<meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0">
@@ -716,8 +728,8 @@ async function fetchAndCombineParts(basePath, filename, info, onProgress) {
 		</script>
 		<script src="index.js"></script>
 		<script>
-const GODOT_CONFIG = {"args":[],"canvasResizePolicy":2,"emscriptenPoolSize":8,"ensureCrossOriginIsolationHeaders":true,"executable":"index","experimentalVK":false,"fileSizes":{"index.pck":10308784,"index.wasm":48954223},"focusCanvas":true,"gdextensionLibs":[],"godotPoolSize":4};
-const GODOT_THREADS_ENABLED = true;
+const GODOT_CONFIG = {"args":[],"canvasResizePolicy":2,"emscriptenPoolSize":8,"ensureCrossOriginIsolationHeaders":false,"executable":"index","experimentalVK":false,"fileSizes":{"index.pck":10308784,"index.wasm":35376909},"focusCanvas":true,"gdextensionLibs":[],"godotPoolSize":4};
+const GODOT_THREADS_ENABLED = false;
 const engine = new Engine(GODOT_CONFIG);
 
 (function () {

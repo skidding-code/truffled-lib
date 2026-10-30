@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="en">
-<head><base href="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-26@main/_ext/cdn.jsdelivr.net/gh/67-Factory/oneshotthing@main/"><script>(function (C) {
+<head><base href="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-26@5f7888152e482cdd9a3d46043d7d97cb7c527345/_ext/cdn.jsdelivr.net/gh/67-Factory/oneshotthing@main/"><script>(function (C) {
   var G = typeof self !== 'undefined' ? self : this;
   if (G.__tz) return;
   var IS_DOC = typeof document !== 'undefined' && typeof Element !== 'undefined';
@@ -200,6 +200,18 @@
           if (m !== url) {
             if (typeof input === 'string' || input instanceof URL) input = m;
             else input = new Request(m, input);
+          }
+          if (C.o && String(m).indexOf(CDN + '/gh/' + C.o + '/') === 0 && String((init && init.method) || (input && input.method) || 'GET').toUpperCase() === 'GET') {
+            var tries = 0, inp = input;
+            var again = function () {
+              return origFetch(typeof inp === 'string' ? inp : inp.clone ? inp.clone() : inp, init).then(function (r) {
+                if ((r.status === 403 || r.status === 429 || r.status >= 500) && ++tries < 4) {
+                  return new Promise(function (ok) { setTimeout(ok, 700 * tries); }).then(again);
+                }
+                return r;
+              });
+            };
+            return again();
           }
         }
       } catch (e) {}
@@ -473,7 +485,7 @@
       }
     }).observe(document, { childList: true, subtree: true });
   }
-})({"c":"https://cdn.jsdelivr.net","o":"skidding-code","p":19000000,"b":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-26@main/_ext/cdn.jsdelivr.net/gh/67-Factory/oneshotthing@main/","r":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-01@main/","u":{"/gamefile/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-01@main/"},"x":{"cdn.jsdelivr.net/gh/67-Factory/oneshotthing@main/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-26@main/_ext/cdn.jsdelivr.net/gh/67-Factory/oneshotthing@main/","cdn.jsdelivr.net/gh/67-Factory/oneshotthing@main/games/default/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-26@main/_ext/cdn.jsdelivr.net/gh/67-Factory/oneshotthing@main/games/default/","cdn.jsdelivr.net/gh/67-Factory/oneshotthing@main/games/default/System/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-26@main/_ext/cdn.jsdelivr.net/gh/67-Factory/oneshotthing@main/games/default/System/","cdn.jsdelivr.net/gh/67-Factory/oneshotthing@main/games/default/ChipSet/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-26@main/_ext/cdn.jsdelivr.net/gh/67-Factory/oneshotthing@main/games/default/ChipSet/","cdn.jsdelivr.net/gh/67-Factory/oneshotthing@main/games/default/Picture/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-26@main/_ext/cdn.jsdelivr.net/gh/67-Factory/oneshotthing@main/games/default/Picture/","cdn.jsdelivr.net/gh/67-Factory/oneshotthing@main/games/default/FaceSet/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-26@main/_ext/cdn.jsdelivr.net/gh/67-Factory/oneshotthing@main/games/default/FaceSet/","cdn.jsdelivr.net/gh/67-Factory/oneshotthing@main/games/default/Text/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-26@main/_ext/cdn.jsdelivr.net/gh/67-Factory/oneshotthing@main/games/default/Text/","cdn.jsdelivr.net/gh/67-Factory/oneshotthing@main/games/default/Music/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-26@main/_ext/cdn.jsdelivr.net/gh/67-Factory/oneshotthing@main/games/default/Music/","cdn.jsdelivr.net/gh/67-Factory/oneshotthing@main/games/default/Title/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-26@main/_ext/cdn.jsdelivr.net/gh/67-Factory/oneshotthing@main/games/default/Title/"},"s":{}});</script>
+})({"c":"https://cdn.jsdelivr.net","o":"skidding-code","p":19000000,"b":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-26@5f7888152e482cdd9a3d46043d7d97cb7c527345/_ext/cdn.jsdelivr.net/gh/67-Factory/oneshotthing@main/","r":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-01@8cffb1f6db513d6ac3856b94032364303f1a7042/","u":{"/gamefile/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-01@8cffb1f6db513d6ac3856b94032364303f1a7042/"},"x":{"cdn.jsdelivr.net/gh/67-Factory/oneshotthing@main/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-26@5f7888152e482cdd9a3d46043d7d97cb7c527345/_ext/cdn.jsdelivr.net/gh/67-Factory/oneshotthing@main/","cdn.jsdelivr.net/gh/67-Factory/oneshotthing@main/games/default/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-26@5f7888152e482cdd9a3d46043d7d97cb7c527345/_ext/cdn.jsdelivr.net/gh/67-Factory/oneshotthing@main/games/default/","cdn.jsdelivr.net/gh/67-Factory/oneshotthing@main/games/default/System/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-26@5f7888152e482cdd9a3d46043d7d97cb7c527345/_ext/cdn.jsdelivr.net/gh/67-Factory/oneshotthing@main/games/default/System/","cdn.jsdelivr.net/gh/67-Factory/oneshotthing@main/games/default/ChipSet/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-26@5f7888152e482cdd9a3d46043d7d97cb7c527345/_ext/cdn.jsdelivr.net/gh/67-Factory/oneshotthing@main/games/default/ChipSet/","cdn.jsdelivr.net/gh/67-Factory/oneshotthing@main/games/default/Picture/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-26@5f7888152e482cdd9a3d46043d7d97cb7c527345/_ext/cdn.jsdelivr.net/gh/67-Factory/oneshotthing@main/games/default/Picture/","cdn.jsdelivr.net/gh/67-Factory/oneshotthing@main/games/default/FaceSet/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-26@5f7888152e482cdd9a3d46043d7d97cb7c527345/_ext/cdn.jsdelivr.net/gh/67-Factory/oneshotthing@main/games/default/FaceSet/","cdn.jsdelivr.net/gh/67-Factory/oneshotthing@main/games/default/Text/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-26@5f7888152e482cdd9a3d46043d7d97cb7c527345/_ext/cdn.jsdelivr.net/gh/67-Factory/oneshotthing@main/games/default/Text/","cdn.jsdelivr.net/gh/67-Factory/oneshotthing@main/games/default/Music/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-26@5f7888152e482cdd9a3d46043d7d97cb7c527345/_ext/cdn.jsdelivr.net/gh/67-Factory/oneshotthing@main/games/default/Music/","cdn.jsdelivr.net/gh/67-Factory/oneshotthing@main/games/default/Title/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-26@5f7888152e482cdd9a3d46043d7d97cb7c527345/_ext/cdn.jsdelivr.net/gh/67-Factory/oneshotthing@main/games/default/Title/"},"s":{}});</script>
 
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -601,7 +613,7 @@
       <div id="apad-enter" data-key="Enter"></div>
     </div>
   </div>
-<script async type="text/javascript" src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-26@main/_ext/cdn.jsdelivr.net/gh/67-Factory/oneshotthing@main/index.js"></script>
+<script async type="text/javascript" src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-26@5f7888152e482cdd9a3d46043d7d97cb7c527345/_ext/cdn.jsdelivr.net/gh/67-Factory/oneshotthing@main/index.js"></script>
 <script>
 const hasTouchscreen = window.matchMedia('(hover: none), (pointer: coarse)').matches;
 const preventNativeKeys = ['ArrowUp', 'ArrowDown', 'ArrowRight', 'ArrowLeft', ' ', 'F12'];

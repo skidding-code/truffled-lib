@@ -1,5 +1,5 @@
 <html>
-  <head><base href="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-37@main/games/tosstheturtle/"><script>(function (C) {
+  <head><base href="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-37@615998d44f6e1e4b1ce5bdb3be7c7f393fe3b0d3/games/tosstheturtle/"><script>(function (C) {
   var G = typeof self !== 'undefined' ? self : this;
   if (G.__tz) return;
   var IS_DOC = typeof document !== 'undefined' && typeof Element !== 'undefined';
@@ -199,6 +199,18 @@
           if (m !== url) {
             if (typeof input === 'string' || input instanceof URL) input = m;
             else input = new Request(m, input);
+          }
+          if (C.o && String(m).indexOf(CDN + '/gh/' + C.o + '/') === 0 && String((init && init.method) || (input && input.method) || 'GET').toUpperCase() === 'GET') {
+            var tries = 0, inp = input;
+            var again = function () {
+              return origFetch(typeof inp === 'string' ? inp : inp.clone ? inp.clone() : inp, init).then(function (r) {
+                if ((r.status === 403 || r.status === 429 || r.status >= 500) && ++tries < 4) {
+                  return new Promise(function (ok) { setTimeout(ok, 700 * tries); }).then(again);
+                }
+                return r;
+              });
+            };
+            return again();
           }
         }
       } catch (e) {}
@@ -472,7 +484,7 @@
       }
     }).observe(document, { childList: true, subtree: true });
   }
-})({"c":"https://cdn.jsdelivr.net","o":"skidding-code","p":19000000,"b":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-37@main/games/tosstheturtle/","r":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-37@main/","u":{"/games/tosstheturtle/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-37@main/","/js/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-01@main/"},"x":{"apifiles.ngfiles.com/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-23@main/_ext/apifiles.ngfiles.com/","apifiles.ngfiles.com/medals/20000/20552/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-23@main/_ext/apifiles.ngfiles.com/medals/20000/20552/","apifiles.ngfiles.com/medals/15000/15021/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-23@main/_ext/apifiles.ngfiles.com/medals/15000/15021/","apifiles.ngfiles.com/icons/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-23@main/_ext/apifiles.ngfiles.com/icons/","apifiles.ngfiles.com/medals/25000/25243/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-23@main/_ext/apifiles.ngfiles.com/medals/25000/25243/","apifiles.ngfiles.com/medals/20000/20774/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-23@main/_ext/apifiles.ngfiles.com/medals/20000/20774/"},"s":{}});</script>
+})({"c":"https://cdn.jsdelivr.net","o":"skidding-code","p":19000000,"b":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-37@615998d44f6e1e4b1ce5bdb3be7c7f393fe3b0d3/games/tosstheturtle/","r":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-37@615998d44f6e1e4b1ce5bdb3be7c7f393fe3b0d3/","u":{"/games/tosstheturtle/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-37@615998d44f6e1e4b1ce5bdb3be7c7f393fe3b0d3/","/js/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-01@8cffb1f6db513d6ac3856b94032364303f1a7042/"},"x":{"apifiles.ngfiles.com/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-23@8db7cb496b135f6e29593269ee69884c08038c40/_ext/apifiles.ngfiles.com/","apifiles.ngfiles.com/medals/20000/20552/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-23@8db7cb496b135f6e29593269ee69884c08038c40/_ext/apifiles.ngfiles.com/medals/20000/20552/","apifiles.ngfiles.com/medals/15000/15021/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-23@8db7cb496b135f6e29593269ee69884c08038c40/_ext/apifiles.ngfiles.com/medals/15000/15021/","apifiles.ngfiles.com/icons/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-23@8db7cb496b135f6e29593269ee69884c08038c40/_ext/apifiles.ngfiles.com/icons/","apifiles.ngfiles.com/medals/25000/25243/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-23@8db7cb496b135f6e29593269ee69884c08038c40/_ext/apifiles.ngfiles.com/medals/25000/25243/","apifiles.ngfiles.com/medals/20000/20774/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-23@8db7cb496b135f6e29593269ee69884c08038c40/_ext/apifiles.ngfiles.com/medals/20000/20774/"},"s":{}});</script>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Toss The Turtle | 3kh0</title>
     <link rel="icon" type="image/x-icon" href="tosstheturtle.png" />
@@ -480,7 +492,7 @@
 
 </head>
   <body>
-    <script src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-01@main/js/main.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-01@8cffb1f6db513d6ac3856b94032364303f1a7042/js/main.js"></script>
     <div id="ruffle" width="100%" height="100%"></div>
     <script src="ruffle.js"></script>
     <script>

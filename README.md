@@ -30,3 +30,7 @@ each page carries a `<base>` pointing at its folder in a `truffled-lib-NN` repo 
 - re-joins files that were split into `.partN` chunks (jsdelivr's per-file limit is 20 MB) for `fetch`, `XMLHttpRequest` and `src` assignments
 - wraps cross-origin `Worker`/`SharedWorker` scripts in blob workers
 - loads nested `.html` pages (jsdelivr serves html as `text/plain`) by fetching and writing them into their frame
+
+## threaded games
+
+entries tagged `"special": ["threads"]` use SharedArrayBuffer (pthreads / threaded engines). browsers only allow that on cross-origin isolated pages, so they can't run from a plain file, s3 or about:blank launcher — the same limit gn-math has. to unlock them, host `index.html` next to `coi-serviceworker.js` on any https static host (github pages, cloudflare pages, ...): the launcher registers it once and reloads isolated. serving the launcher with `Cross-Origin-Opener-Policy: same-origin` + `Cross-Origin-Embedder-Policy: credentialless` works too.

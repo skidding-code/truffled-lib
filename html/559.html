@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="en">
-  <head><base href="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-09@main/games/psp/tboir/"><script>(function (C) {
+  <head><base href="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-09@d3bb043cafd52481570850912cf7b9bf72c13a6b/games/psp/tboir/"><script>(function (C) {
   var G = typeof self !== 'undefined' ? self : this;
   if (G.__tz) return;
   var IS_DOC = typeof document !== 'undefined' && typeof Element !== 'undefined';
@@ -200,6 +200,18 @@
           if (m !== url) {
             if (typeof input === 'string' || input instanceof URL) input = m;
             else input = new Request(m, input);
+          }
+          if (C.o && String(m).indexOf(CDN + '/gh/' + C.o + '/') === 0 && String((init && init.method) || (input && input.method) || 'GET').toUpperCase() === 'GET') {
+            var tries = 0, inp = input;
+            var again = function () {
+              return origFetch(typeof inp === 'string' ? inp : inp.clone ? inp.clone() : inp, init).then(function (r) {
+                if ((r.status === 403 || r.status === 429 || r.status >= 500) && ++tries < 4) {
+                  return new Promise(function (ok) { setTimeout(ok, 700 * tries); }).then(again);
+                }
+                return r;
+              });
+            };
+            return again();
           }
         }
       } catch (e) {}
@@ -473,7 +485,7 @@
       }
     }).observe(document, { childList: true, subtree: true });
   }
-})({"c":"https://cdn.jsdelivr.net","o":"skidding-code","p":19000000,"b":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-09@main/games/psp/tboir/","r":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-09@main/","u":{"/games/psp/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-09@main/","/extra/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-09@main/"},"x":{"cdn.emulatorjs.org/stable/data/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-09@main/_ext/cdn.emulatorjs.org/stable/data/","cdn.emulatorjs.org/stable/data/localization/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-09@main/_ext/cdn.emulatorjs.org/stable/data/localization/","cdn.emulatorjs.org/stable/data/cores/reports/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-09@main/_ext/cdn.emulatorjs.org/stable/data/cores/reports/","cdn.emulatorjs.org/stable/data/cores/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-09@main/_ext/cdn.emulatorjs.org/stable/data/cores/","cdn.emulatorjs.org/stable/data/compression/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-09@main/_ext/cdn.emulatorjs.org/stable/data/compression/"},"s":{"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-09@main/games/psp/tboir/tboirpsp0301.iso":[8,"application/octet-stream",134742016]}});</script>
+})({"c":"https://cdn.jsdelivr.net","o":"skidding-code","p":19000000,"b":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-09@d3bb043cafd52481570850912cf7b9bf72c13a6b/games/psp/tboir/","r":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-09@d3bb043cafd52481570850912cf7b9bf72c13a6b/","u":{"/games/psp/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-09@d3bb043cafd52481570850912cf7b9bf72c13a6b/","/extra/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-09@d3bb043cafd52481570850912cf7b9bf72c13a6b/"},"x":{"cdn.emulatorjs.org/stable/data/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-09@d3bb043cafd52481570850912cf7b9bf72c13a6b/_ext/cdn.emulatorjs.org/stable/data/","cdn.emulatorjs.org/stable/data/localization/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-09@d3bb043cafd52481570850912cf7b9bf72c13a6b/_ext/cdn.emulatorjs.org/stable/data/localization/","cdn.emulatorjs.org/stable/data/cores/reports/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-09@d3bb043cafd52481570850912cf7b9bf72c13a6b/_ext/cdn.emulatorjs.org/stable/data/cores/reports/","cdn.emulatorjs.org/stable/data/cores/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-09@d3bb043cafd52481570850912cf7b9bf72c13a6b/_ext/cdn.emulatorjs.org/stable/data/cores/","cdn.emulatorjs.org/stable/data/compression/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-09@d3bb043cafd52481570850912cf7b9bf72c13a6b/_ext/cdn.emulatorjs.org/stable/data/compression/"},"s":{"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-09@d3bb043cafd52481570850912cf7b9bf72c13a6b/games/psp/tboir/tboirpsp0301.iso":[8,"application/octet-stream",134742016]}});</script>
     <meta charset="UTF-8" />
     <meta
       name="viewport"
@@ -526,7 +538,7 @@
       window.EJS_player = "#game";
       window.EJS_core = "psp";
       window.EJS_gameUrl = "tboirpsp0301.iso";
-      window.EJS_pathtodata = "https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-09@main/extra/data/";
+      window.EJS_pathtodata = "https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-09@d3bb043cafd52481570850912cf7b9bf72c13a6b/extra/data/";
       window.EJS_threads = true;
       window.EJS_startOnLoaded = true;
       window.EJS_language = "en-US";
