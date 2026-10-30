@@ -247,19 +247,6 @@
   "key": "games__AVHPort"
  },
  {
-  "id": 31,
-  "name": "Apotheon, Webport",
-  "cover": "{COVER_URL}/31.webp",
-  "url": "{HTML_URL}/31.html",
-  "altNames": [
-   "Apotheon"
-  ],
-  "special": [
-   "threads"
-  ],
-  "key": "games__Apotheon"
- },
- {
   "id": 32,
   "name": "Arthur's Nightmare, Webport",
   "cover": "{COVER_URL}/32.webp",
@@ -478,16 +465,6 @@
   "key": "games__beatblock"
  },
  {
-  "id": 58,
-  "name": "Bee Movie Game",
-  "cover": "{COVER_URL}/58.webp",
-  "url": "{HTML_URL}/58.html",
-  "special": [
-   "threads"
-  ],
-  "key": "games__beemovie"
- },
- {
   "id": 59,
   "name": "Bendy And The Ink Machine, Webport",
   "cover": "{COVER_URL}/59.webp",
@@ -692,16 +669,6 @@
   "cover": "{COVER_URL}/84.webp",
   "url": "{HTML_URL}/84.html",
   "key": "gamefile__bbe"
- },
- {
-  "id": 85,
-  "name": "Call of Duty 4 Modern Warfare",
-  "cover": "{COVER_URL}/85.webp",
-  "url": "{HTML_URL}/85.html",
-  "special": [
-   "threads"
-  ],
-  "key": "games__cod4mw"
  },
  {
   "id": 86,
@@ -1043,16 +1010,6 @@
   "key": "gamefile__daily"
  },
  {
-  "id": 128,
-  "name": "Danganronpa",
-  "cover": "{COVER_URL}/128.webp",
-  "url": "{HTML_URL}/128.html",
-  "special": [
-   "threads"
-  ],
-  "key": "games__danganronpa"
- },
- {
   "id": 129,
   "name": "DEAD PLATE, Webport",
   "cover": "{COVER_URL}/129.webp",
@@ -1107,16 +1064,6 @@
   "key": "gamefile__deltatr"
  },
  {
-  "id": 135,
-  "name": "Dewdrop Dynasty, Webport",
-  "cover": "{COVER_URL}/135.webp",
-  "url": "{HTML_URL}/135.html",
-  "special": [
-   "threads"
-  ],
-  "key": "games__dewdrop"
- },
- {
   "id": 136,
   "name": "Diablo",
   "cover": "{COVER_URL}/136.webp",
@@ -1150,16 +1097,6 @@
   "cover": "{COVER_URL}/140.webp",
   "url": "{HTML_URL}/140.html",
   "key": "gamefile__dm2"
- },
- {
-  "id": 141,
-  "name": "Dome Keeper, Webport",
-  "cover": "{COVER_URL}/141.webp",
-  "url": "{HTML_URL}/141.html",
-  "special": [
-   "threads"
-  ],
-  "key": "games__domekeeper"
  },
  {
   "id": 142,
@@ -2049,19 +1986,6 @@
   "key": "gamefile__gta3"
  },
  {
-  "id": 259,
-  "name": "GTA San Andreas",
-  "cover": "{COVER_URL}/259.webp",
-  "url": "{HTML_URL}/259.html",
-  "altNames": [
-   "Grand Theft Auto: San Andreas"
-  ],
-  "special": [
-   "threads"
-  ],
-  "key": "games__gtasan"
- },
- {
   "id": 260,
   "name": "GTA Vice City, Webport",
   "cover": "{COVER_URL}/260.webp",
@@ -2867,16 +2791,6 @@
   "key": "games__mcpe"
  },
  {
-  "id": 356,
-  "name": "Minecraft: Story Mode, Webport",
-  "cover": "{COVER_URL}/356.webp",
-  "url": "{HTML_URL}/356.html",
-  "special": [
-   "threads"
-  ],
-  "key": "games__mcsm"
- },
- {
   "id": 357,
   "name": "Minesweeper Mania",
   "cover": "{COVER_URL}/357.webp",
@@ -3046,16 +2960,6 @@
   "key": "gamefile__onshi"
  },
  {
-  "id": 379,
-  "name": "Osu!",
-  "cover": "{COVER_URL}/379.webp",
-  "url": "{HTML_URL}/379.html",
-  "special": [
-   "threads"
-  ],
-  "key": "games__osu"
- },
- {
   "id": 380,
   "name": "Overburden, Webport",
   "cover": "{COVER_URL}/380.webp",
@@ -3180,16 +3084,6 @@
   "cover": "{COVER_URL}/397.webp",
   "url": "{HTML_URL}/397.html",
   "key": "games__paps"
- },
- {
-  "id": 398,
-  "name": "Parappa The Rapper 2",
-  "cover": "{COVER_URL}/398.webp",
-  "url": "{HTML_URL}/398.html",
-  "special": [
-   "threads"
-  ],
-  "key": "games__parappa2"
  },
  {
   "id": 399,
@@ -3430,26 +3324,6 @@
   "cover": "{COVER_URL}/428.webp",
   "url": "{HTML_URL}/428.html",
   "key": "games__polytrack"
- },
- {
-  "id": 429,
-  "name": "Portal",
-  "cover": "{COVER_URL}/429.webp",
-  "url": "{HTML_URL}/429.html",
-  "special": [
-   "threads"
-  ],
-  "key": "games__portal"
- },
- {
-  "id": 430,
-  "name": "Portal 2",
-  "cover": "{COVER_URL}/430.webp",
-  "url": "{HTML_URL}/430.html",
-  "special": [
-   "threads"
-  ],
-  "key": "games__portal2__portal2"
  },
  {
   "id": 431,
@@ -4131,16 +4005,6 @@
   "key": "games__srb2"
  },
  {
-  "id": 515,
-  "name": "Sonic Robo Blast 2 KART",
-  "cover": "{COVER_URL}/515.webp",
-  "url": "{HTML_URL}/515.html",
-  "special": [
-   "threads"
-  ],
-  "key": "games__kart"
- },
- {
   "id": 516,
   "name": "Sonic World Next",
   "cover": "{COVER_URL}/516.webp",
@@ -4193,16 +4057,6 @@
   "cover": "{COVER_URL}/521.webp",
   "url": "{HTML_URL}/521.html",
   "key": "gamefile__spelunky"
- },
- {
-  "id": 522,
-  "name": "Starbound, Webport",
-  "cover": "{COVER_URL}/522.webp",
-  "url": "{HTML_URL}/522.html",
-  "special": [
-   "threads"
-  ],
-  "key": "games__Starbound"
  },
  {
   "id": 523,
@@ -4369,16 +4223,6 @@
   "key": "gamefile__ssf2"
  },
  {
-  "id": 544,
-  "name": "Super Tux Kart",
-  "cover": "{COVER_URL}/544.webp",
-  "url": "{HTML_URL}/544.html",
-  "special": [
-   "threads"
-  ],
-  "key": "games__supertuxkart__SuperTuxKart"
- },
- {
   "id": 545,
   "name": "Survivor.io, Webport",
   "cover": "{COVER_URL}/545.webp",
@@ -4528,16 +4372,6 @@
   "cover": "{COVER_URL}/563.webp",
   "url": "{HTML_URL}/563.html",
   "key": "gamefile__tloz"
- },
- {
-  "id": 564,
-  "name": "The Legend of Zelda: Twilight Princess",
-  "cover": "{COVER_URL}/564.webp",
-  "url": "{HTML_URL}/564.html",
-  "special": [
-   "threads"
-  ],
-  "key": "games__dusk"
  },
  {
   "id": 565,

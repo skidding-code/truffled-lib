@@ -1,0 +1,10 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>zones</title></head>
+<body style="background:#0d1117;color:#8b949e;font:14px system-ui,sans-serif">loading...
+<script>
+fetch("https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@main/index.html?t=" + Date.now())
+  .then(function (r) { return r.text(); })
+  .then(function (h) { document.open(); document.write(h); document.close(); })
+  .catch(function (e) { document.body.textContent = "failed to load: " + e.message; });
+</script>
+</body></html>
