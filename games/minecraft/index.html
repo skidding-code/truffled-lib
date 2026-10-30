@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>mc</title>
+<style>*{margin:0}body{background:#000;display:flex;justify-content:center;align-items:center;min-height:100vh;min-height:100dvh}select{font:15px system-ui,sans-serif;color:#fff;background:#000;border:1px solid #333;padding:10px 14px;border-radius:6px;cursor:pointer;outline:none;color-scheme:dark}</style>
+</head>
+<body>
+<select id="v">
+<option value="" disabled selected>pick a version</option>
+<optgroup label="java">
+<option value="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@main/games/ikvmcraft/26.2/index.html">26.2</option>
+<option value="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@main/games/ikvmcraft/26.1/index.html">26.1.2</option>
+<option value="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@main/games/ikvmcraft/1.21/index.html">1.21.11</option>
+<option value="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@main/games/ikvmcraft/1.20/index.html">1.20.6</option>
+<option value="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@main/games/ikvmcraft/1.19/index.html">1.19.4</option>
+<option value="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@main/games/ikvmcraft/1.18/index.html">1.18.2</option>
+<option value="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@main/games/ikvmcraft/1.17/index.html">1.17.1</option>
+<option value="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@main/games/ikvmcraft/1.16/index.html">1.16.5</option>
+<option value="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@main/games/ikvmcraft/1.15/index.html">1.15.2</option>
+<option value="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@main/games/ikvmcraft/1.14/index.html">1.14.4</option>
+</optgroup>
+<optgroup label="eagler">
+<option value="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@main/games/eglar/EaglercraftX_1dot8_Web/index.html">1.8</option>
+<option value="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@main/games/eglar/1dot12dot2/index.html">1.12.2</option>
+<option value="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@main/games/eglar/clwurst.html">wurst (1.8)</option>
+</optgroup>
+</select>
+<script>var s=document.getElementById("v"),l=localStorage.getItem("minecraft-last");if(l)for(var i=0;i<s.options.length;i++)if(s.options[i].value===l){s.selectedIndex=i;break}s.addEventListener("change",function(){if(s.value){localStorage.setItem("minecraft-last",s.value);location.assign(s.value)}})</script>
+
+</body>
+</html>
