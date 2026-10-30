@@ -7,7 +7,7 @@ a jsdelivr-only game library, laid out like gn-math's `freebuisness/{assets,html
 - `covers/<id>.*` — thumbnails
 - `index.html` — single-file launcher; works from any origin, `file://`, or pasted into an about:blank tab
 
-game files live in `skidding-code/truffled-lib-NN` and are only ever fetched from `cdn.jsdelivr.net`.
+game files live in this repo and are only ever fetched from `cdn.jsdelivr.net`: `main` holds the launcher, catalog and every regular game; the `threads` branch holds the games that need SharedArrayBuffer.
 
 ## loading a game yourself
 
@@ -24,7 +24,7 @@ f.contentDocument.open(); f.contentDocument.write(html); f.contentDocument.close
 
 ## how the html pages work
 
-each page carries a `<base>` pointing at its folder in a `truffled-lib-NN` repo plus a small inline runtime that:
+each page carries a `<base>` pointing at its folder in this repo (pinned to a commit) plus a small inline runtime that:
 
 - remaps root-relative, truffled.lol and mirrored third-party urls onto jsdelivr
 - re-joins files that were split into `.partN` chunks (jsdelivr's per-file limit is 20 MB) for `fetch`, `XMLHttpRequest` and `src` assignments

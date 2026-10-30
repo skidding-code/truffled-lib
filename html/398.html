@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="en">
-   <head><base href="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-26@5f7888152e482cdd9a3d46043d7d97cb7c527345/games/parappa2/"><script>(function (C) {
+   <head><base href="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@threads/games/parappa2/"><script>(function (C) {
   var G = typeof self !== 'undefined' ? self : this;
   if (G.__tz) return;
   var IS_DOC = typeof document !== 'undefined' && typeof Element !== 'undefined';
@@ -485,7 +485,7 @@
       }
     }).observe(document, { childList: true, subtree: true });
   }
-})({"c":"https://cdn.jsdelivr.net","o":"skidding-code","p":19000000,"b":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-26@5f7888152e482cdd9a3d46043d7d97cb7c527345/games/parappa2/","r":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-26@5f7888152e482cdd9a3d46043d7d97cb7c527345/","u":{"/games/parappa2/index.html":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-26@5f7888152e482cdd9a3d46043d7d97cb7c527345/","/games/parappa2/Play.js":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-26@5f7888152e482cdd9a3d46043d7d97cb7c527345/","/games/parappa2/Play.wasm":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-26@5f7888152e482cdd9a3d46043d7d97cb7c527345/","/games/parappa2/parappa.iso":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-27@7cb78d4a0e78adf59100e27e81629e2fd3c54b4a/","/games/parappa2/static/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-28@9ac8637fa0fc84c441da6b58f480b276173bb81f/"},"x":{},"s":{"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-27@7cb78d4a0e78adf59100e27e81629e2fd3c54b4a/games/parappa2/parappa.iso":[239,"application/octet-stream",4522868736,[[1,"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-27@7cb78d4a0e78adf59100e27e81629e2fd3c54b4a/games/parappa2/parappa.iso"],[132,"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-42@6fe2599c5accfb18dc0df2542ef092e1e8ce6967/games/parappa2/parappa.iso"]]]}});</script>
+})({"c":"https://cdn.jsdelivr.net","o":"skidding-code","p":19000000,"b":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@threads/games/parappa2/","r":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@threads/","u":{"/games/parappa2/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@threads/"},"x":{},"s":{"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@threads/games/parappa2/parappa.iso":[239,"application/octet-stream",4522868736]}});</script>
       <meta charse
 t="utf-8"/>
       <link rel="icon" href="/favicon.ico"/>
@@ -495,8 +495,8 @@ t="utf-8"/>
       <link rel="apple-touch-icon" href="/logo192.png"/>
       <link rel="manifest" href="/manifest.json"/>
       <title>Play!.js</title>
-      <script defer="defer" src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-28@9ac8637fa0fc84c441da6b58f480b276173bb81f/games/parappa2/static/js/main.fb6e8aea.js"></script>
-      <link href="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-28@9ac8637fa0fc84c441da6b58f480b276173bb81f/games/parappa2/static/css/main.5a525eca.css" rel="stylesheet">
+      <script defer="defer" src="static/js/main.fb6e8aea.js"></script>
+      <link href="static/css/main.5a525eca.css" rel="stylesheet">
       <style>
          * { margin: 0; padding: 0; box-sizing: border-box; }
          html, body { width: 100vw; height: 100vh; overflow: hidden; background: #000; }
@@ -578,7 +578,7 @@ t="utf-8"/>
 
             async function autoload() {
                try {
-                  let res = await fetch('https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-27@7cb78d4a0e78adf59100e27e81629e2fd3c54b4a/games/parappa2/parappa.iso')
+                  let res = await fetch('parappa.iso')
                   if (!res.ok) throw new Error('failed to fetch parappa.iso (' + res.status + ')')
 
                   let total = parseInt(res.headers.get('content-length') || '0')
@@ -599,7 +599,7 @@ t="utf-8"/>
                   }
 
                   let blob = new Blob(chunks)
-                  let file = new File([blob], 'https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-27@7cb78d4a0e78adf59100e27e81629e2fd3c54b4a/games/parappa2/parappa.iso', { type: 'application/octet-stream' })
+                  let file = new File([blob], 'parappa.iso', { type: 'application/octet-stream' })
 
                   status.textContent = 'waiting for emulator...'
                   bar.style.width = '100%'
