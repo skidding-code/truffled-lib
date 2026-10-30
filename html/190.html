@@ -230,6 +230,10 @@
         this.__tzs = { a: a, m: m, h: [] };
         return;
       }
+      if (a[2] !== false && C.o && String(method).toUpperCase() === 'GET' && typeof m === 'string' && m.indexOf(CDN + '/gh/' + C.o + '/') === 0) {
+        this.__tzs = { a: a, m: m, h: [], r: 1 };
+        return;
+      }
       this.__tzs = null;
       a[1] = m;
       return oOpen.apply(this, a);
@@ -241,6 +245,40 @@
     XP.send = function (body) {
       var s = this.__tzs, x = this;
       if (!s) return oSend.call(this, body);
+      if (s.r) {
+        var hdr = {};
+        s.h.forEach(function (h) { hdr[h[0]] = h[1]; });
+        var tries = 0;
+        var go = function () {
+          return origFetch(s.m, { headers: hdr }).then(function (r) {
+            if ((r.status === 403 || r.status === 429 || r.status >= 500) && ++tries < 4) {
+              return new Promise(function (ok) { setTimeout(ok, 700 * tries); }).then(go);
+            }
+            return r;
+          });
+        };
+        go().then(function (r) {
+          if (!r.ok) throw new Error(String(r.status));
+          return r.blob();
+        }).then(function (b) {
+          var bu = URL.createObjectURL(b);
+          var a = s.a.slice();
+          a[1] = bu;
+          x.__tzs = null;
+          oOpen.apply(x, a);
+          s.h.forEach(function (h) { if (String(h[0]).toLowerCase() !== 'range') try { oSRH.call(x, h[0], h[1]); } catch (e) {} });
+          x.addEventListener('loadend', function () { setTimeout(function () { URL.revokeObjectURL(bu); }, 1000); });
+          oSend.call(x, body);
+        }, function () {
+          x.__tzs = null;
+          var a = s.a.slice();
+          a[1] = s.m;
+          oOpen.apply(x, a);
+          s.h.forEach(function (h) { try { oSRH.call(x, h[0], h[1]); } catch (e) {} });
+          oSend.call(x, body);
+        });
+        return;
+      }
       var key = splitKey(s.m), rh = null;
       s.h.forEach(function (h) { if (String(h[0]).toLowerCase() === 'range') rh = h[1]; });
       var rg = rh && sizeOf(key) ? parseRange(rh, sizeOf(key)) : null;
@@ -473,6 +511,33 @@
       else oSetAttr.call(f, 'src', m);
     }
   }
+  G.addEventListener('error', function (e) {
+    var el = e.target;
+    if (!el || el === G || !el.tagName) return;
+    var tag = el.tagName, attr = tag === 'LINK' ? 'href' : 'src';
+    var u = String(el[attr] || '');
+    if (u.indexOf(CDN + '/gh/') !== 0) return;
+    var n = el.__tzRetry || 0;
+    if (n >= 3) return;
+    setTimeout(function () {
+      var v = u.replace(/([?&])tzr=\d+&?/, '$1').replace(/[?&]$/, '');
+      v = v + (v.indexOf('?') >= 0 ? '&' : '?') + 'tzr=' + (n + 1);
+      if (tag === 'SCRIPT' || tag === 'LINK') {
+        var c = document.createElement(tag.toLowerCase());
+        for (var i = 0; i < el.attributes.length; i++) oSetAttr.call(c, el.attributes[i].name, el.attributes[i].value);
+        if (tag === 'SCRIPT') c.async = el.async;
+        c.__tzRetry = n + 1;
+        oSetAttr.call(c, attr, v);
+        if (el.parentNode) el.parentNode.insertBefore(c, el.nextSibling);
+        el.remove();
+      } else {
+        el.__tzRetry = n + 1;
+        oSetAttr.call(el, attr, v);
+        if (tag === 'SOURCE' && el.parentNode && el.parentNode.load) el.parentNode.load();
+      }
+    }, 700 * (n + 1));
+  }, true);
+
   if (G.MutationObserver) {
     new MutationObserver(function (recs) {
       for (var i = 0; i < recs.length; i++) {
@@ -486,7 +551,7 @@
       }
     }).observe(document, { childList: true, subtree: true });
   }
-})({"c":"https://cdn.jsdelivr.net","o":"skidding-code","p":19000000,"b":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@main/_ext/cdn.jsdelivr.net/gh/web-ports/fnac/2/","r":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@main/","u":{"/gamefile/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@main/"},"x":{"cdn.jsdelivr.net/gh/web-ports/fnac/2/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@main/_ext/cdn.jsdelivr.net/gh/web-ports/fnac/2/","cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@main/_ext/cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/","cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@main/_ext/cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/","cdn.jsdelivr.net/gh/web-ports/fnac/1/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@main/_ext/cdn.jsdelivr.net/gh/web-ports/fnac/1/","cdnjs.cloudflare.com/ajax/libs/nipplejs/0.9.0/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@main/_ext/cdnjs.cloudflare.com/ajax/libs/nipplejs/0.9.0/","cdnjs.cloudflare.com/ajax/libs/jszip/3.3.0/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@main/_ext/cdnjs.cloudflare.com/ajax/libs/jszip/3.3.0/","cdnjs.cloudflare.com/ajax/libs/Sortable/1.10.1/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@main/_ext/cdnjs.cloudflare.com/ajax/libs/Sortable/1.10.1/","cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/fonts/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@main/_ext/cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/fonts/"},"s":{"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@main/_ext/cdn.jsdelivr.net/gh/web-ports/fnac/2/resources.zip.part1":[2,"application/octet-stream",20971520],"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@main/_ext/cdn.jsdelivr.net/gh/web-ports/fnac/2/resources.zip.part2":[2,"application/octet-stream",20971520],"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@main/_ext/cdn.jsdelivr.net/gh/web-ports/fnac/2/resources.zip.part3":[2,"application/octet-stream",20971520],"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@main/_ext/cdn.jsdelivr.net/gh/web-ports/fnac/2/resources.zip.part4":[2,"application/octet-stream",20971520],"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@main/_ext/cdn.jsdelivr.net/gh/web-ports/fnac/2/resources.zip.part5":[2,"application/octet-stream",20971520],"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@main/_ext/cdn.jsdelivr.net/gh/web-ports/fnac/2/resources.zip.part6":[2,"application/octet-stream",20971520],"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@main/_ext/cdn.jsdelivr.net/gh/web-ports/fnac/2/resources.zip.part7":[2,"application/octet-stream",20971520],"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@main/_ext/cdn.jsdelivr.net/gh/web-ports/fnac/2/resources.zip.part8":[2,"application/octet-stream",20971520],"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@main/_ext/cdn.jsdelivr.net/gh/web-ports/fnac/2/resources.zip.part9":[2,"application/octet-stream",20971520],"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@main/_ext/cdn.jsdelivr.net/gh/web-ports/fnac/2/resources.zip.part10":[2,"application/octet-stream",20971520],"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@main/_ext/cdn.jsdelivr.net/gh/web-ports/fnac/2/resources.zip.part11":[2,"application/octet-stream",20971520],"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@main/_ext/cdn.jsdelivr.net/gh/web-ports/fnac/1/resources.zip.part1":[2,"application/octet-stream",20971520],"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@main/_ext/cdn.jsdelivr.net/gh/web-ports/fnac/1/resources.zip.part2":[2,"application/octet-stream",20971520],"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@main/_ext/cdn.jsdelivr.net/gh/web-ports/fnac/1/resources.zip.part3":[2,"application/octet-stream",20971520],"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@main/_ext/cdn.jsdelivr.net/gh/web-ports/fnac/1/resources.zip.part4":[2,"application/octet-stream",20971520],"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@main/_ext/cdn.jsdelivr.net/gh/web-ports/fnac/1/resources.zip.part5":[2,"application/octet-stream",20971520],"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@main/_ext/cdn.jsdelivr.net/gh/web-ports/fnac/1/resources.zip.part6":[2,"application/octet-stream",20971520],"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@main/_ext/cdn.jsdelivr.net/gh/web-ports/fnac/1/resources.zip.part7":[2,"application/octet-stream",19697878]}});</script>
+})({"c":"https://cdn.jsdelivr.net","o":"skidding-code","p":19000000,"b":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@main/_ext/cdn.jsdelivr.net/gh/web-ports/fnac/2/","r":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@main/","u":{"/gamefile/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@main/"},"x":{"cdn.jsdelivr.net/gh/web-ports/fnac/2/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@main/_ext/cdn.jsdelivr.net/gh/web-ports/fnac/2/","cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@main/_ext/cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/","cdnjs.cloudflare.com/ajax/libs/nipplejs/0.10.1/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@main/_ext/cdnjs.cloudflare.com/ajax/libs/nipplejs/0.10.1/","cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@main/_ext/cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/","cdn.jsdelivr.net/gh/web-ports/fnac/1/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@main/_ext/cdn.jsdelivr.net/gh/web-ports/fnac/1/","cdnjs.cloudflare.com/ajax/libs/nipplejs/0.9.0/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@main/_ext/cdnjs.cloudflare.com/ajax/libs/nipplejs/0.9.0/","cdnjs.cloudflare.com/ajax/libs/jszip/3.3.0/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@main/_ext/cdnjs.cloudflare.com/ajax/libs/jszip/3.3.0/","cdnjs.cloudflare.com/ajax/libs/Sortable/1.10.1/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@main/_ext/cdnjs.cloudflare.com/ajax/libs/Sortable/1.10.1/","cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/fonts/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@main/_ext/cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/fonts/"},"s":{"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@main/_ext/cdn.jsdelivr.net/gh/web-ports/fnac/2/resources.zip.part1":[2,"application/octet-stream",20971520],"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@main/_ext/cdn.jsdelivr.net/gh/web-ports/fnac/2/resources.zip.part2":[2,"application/octet-stream",20971520],"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@main/_ext/cdn.jsdelivr.net/gh/web-ports/fnac/2/resources.zip.part3":[2,"application/octet-stream",20971520],"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@main/_ext/cdn.jsdelivr.net/gh/web-ports/fnac/2/resources.zip.part4":[2,"application/octet-stream",20971520],"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@main/_ext/cdn.jsdelivr.net/gh/web-ports/fnac/2/resources.zip.part5":[2,"application/octet-stream",20971520],"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@main/_ext/cdn.jsdelivr.net/gh/web-ports/fnac/2/resources.zip.part6":[2,"application/octet-stream",20971520],"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@main/_ext/cdn.jsdelivr.net/gh/web-ports/fnac/2/resources.zip.part7":[2,"application/octet-stream",20971520],"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@main/_ext/cdn.jsdelivr.net/gh/web-ports/fnac/2/resources.zip.part8":[2,"application/octet-stream",20971520],"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@main/_ext/cdn.jsdelivr.net/gh/web-ports/fnac/2/resources.zip.part9":[2,"application/octet-stream",20971520],"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@main/_ext/cdn.jsdelivr.net/gh/web-ports/fnac/2/resources.zip.part10":[2,"application/octet-stream",20971520],"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@main/_ext/cdn.jsdelivr.net/gh/web-ports/fnac/2/resources.zip.part11":[2,"application/octet-stream",20971520],"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@main/_ext/cdn.jsdelivr.net/gh/web-ports/fnac/1/resources.zip.part1":[2,"application/octet-stream",20971520],"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@main/_ext/cdn.jsdelivr.net/gh/web-ports/fnac/1/resources.zip.part2":[2,"application/octet-stream",20971520],"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@main/_ext/cdn.jsdelivr.net/gh/web-ports/fnac/1/resources.zip.part3":[2,"application/octet-stream",20971520],"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@main/_ext/cdn.jsdelivr.net/gh/web-ports/fnac/1/resources.zip.part4":[2,"application/octet-stream",20971520],"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@main/_ext/cdn.jsdelivr.net/gh/web-ports/fnac/1/resources.zip.part5":[2,"application/octet-stream",20971520],"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@main/_ext/cdn.jsdelivr.net/gh/web-ports/fnac/1/resources.zip.part6":[2,"application/octet-stream",20971520],"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@main/_ext/cdn.jsdelivr.net/gh/web-ports/fnac/1/resources.zip.part7":[2,"application/octet-stream",19697878]}});</script>
     
     <link rel="stylesheet" type="text/css" href="style.css"/>
     <link rel="icon" type="image/x-icon" href="favicon.ico" />
