@@ -1,0 +1,80 @@
+{
+	"animations": [
+		{
+			"offsets": [
+				577,
+				-100
+			],
+			"loop": false,
+			"fps": 24,
+			"anim": "singDOWN",
+			"indices": [],
+			"name": "down_guitar"
+		},
+		{
+			"offsets": [
+				441,
+				81
+			],
+			"loop": false,
+			"fps": 24,
+			"anim": "singLEFT",
+			"indices": [],
+			"name": "left_guitar"
+		},
+		{
+			"offsets": [
+				183,
+				134
+			],
+			"loop": false,
+			"fps": 24,
+			"anim": "singRIGHT",
+			"indices": [],
+			"name": "right_guitar"
+		},
+		{
+			"offsets": [
+				518,
+				-29
+			],
+			"loop": false,
+			"fps": 24,
+			"anim": "singUP",
+			"indices": [],
+			"name": "up_guitar"
+		},
+		{
+			"offsets": [
+				500,
+				-50
+			],
+			"loop": false,
+			"fps": 24,
+			"anim": "idle",
+			"indices": [],
+			"name": "idle_guitar"
+		}
+	],
+	"vocals_file": "",
+	"no_antialiasing": false,
+	"image": "characters/skeleton_guitar",
+	"position": [
+		-809,
+		-20
+	],
+	"healthicon": "skeleton",
+	"flip_x": false,
+	"healthbar_colors": [
+		185,
+		89,
+		94
+	],
+	"camera_position": [
+		-130,
+		120
+	],
+	"sing_duration": 4,
+	"scale": 0.6,
+	"_editor_isPlayer": false
+}
