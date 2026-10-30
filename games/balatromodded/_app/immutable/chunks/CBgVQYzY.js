@@ -1,0 +1,1 @@
+async function e(){return`windows`}export{e as platform};
