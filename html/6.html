@@ -1,0 +1,883 @@
+<!doctype html>
+<html>
+    <head><base href="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-01@main/games/30dolar/"><script>(function (C) {
+  var G = typeof self !== 'undefined' ? self : this;
+  if (G.__tz) return;
+  var IS_DOC = typeof document !== 'undefined' && typeof Element !== 'undefined';
+  var CDN = C.c;
+  var SKIP = /^(data:|blob:|javascript:|about:|mailto:|tel:|ws:|wss:|#)/i;
+  var units = Object.keys(C.u || {}).sort(function (a, b) { return b.length - a.length; });
+  var exts = Object.keys(C.x || {}).sort(function (a, b) { return b.length - a.length; });
+  var split = C.s || {};
+  var hostDir = (function () {
+    try {
+      var h = String(G.location.href);
+      if (/^(https?|file):/i.test(h)) return h.slice(0, h.lastIndexOf('/') + 1);
+    } catch (e) {}
+    return null;
+  })();
+
+  function base() {
+    if (C.w) return C.w;
+    try { return document.baseURI; } catch (e) { return C.b; }
+  }
+
+  function rootFor(p, strict) {
+    for (var i = 0; i < units.length; i++) if (p.indexOf(units[i]) === 0) return C.u[units[i]];
+    return strict ? null : C.r;
+  }
+
+  function map(u) {
+    try {
+      if (u == null) return u;
+      if (typeof u !== 'string') {
+        if (typeof URL !== 'undefined' && u instanceof URL) u = u.href;
+        else if (u && typeof u.toString === 'function') u = u.toString();
+        else return u;
+      }
+      var t = u.trim();
+      if (C.w && /^blob:/i.test(t) && /\/[^\/?#]*\.[A-Za-z0-9]{1,8}([?#].*)?$/.test(t)) {
+        return map(new URL(t.slice(t.lastIndexOf('/') + 1), C.w).href);
+      }
+      if (!t || SKIP.test(t)) return u;
+      var abs;
+      try { abs = new URL(t, base()); } catch (e) { return u; }
+      var href = abs.href;
+      if (hostDir && href.indexOf(hostDir) === 0 && !(C.b.indexOf(hostDir) === 0)) {
+        return map(new URL(href.slice(hostDir.length), C.b).href);
+      }
+      if (abs.protocol !== 'http:' && abs.protocol !== 'https:') return u;
+      if (abs.origin === CDN && C.o && abs.pathname.indexOf('/gh/' + C.o + '/') === 0) {
+        var mm = /^\/gh\/[^/]+\/[^/@]+@[^/]+\//.exec(abs.pathname);
+        if (mm) {
+          var rest = abs.pathname.slice(mm[0].length), dp = rest;
+          try { dp = decodeURIComponent(rest); } catch (e) {}
+          var want = rootFor('/' + dp, true);
+          if (want && want !== CDN + mm[0]) return want + rest + abs.search + abs.hash;
+        }
+        return href;
+      }
+      if ((abs.origin === CDN && !/^\/(gh|npm|combine|wp)\//.test(abs.pathname)) || /^(www\.)?truffled\.lol$/i.test(abs.hostname)) {
+        var dpp = abs.pathname;
+        try { dpp = decodeURIComponent(dpp); } catch (e) {}
+        return rootFor(dpp) + abs.pathname.slice(1) + abs.search + abs.hash;
+      }
+      var hp = abs.host + abs.pathname;
+      for (var i = 0; i < exts.length; i++) {
+        if (hp.indexOf(exts[i]) === 0) return C.x[exts[i]] + hp.slice(exts[i].length);
+      }
+      return href;
+    } catch (e) { return u; }
+  }
+
+  function bare(u) { return String(u).replace(/[?#].*$/, ''); }
+  function splitKey(u) {
+    var b = bare(u);
+    if (split[b]) return b;
+    try { var n = new URL(b).href; if (split[n]) return n; } catch (e) {}
+    try { var d = encodeURI(decodeURI(b)); if (split[d]) return d; } catch (e) {}
+    return null;
+  }
+  function splitInfo(u) { var k = splitKey(u); return k ? split[k] : null; }
+
+  var PART = C.p || 19000000;
+  function partUrl(key, i) {
+    var info = split[key], segs = info[3];
+    if (segs) {
+      for (var j = segs.length - 1; j >= 0; j--) if (i >= segs[j][0]) return segs[j][1] + '.part' + i;
+    }
+    return key + '.part' + i;
+  }
+  function getPart(key, i, range) {
+    var u = partUrl(key, i), tries = 0;
+    function go() {
+      return origFetch(u, range ? { headers: { Range: range } } : undefined).then(function (r) {
+        if (!r.ok) throw new Error('part ' + u + ' ' + r.status);
+        return r.arrayBuffer().then(function (ab) { return [ab, r.status]; });
+      }).catch(function (e) {
+        if (++tries < 4) return new Promise(function (ok) { setTimeout(ok, 800 * tries); }).then(go);
+        throw e;
+      });
+    }
+    return go();
+  }
+  var merged = {};
+  function mergeBuf(u) {
+    var key = splitKey(u) || bare(u);
+    if (merged[key]) return merged[key];
+    var n = split[key][0], type = split[key][1] || 'application/octet-stream';
+    var blobs = new Array(n), next = 1;
+    merged[key] = new Promise(function (ok, bad) {
+      var active = 0, done = 0, failed = false;
+      function pump() {
+        while (!failed && active < 4 && next <= n) {
+          (function (i) {
+            active++;
+            getPart(key, i).then(function (r) {
+              blobs[i - 1] = new Blob([r[0]]);
+              active--;
+              if (++done === n) ok(new Blob(blobs, { type: type }));
+              else pump();
+            }, function (e) { failed = true; bad(e); });
+          })(next++);
+        }
+      }
+      pump();
+    });
+    return merged[key];
+  }
+  var blobUrls = {};
+  function mergeUrl(u) {
+    var key = splitKey(u) || bare(u);
+    if (!blobUrls[key]) blobUrls[key] = mergeBuf(key).then(function (b) { return URL.createObjectURL(b); });
+    return blobUrls[key];
+  }
+  function sizeOf(key) { return split[key][2] || 0; }
+  function parseRange(h, size) {
+    var m = /bytes=(\d*)-(\d*)/.exec(h || '');
+    if (!m) return null;
+    var a, b;
+    if (m[1] === '') { a = Math.max(0, size - Number(m[2])); b = size - 1; }
+    else { a = Number(m[1]); b = m[2] === '' ? size - 1 : Math.min(Number(m[2]), size - 1); }
+    if (a > b || a >= size) return null;
+    return [a, b];
+  }
+  function rangeBlob(key, a, b) {
+    var i0 = Math.floor(a / PART), i1 = Math.floor(b / PART), jobs = [];
+    for (var i = i0; i <= i1; i++) {
+      (function (i) {
+        var s = Math.max(a, i * PART) - i * PART, e = Math.min(b, (i + 1) * PART - 1) - i * PART;
+        jobs.push(getPart(key, i + 1, 'bytes=' + s + '-' + e).then(function (r) {
+          return r[1] === 206 ? r[0] : r[0].slice(s, e + 1);
+        }));
+      })(i);
+    }
+    return Promise.all(jobs).then(function (bufs) { return new Blob(bufs, { type: split[key][1] || 'application/octet-stream' }); });
+  }
+  function streamResponse(key) {
+    var n = split[key][0], next = 1, ahead = [];
+    var hdr = { 'Content-Type': split[key][1] || 'application/octet-stream', 'Accept-Ranges': 'bytes' };
+    if (sizeOf(key)) hdr['Content-Length'] = String(sizeOf(key));
+    function fill() { while (ahead.length < 3 && next <= n) ahead.push(getPart(key, next++)); }
+    var rs = new ReadableStream({
+      pull: function (ctrl) {
+        fill();
+        if (!ahead.length) { ctrl.close(); return; }
+        return ahead.shift().then(function (r) { ctrl.enqueue(new Uint8Array(r[0])); fill(); });
+      },
+      cancel: function () { ahead = []; next = n + 1; }
+    });
+    return new Response(rs, { status: 200, statusText: 'OK', headers: hdr });
+  }
+  function splitFetch(key, input, init) {
+    var method = String((init && init.method) || (input && input.method) || 'GET').toUpperCase();
+    var range = null;
+    try { range = new Headers((init && init.headers) || (input && typeof input === 'object' && input.headers) || undefined).get('range'); } catch (e) {}
+    var size = sizeOf(key), type = split[key][1] || 'application/octet-stream';
+    if (method === 'HEAD') {
+      return Promise.resolve(new Response(null, { status: 200, headers: { 'Content-Length': String(size), 'Content-Type': type, 'Accept-Ranges': 'bytes' } }));
+    }
+    var rg = range && size ? parseRange(range, size) : null;
+    if (rg) {
+      return rangeBlob(key, rg[0], rg[1]).then(function (b) {
+        return new Response(b, { status: 206, statusText: 'Partial Content', headers: { 'Content-Type': type, 'Content-Length': String(b.size), 'Content-Range': 'bytes ' + rg[0] + '-' + rg[1] + '/' + size, 'Accept-Ranges': 'bytes' } });
+      });
+    }
+    if (merged[key]) return merged[key].then(function (b) { return new Response(b, { status: 200, headers: { 'Content-Type': type, 'Content-Length': String(b.size) } }); });
+    return Promise.resolve(streamResponse(key));
+  }
+
+  var origFetch = G.fetch ? G.fetch.bind(G) : null;
+  G.__tz = { map: map, cfg: C };
+
+  if (origFetch) {
+    G.fetch = function (input, init) {
+      try {
+        var url = typeof input === 'string' || (typeof URL !== 'undefined' && input instanceof URL) ? String(input) : input && input.url;
+        if (url) {
+          var m = map(url);
+          if (splitInfo(m)) return splitFetch(splitKey(m), input, init);
+          if (m !== url) {
+            if (typeof input === 'string' || input instanceof URL) input = m;
+            else input = new Request(m, input);
+          }
+        }
+      } catch (e) {}
+      return origFetch(input, init);
+    };
+  }
+
+  if (G.XMLHttpRequest) {
+    var XP = G.XMLHttpRequest.prototype;
+    var oOpen = XP.open, oSend = XP.send, oSRH = XP.setRequestHeader;
+    XP.open = function (method, url) {
+      var a = Array.prototype.slice.call(arguments);
+      var m = map(url);
+      if (splitInfo(m) && a[2] !== false) {
+        this.__tzs = { a: a, m: m, h: [] };
+        return;
+      }
+      this.__tzs = null;
+      a[1] = m;
+      return oOpen.apply(this, a);
+    };
+    XP.setRequestHeader = function (k, v) {
+      if (this.__tzs) { this.__tzs.h.push([k, v]); return; }
+      return oSRH.call(this, k, v);
+    };
+    XP.send = function (body) {
+      var s = this.__tzs, x = this;
+      if (!s) return oSend.call(this, body);
+      var key = splitKey(s.m), rh = null;
+      s.h.forEach(function (h) { if (String(h[0]).toLowerCase() === 'range') rh = h[1]; });
+      var rg = rh && sizeOf(key) ? parseRange(rh, sizeOf(key)) : null;
+      var src = rg ? rangeBlob(key, rg[0], rg[1]).then(function (b) { return URL.createObjectURL(b); }) : mergeUrl(s.m);
+      s.h = s.h.filter(function (h) { return String(h[0]).toLowerCase() !== 'range'; });
+      src.then(function (bu) {
+        var a = s.a.slice();
+        a[1] = bu;
+        x.__tzs = null;
+        oOpen.apply(x, a);
+        s.h.forEach(function (h) { try { oSRH.call(x, h[0], h[1]); } catch (e) {} });
+        oSend.call(x, body);
+      }, function () {
+        x.__tzs = null;
+        var a = s.a.slice();
+        a[1] = s.m;
+        oOpen.apply(x, a);
+        oSend.call(x, body);
+      });
+    };
+  }
+
+  var shimSrc = null;
+  function workerBlob(url, opts) {
+    var m = map(url);
+    var abs = new URL(m, base()).href;
+    var cfg = JSON.parse(JSON.stringify(C));
+    cfg.w = abs;
+    var pre = shimSrc ? '(' + shimSrc + ')(' + JSON.stringify(cfg) + ');' : '';
+    var body = opts && opts.type === 'module'
+      ? pre + 'import ' + JSON.stringify(abs) + ';'
+      : pre + 'importScripts(' + JSON.stringify(abs) + ');';
+    return URL.createObjectURL(new Blob([body], { type: 'text/javascript' }));
+  }
+  function needsWrap(u) {
+    try {
+      var abs = new URL(map(u), base());
+      return abs.origin !== G.location.origin && abs.protocol !== 'blob:' && abs.protocol !== 'data:';
+    } catch (e) { return false; }
+  }
+  ['Worker', 'SharedWorker'].forEach(function (k) {
+    var W = G[k];
+    if (!W) return;
+    var Wrapped = function (url, opts) {
+      var u = typeof url === 'string' || url instanceof URL ? String(url) : url;
+      if (typeof u === 'string' && needsWrap(u)) u = workerBlob(u, opts);
+      return opts === undefined ? new W(u) : new W(u, opts);
+    };
+    Wrapped.prototype = W.prototype;
+    try { Object.defineProperty(Wrapped, 'name', { value: k }); } catch (e) {}
+    G[k] = Wrapped;
+  });
+
+  if (!IS_DOC && typeof G.importScripts === 'function') {
+    var oIS = G.importScripts;
+    G.importScripts = function () {
+      var a = Array.prototype.slice.call(arguments).map(function (u) { return map(u); });
+      return oIS.apply(G, a);
+    };
+  }
+
+  if (!IS_DOC) return;
+
+  try { shimSrc = String(document.currentScript && document.currentScript.textContent || ''); } catch (e) {}
+  if (shimSrc) {
+    var mm = /^\s*\(function \(C\)[\s\S]*\}\)\(/.exec(shimSrc);
+    shimSrc = mm ? mm[0].replace(/\)\($/, '').replace(/^\s*\(/, '') : null;
+  }
+
+  function loadHtmlFrame(frame, url) {
+    origFetch(url).then(function (r) { return r.text(); }).then(function (html) {
+      var w = frame.contentWindow;
+      if (!w) return;
+      var d = w.document;
+      html = prepHtml(html, url);
+      d.open();
+      d.write(html);
+      d.close();
+    });
+  }
+  function prepHtml(html, url) {
+    var dir = url.slice(0, url.lastIndexOf('/') + 1);
+    var tag = '<base href="' + dir + '">';
+    var cfg = JSON.parse(JSON.stringify(C));
+    delete cfg.w;
+    var sh = shimSrc ? '<script>(' + shimSrc + ')(' + JSON.stringify(cfg).replace(/<\//g, '<\\/') + ');<\/script>' : '';
+    if (/<base\b[^>]*>/i.test(html)) {
+      var mb = /<base\b[^>]*\bhref\s*=\s*["']?([^"'\s>]+)/i.exec(html);
+      if (mb) tag = '<base href="' + new URL(mb[1], dir).href + '">';
+      html = html.replace(/<base\b[^>]*>/i, '');
+    }
+    if (/<head[^>]*>/i.test(html)) return html.replace(/<head[^>]*>/i, function (m) { return m + tag + sh; });
+    if (/<html[^>]*>/i.test(html)) return html.replace(/<html[^>]*>/i, function (m) { return m + tag + sh; });
+    return tag + sh + html;
+  }
+  function isHtml(u) {
+    try {
+      var p = new URL(u).pathname;
+      return /\.html?$/i.test(p) || /\/$/.test(p);
+    } catch (e) { return false; }
+  }
+  function cdnLike(u) {
+    try { return new URL(u).origin === CDN; } catch (e) { return false; }
+  }
+
+  function hookProp(proto, prop, special) {
+    if (!proto) return;
+    var d = Object.getOwnPropertyDescriptor(proto, prop);
+    if (!d || !d.set || !d.configurable) return;
+    Object.defineProperty(proto, prop, {
+      configurable: true,
+      enumerable: d.enumerable,
+      get: d.get,
+      set: function (v) {
+        var el = this;
+        if (prop === 'srcset') return d.set.call(el, mapSrcset(v));
+        var m = map(v);
+        if (typeof m === 'string' && splitInfo(m)) {
+          mergeUrl(m).then(function (bu) { d.set.call(el, bu); });
+          return;
+        }
+        if (special && special(el, m, function (x) { d.set.call(el, x); })) return;
+        return d.set.call(el, m);
+      },
+    });
+  }
+  function mapSrcset(v) {
+    if (typeof v !== 'string') return v;
+    return v.split(',').map(function (p) {
+      var t = p.trim();
+      if (!t) return t;
+      var sp = t.split(/\s+/);
+      sp[0] = map(sp[0]);
+      return sp.join(' ');
+    }).join(', ');
+  }
+  function iframeSpecial(el, m, set) {
+    if (typeof m === 'string' && cdnLike(m) && isHtml(m)) {
+      set('about:blank');
+      var go = function () { loadHtmlFrame(el, m); };
+      if (el.isConnected) setTimeout(go, 0);
+      else el.__tzPending = go;
+      return true;
+    }
+    return false;
+  }
+  hookProp(G.HTMLScriptElement && HTMLScriptElement.prototype, 'src');
+  hookProp(G.HTMLImageElement && HTMLImageElement.prototype, 'src');
+  hookProp(G.HTMLImageElement && HTMLImageElement.prototype, 'srcset');
+  hookProp(G.HTMLMediaElement && HTMLMediaElement.prototype, 'src');
+  hookProp(G.HTMLSourceElement && HTMLSourceElement.prototype, 'src');
+  hookProp(G.HTMLSourceElement && HTMLSourceElement.prototype, 'srcset');
+  hookProp(G.HTMLLinkElement && HTMLLinkElement.prototype, 'href');
+  hookProp(G.HTMLEmbedElement && HTMLEmbedElement.prototype, 'src');
+  hookProp(G.HTMLObjectElement && HTMLObjectElement.prototype, 'data');
+  hookProp(G.HTMLInputElement && HTMLInputElement.prototype, 'src');
+  hookProp(G.HTMLIFrameElement && HTMLIFrameElement.prototype, 'src', iframeSpecial);
+  try {
+    var svgHref = Object.getOwnPropertyDescriptor(SVGImageElement.prototype, 'href');
+    void svgHref;
+  } catch (e) {}
+
+  var oSetAttr = Element.prototype.setAttribute;
+  var ATTRS = { src: 1, href: 1, data: 1, poster: 1, srcset: 1, 'xlink:href': 1 };
+  Element.prototype.setAttribute = function (name, value) {
+    var n = String(name).toLowerCase();
+    if (ATTRS[n] && typeof value === 'string') {
+      var tag = this.tagName;
+      if (n === 'href' && (tag === 'A' || tag === 'BASE' || tag === 'AREA')) return oSetAttr.call(this, name, value);
+      if (n === 'srcset') return oSetAttr.call(this, name, mapSrcset(value));
+      var m = map(value);
+      if (splitInfo(m)) {
+        var el = this;
+        mergeUrl(m).then(function (bu) { oSetAttr.call(el, name, bu); });
+        return;
+      }
+      if (tag === 'IFRAME' && n === 'src' && iframeSpecial(this, m, function (x) { oSetAttr.call(this, name, x); }.bind(this))) return;
+      return oSetAttr.call(this, name, m);
+    }
+    return oSetAttr.call(this, name, value);
+  };
+
+  var oAppend = Node.prototype.appendChild, oInsert = Node.prototype.insertBefore;
+  function flushPending(n) {
+    if (n && n.__tzPending) {
+      var go = n.__tzPending;
+      n.__tzPending = null;
+      setTimeout(go, 0);
+    }
+  }
+  Node.prototype.appendChild = function (n) {
+    var r = oAppend.call(this, n);
+    flushPending(n);
+    return r;
+  };
+  Node.prototype.insertBefore = function (n, ref) {
+    var r = oInsert.call(this, n, ref);
+    flushPending(n);
+    return r;
+  };
+
+  if (G.Audio) {
+    var OA = G.Audio;
+    var NA = function Audio(src) {
+      var a = new OA();
+      if (src !== undefined) a.src = src;
+      return a;
+    };
+    NA.prototype = OA.prototype;
+    G.Audio = NA;
+  }
+
+  var oOpenWin = G.open;
+  if (oOpenWin) {
+    G.open = function (u) {
+      var a = Array.prototype.slice.call(arguments);
+      if (typeof u === 'string' && u) a[0] = map(u);
+      return oOpenWin.apply(G, a);
+    };
+  }
+
+  function fixStatic(root) {
+    var list = root.querySelectorAll ? root.querySelectorAll('iframe[data-tz-src]') : [];
+    for (var i = 0; i < list.length; i++) {
+      var f = list[i];
+      var s = f.getAttribute('data-tz-src');
+      f.removeAttribute('data-tz-src');
+      var m = map(s);
+      if (cdnLike(m) && isHtml(m)) loadHtmlFrame(f, m);
+      else oSetAttr.call(f, 'src', m);
+    }
+  }
+  if (G.MutationObserver) {
+    new MutationObserver(function (recs) {
+      for (var i = 0; i < recs.length; i++) {
+        var a = recs[i].addedNodes;
+        for (var j = 0; j < a.length; j++) {
+          var n = a[j];
+          if (n.nodeType !== 1) continue;
+          if (n.tagName === 'IFRAME' && n.hasAttribute('data-tz-src')) fixStatic(n.parentNode || document);
+          else if (n.querySelector && n.querySelector('iframe[data-tz-src]')) fixStatic(n);
+        }
+      }
+    }).observe(document, { childList: true, subtree: true });
+  }
+})({"c":"https://cdn.jsdelivr.net","o":"skidding-code","p":19000000,"b":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-01@main/games/30dolar/","r":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-01@main/","u":{"/games/30dolar/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-01@main/"},"x":{"fonts.gstatic.com/s/lato/v25/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-01@main/_ext/fonts.gstatic.com/s/lato/v25/","fonts.gstatic.com/s/tiltwarp/v18/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-01@main/_ext/fonts.gstatic.com/s/tiltwarp/v18/","fonts.gstatic.com/s/googlesans/v29/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-01@main/_ext/fonts.gstatic.com/s/googlesans/v29/","fonts.gstatic.com/s/roboto/v48/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-01@main/_ext/fonts.gstatic.com/s/roboto/v48/","fonts.gstatic.com/s/amaticsc/v28/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-01@main/_ext/fonts.gstatic.com/s/amaticsc/v28/","fonts.gstatic.com/s/caveat/v23/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-01@main/_ext/fonts.gstatic.com/s/caveat/v23/","fonts.gstatic.com/s/comfortaa/v47/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-01@main/_ext/fonts.gstatic.com/s/comfortaa/v47/","fonts.gstatic.com/s/ebgaramond/v33/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-01@main/_ext/fonts.gstatic.com/s/ebgaramond/v33/","fonts.gstatic.com/s/lexend/v26/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-01@main/_ext/fonts.gstatic.com/s/lexend/v26/","fonts.gstatic.com/s/lobster/v32/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-01@main/_ext/fonts.gstatic.com/s/lobster/v32/","fonts.gstatic.com/s/lora/v37/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-01@main/_ext/fonts.gstatic.com/s/lora/v37/","fonts.gstatic.com/s/merriweather/v33/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-01@main/_ext/fonts.gstatic.com/s/merriweather/v33/","fonts.gstatic.com/s/montserrat/v31/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-01@main/_ext/fonts.gstatic.com/s/montserrat/v31/","fonts.gstatic.com/s/nunito/v32/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-01@main/_ext/fonts.gstatic.com/s/nunito/v32/","fonts.gstatic.com/s/oswald/v57/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-01@main/_ext/fonts.gstatic.com/s/oswald/v57/","fonts.gstatic.com/s/pacifico/v23/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-01@main/_ext/fonts.gstatic.com/s/pacifico/v23/","fonts.gstatic.com/s/playfairdisplay/v40/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-01@main/_ext/fonts.gstatic.com/s/playfairdisplay/v40/","fonts.gstatic.com/s/roboto/v51/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-01@main/_ext/fonts.gstatic.com/s/roboto/v51/","fonts.gstatic.com/s/robotomono/v31/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-01@main/_ext/fonts.gstatic.com/s/robotomono/v31/","fonts.gstatic.com/s/robotoserif/v17/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-01@main/_ext/fonts.gstatic.com/s/robotoserif/v17/","fonts.gstatic.com/s/spectral/v15/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-01@main/_ext/fonts.gstatic.com/s/spectral/v15/","fonts.gstatic.com/s/pressstart2p/v16/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-01@main/_ext/fonts.gstatic.com/s/pressstart2p/v16/","fonts.gstatic.com/s/poppins/v24/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-01@main/_ext/fonts.gstatic.com/s/poppins/v24/","fonts.gstatic.com/s/anta/v1/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-01@main/_ext/fonts.gstatic.com/s/anta/v1/","fonts.gstatic.com/s/kanit/v17/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-01@main/_ext/fonts.gstatic.com/s/kanit/v17/","fonts.gstatic.com/s/intertight/v9/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-01@main/_ext/fonts.gstatic.com/s/intertight/v9/","fonts.gstatic.com/s/inter/v20/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-01@main/_ext/fonts.gstatic.com/s/inter/v20/","fonts.gstatic.com/s/materialsymbolsrounded/v383/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-01@main/_ext/fonts.gstatic.com/s/materialsymbolsrounded/v383/","fonts.gstatic.com/s/opensans/v44/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-01@main/_ext/fonts.gstatic.com/s/opensans/v44/","fonts.gstatic.com/s/rajdhani/v17/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-01@main/_ext/fonts.gstatic.com/s/rajdhani/v17/","fonts.gstatic.com/s/inconsolata/v37/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-01@main/_ext/fonts.gstatic.com/s/inconsolata/v37/","fonts.gstatic.com/s/shantellsans/v13/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-01@main/_ext/fonts.gstatic.com/s/shantellsans/v13/","fonts.gstatic.com/s/vt323/v18/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-01@main/_ext/fonts.gstatic.com/s/vt323/v18/","fonts.gstatic.com/s/robotocondensed/v31/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-01@main/_ext/fonts.gstatic.com/s/robotocondensed/v31/","fonts.gstatic.com/s/sourcesanspro/v13/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-01@main/_ext/fonts.gstatic.com/s/sourcesanspro/v13/","fonts.gstatic.com/s/ubuntu/v21/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-01@main/_ext/fonts.gstatic.com/s/ubuntu/v21/","fonts.gstatic.com/s/spacemono/v17/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-01@main/_ext/fonts.gstatic.com/s/spacemono/v17/","fonts.gstatic.com/s/outfit/v15/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-01@main/_ext/fonts.gstatic.com/s/outfit/v15/","fonts.gstatic.com/s/lilitaone/v17/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-01@main/_ext/fonts.gstatic.com/s/lilitaone/v17/"},"s":{}});</script>
+
+        <title>DON'T YOU LECTURE ME WITH YOUR THIRTY DOLLAR WEBSITE</title>
+        <link rel="stylesheet" href="🎨.css" charset="UTF-8" />
+        <link rel="icon" href="assets/🗿.png"></link>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=820">
+        <meta property="og:title" content="DON'T YOU LECTURE ME WITH YOUR THIRTY DOLLAR WEBSITE">
+        <meta property="og:description" content="🗿🗿🗿🗿🗿🗿🗿🗿🗿🗿🗿🗿🗿🗿🗿🗿🗿🗿🗿🗿🗿🗿🗿🗿🗿🗿🗿🗿🗿🗿🗿🗿🗿🗿🗿🗿🗿🗿🗿🗿🗿🗿🗿🗿🗿🗿🗿🗿🗿🗿🗿🗿🗿🗿🗿🗿🗿🗿🗿🗿🗿🗿🗿🗿🗿🗿🗿🗿🗿">
+        <meta property="og:type" content="website">
+        <meta name="og:image" itemprop="image" content="https://thirtydollar.website/assets/🗿.png">
+
+        <script>
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+          
+            gtag('config', 'G-WLTG1S4STB');
+          </script>
+        <script src="lib/jquery.min.js"></script>
+        <script src="lib/jquery-ui.min.js"></script>
+        <script src="lib/jquery.ui.touch-punch.min.js"></script>
+        <script src="lib/howler.min.js"></script>
+
+</head>
+
+    <body style="text-align: center">
+
+        <div id="everything">
+        
+        <h1 class="title" id="caption">DON'T YOU LECTURE ME WITH YOUR THIRTY DOLLAR WEBSITE</h1>
+
+        <div id="main" style="width: 1140px;">
+
+            <div class="sideboxes">
+                <div class="innersidebox" id="icons_container" style="width: 824px">
+                    <div class="infobox">
+                        <h1 id="soundText">Sounds</h1>
+                        <h1 id="soundInfo" style="display: none; color: var(--greenfont); white-space: nowrap;">
+                            <soundinfo id="soundName"></soundinfo>
+                            <soundinfo id="soundOrigin" style="margin-left: 5px; font-size: 20px; opacity: 50%;"></soundinfo>
+                        </h1>
+                        <span><p mobile="Tap to add sound">Left click to add sound</p><p mobile="Hold to preview">Right click to preview</p></span>
+                    </div>
+                    <div class="iconbox loadingIcons" id="icons" style="height: 467px">
+                        <div id="iconboxLoading" style="width: 100%; opacity: 33%">
+                            <h1 id="loadingText">Loading...</h1>
+                            <p id="errorInfo" style="font-weight: normal; padding-bottom: 10px"><p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="innersidebox" style="width: 284px;">
+                    <div class="infobox">
+                        <h1 id="actionText">Actions</h1>
+                        <h1 id="actionInfo" style="display: none; color: var(--bluefont)">
+                            <actioninfo id="actionName"></actioninfo>
+                            <actioninfo id="actionKey" style="margin-left: 5px; font-size: 20px; opacity: 50%;"></actioninfo>
+                        </h1>
+                        <span class="mobileOnly"><p mobile="Tap to add action">Left click to add action</p></span>
+                    </div>
+                    <div class="iconbox" id="actions"></div>
+
+                    <div class="playbuttons">
+                        <p id="bpmInfo" class="stopInfo" style="display: none;"><span id="BPM"></span> BPM &nbsp;&nbsp;•&nbsp;&nbsp; <span id="volume"></span>% Volume</p>
+                        <div id="stopBtn" class="stopInfo" style="background-color: var(--emojiyellow); display: none;" onclick="cancel({ stopSounds: true })" oncontextmenu="return false">
+                            <img src="assets/stop.png">
+                            <h1>Stop</h1>
+                        </div>
+
+                        <p class="playInfo" mobile="Hold to skip intro">Right click to skip intro</p>
+                        <div id="playBtn" class="playInfo" style="background-color: var(--emojigreen)" onclick="startSequence()" oncontextmenu="startSequence(true); return false">
+                            <img src="assets/play.png">
+                            <h1>Play</h1>
+                        </div>
+
+                        <div id="resetBtn" style="background-color: var(--emojired)" onclick="if (!active && $('#sequence').children().length) { shiftHeld ? $('#clearsounds').click() : $('#clearAll').css('display', 'flex') }" oncontextmenu="return false">
+                            <img src="assets/reset.png">
+                            <h1>Clear</h1>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
+            <div style="margin-bottom: 0px">
+                <div class="infobox">
+                    <h1>Sequence</h1>
+                    <span>
+                        <p mobile="Tap to remove">Left click to remove</p>
+                        <p class="nomobile">Right click to preview</p>
+                        <p class="nomobile">Shift click to clone</p>
+                        <p mobile="Swipe to change pitch">Scroll to change pitch</p>
+                        <p class="nomobile">Ctrl+scroll to change volume (NEW)</p>
+                        <!-- <p mobile="Drag to rearrange">Drag to rearrange</p> -->
+                    </span>
+                </div>
+                <div class="iconbox" id="sequence"></div>
+            </div>
+
+            <div style="display: none;" id="sectionSettings">
+                <div class="infobox" style="flex-direction:column; align-items: flex-start">
+                    <h1 style="margin-bottom: 12px" class="noPin">Selected section: <b id="selectedSection">None</b></h1>
+                    <div class="sectionControls">
+                        <img onclick="changeSection(-1)" class="imgButton" src="./assets/section_previous.png" title="Previous section">
+                        <img onclick="changeSection(1)" class="imgButton" src="./assets/section_next.png" title="Next section">
+                        <img class="requiresSelected imgButton cantSelect" id="hideSection" onclick="toggleSectionVisibility()" src="./assets/section_hide.png" title="Hide section">
+                        <img class="requiresSelected imgButton cantSelect" id="showSection" onclick="toggleSectionVisibility()" src="./assets/section_show.png" title="Show section" style="display: none">
+                        <img class="requiresSelected imgButton cantSelect" onclick="deselectSection()" src="./assets/section_deselect.png" id="Deselect section">
+                    </div>
+                    <span class="noPin" style="margin-top: 12px">
+                        <p>Ctrl+Click to select a section</p>
+                        <p>Ctrl+Up/Down to change section</p>
+                        <p>Ctrl+D to deselect</p>
+                    </span>
+                    <p class="noPin multiline" style="text-align: left; margin-top: 0px">Sounds will be added to the end of the selected section, and playback will begin from the beginning of it.<br>You can pin these section controls from the settings.</p>
+                </div>
+            </div>
+
+            <input type="file" id="loadFile" style="display: none;" accept=".🗿,.moai,.txt,">
+
+            <div class="playbuttons saveButtons" id="saveOptions" style="display: none; margin-top: 30px; flex-direction: row; justify-content: center;";>
+
+                <div id="saveBtn" onclick="quickSave()" style="position: relative" oncontextmenu="return false">
+                    <img src="assets/save.svg">
+                    <h1>Save</h1>
+                </div>
+
+                <div id="downloadBtn" oncontextmenu="return false">
+                    <img src="assets/download.svg">
+                    <h1 id="saveAsText">Save As</h1>
+                </div>
+
+                <div id="loadBtn" onclick="$('#loadFile').click()" oncontextmenu="return false">
+                    <img src="assets/load.svg">
+                    <h1>Load</h1>
+                </div>
+
+            </div>
+
+            <div style="display: flex; justify-content: center; align-items: center; margin: 7px 0px 16px 0px;">
+                <input id="saveName" placeholder="sequence" type="text" style="height: 32px; width: 200px; background-color: rgba(0, 0, 0, 0.25);">
+                <p style="margin: 0px 0px 0px 6px; padding: 0px 0px; font-size: 20px;">.🗿</p>
+            </div>
+
+            <div class="socialLinks" style="margin-bottom: 10px; padding-top: 25px">
+                <p style="font-size: 20px; margin: 0px 10px 0px 0px">#thirtydollarwebsite creations on:</p>
+                <div class="socialTag"><a target="_blank" href="https://youtube.com/results?search_query=%23thirtydollarwebsite"><img src="./assets/social_youtube.svg"> <p>YouTube</p></a></div>
+                <div class="socialTag"><a target="_blank" href="https://tiktok.com/search?q=%23thirtydollarwebsite"><img src="./assets/social_tiktok.svg"> <p>TikTok</p></a></div>
+                <div class="socialTag"><a target="_blank" href="https://twitter.com/search?q=%23thirtydollarwebsite&src=typed_query&f=top"><img src="./assets/social_twitter.svg"> <p>Twitter</p></a></div>
+            </div>
+
+            <div>           
+                <p class="multiline" style="margin-bottom: 16px">
+                    <b>NEW: </b> Ctrl+scroll over a sound to change the volume
+                <p>Check out my other silly projects over at <a style="color: white !important" target="_blank" href="https://gdcolon.com?f=30">gdcolon.com</a></p>
+            </div>
+
+            <div class="credits" style="margin-bottom: 8px">
+                <p>Created by <a target="_blank" href="https://twitter.com/TheRealGDColon">Colon</a> :</p>
+                <p title="no copyright intended">I own pretty much nothing on this site please don't kill me</p>
+            </div>
+
+            <div style="padding: 10px 0px 10px 0px">
+                <button style="width: 150px; background: var(--emojiblue)" onclick="$('#settingsMenu').show()"><b>Settings</b></button>
+                <button class="nomobile" style="margin-left: 20px; width: 150px; background: var(--emojiblue)" onclick="$('#shortcutMenu').show()"><b>Shortcuts</b></button>
+            </div>
+
+            <div style="display: flex; justify-content: center; padding: 10px 0px 30px 0px">
+                <div class="extraSetting">
+                    <input class="settingBox" id="toggleProMode" type="checkbox" setting="proMode">
+                    <p style="font-weight: bold; font-size: 20px">PRO MODE</p>
+                </div>
+            </div>
+
+            <div id="extraPadding" style="display: none; height: 200px"></div>
+
+        </div>
+
+        <div id="proHotbar" style="display: none">
+            <div class="hotbarTabs">
+                <div class="hotbarTab" tab="all" desc="Sounds">
+                    <img src="./assets/tab_all.svg">
+                </div>
+                <div class="hotbarTab" tab="actions" desc="Actions">
+                    <img src="./assets/tab_actions.svg">
+                </div>
+                <div class="hotbarTab" tab="recent" desc="Recent">
+                    <img src="./assets/tab_recent.svg">
+                </div>
+                <!-- <div class="hotbarBat" tab="favorite" desc="Favorites">
+                    <img src="./assets/tab_favorites.svg">
+                </div> -->
+                <div class="hotbarTab" tab="notes" desc="Notes">
+                    <img src="./assets/tab_notes.svg">
+                </div>
+                <div class="hotbarTab" tab="percussion" desc="Percussion">
+                    <img src="./assets/tab_percussion.svg">
+                </div>
+                <div id="hotbarHovertext" style="display: flex; justify-content: flex-start; align-items: center">
+                    <h1 class="hotbarLabel" id="hotbarText" style="white-space: nowrap;"></h1>
+                    <h1 class="hotbarLabel" id="hotbarContext" style="white-space: nowrap; margin-left: 10px; margin-top: 16px; font-size: 20px; opacity: 50%"></h1>
+                </div>  
+            </div>
+            <div class="hotbar fancyScroll" id="hotbarNotes">
+                
+            </div>
+        </div>
+        
+        <div class="popup" id="action_speed" style="display: none">
+            <div class="popupbox">
+                <h1>Set tempo</h1>
+                <p class="popupdesc">Sets the rate at which sounds are played.<br>Default is 300 sounds per minute.</p>
+                <p class="skippableAction"></p>
+                <div class="popupinput"> <input id="bpmAmount" value="300" type="number"><p> BPM</p> </div>
+                <div style="margin-top: 25px">
+                    <button onclick="addAction('speed', '#bpmAmount', 'add')" style="background: var(--emojigreen)">Add</button>
+                    <button onclick="addAction('speed', '#bpmAmount', 'set')" style="font-weight: bold; background: var(--emojiblue)">Set to</button>
+                    <button onclick="addAction('speed', '#bpmAmount', 'multiply')" style="background: var(--emojigreen)">Multiply</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="popup" id="action_volume" style="display: none">
+            <div class="popupbox">
+                <h1>Set volume</h1>
+                <p class="popupdesc">Sets the volume of all subsequent sounds.<br>Default is 100%, max is 600%.</p>
+                <p class="skippableAction"></p>
+                <div class="popupinput"> <input id="volumeAmount" value="100" type="number"><p>%</p> </div>
+                <div style="margin-top: 25px">
+                    <button onclick="addAction('volume', '#volumeAmount', 'add')" style="background: var(--emojigreen)">Add</button>
+                    <button onclick="addAction('volume', '#volumeAmount', 'set')" style="font-weight: bold; background: var(--emojiblue)">Set to</button>
+                    <button onclick="addAction('volume', '#volumeAmount', 'multiply')" style="background: var(--emojigreen)">Multiply</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="popup" id="action_stop" style="display: none">
+            <div class="popupbox">
+                <h1>Pause</h1>
+                <p class="popupdesc">Pauses for a specified duration.</p>
+                <p class="skippableAction"></p>
+                <div class="popupinput"> <input id="pauseAmount" value="4" type="number"><p> beats</p> </div>
+                <div style="margin-top: 25px">
+                    <button onclick="addAction('stop', '#pauseAmount')" style="font-weight: bold; background: var(--emojiblue)">OK</button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="popup" id="action_loopmany" style="display: none">
+            <div class="popupbox">
+                <h1>Loop</h1>
+                <p class="popupdesc">Loop for a specified number of times.<br>Returns to the start if no start point (◇) is set</p>
+                <p class="skippableAction"></p>
+                <div class="popupinput"> <input id="loopAmount" value="4" type="number"><p> loops</p> </div>
+                <div style="margin-top: 25px">
+                    <button onclick="addAction('loopmany', '#loopAmount')" style="font-weight: bold; background: var(--emojiblue)">OK</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="popup" id="action_transpose" style="display: none">
+            <div class="popupbox">
+                <h1>Transpose</h1>
+                <p class="popupdesc">Increases or decreases the pitch of all subsequent sounds.</p>
+                <p class="skippableAction"></p>
+                <div class="popupinput"> <input id="transposeAmount" value="1" type="number"><p> semitones</p> </div>
+                <div style="margin-top: 25px">
+                    <button onclick="addAction('transpose', '#transposeAmount', 'set')" style="font-weight: bold; background: var(--emojiblue)">Set to</button>
+                    <button onclick="addAction('transpose', '#transposeAmount', 'add')" style="background: var(--emojigreen)">Add</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="popup" id="action_pulse" style="display: none">
+            <div class="popupbox">
+                <h1>Pulse</h1>
+                <p class="popupdesc">Pulses the screen a certain amount of times.<br>Only one pulse action can be active at a timne.<br>Ignores tempo changes.</p>
+                <p class="skippableAction"></p>
+                <div class="popupinput"> <p style="width: 100px; text-align: right; margin-right: 15px">Pulses:</p> <input id="pulseAmount" value="1" type="number"> <p>(total amount)</p> </div>
+                <div class="popupinput"> <p style="width: 100px; text-align: right; margin-right: 15px">Frequency:</p> <input id="pulseInterval" value="2" type="number"> <p>(every X beats)</p> </div>
+                <div style="margin-top: 25px">
+                    <button onclick="addAdvancedAction('pulse', [$('#pulseAmount').val(), $('#pulseInterval').val()])" style="background: var(--emojigreen)">Add</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="popup" id="action_bg" style="display: none">
+            <div class="popupbox">
+                <h1>Background Color</h1>
+                <p class="popupdesc">Sets the page's background color.</p>
+                <div class="popupinput">
+                    <p style="margin-right: 6px">#</p>
+                    <input style="width: 90px; text-transform: uppercase;" class="colorTextbox" maxlength="6" colorgroup="bgColor" value="36393c">
+                    <div class="colorPreview" colorgroup="bgColor" style="background-color: #36393c"></div>
+                    <input type="color" id="bgColor" class="colorSelector" colorgroup="bgColor" value="#36393c">
+                </div>
+                <div class="popupinput"> <p style="width: 100px; text-align: right; margin-right: 15px">Fade time:</p> <input id="bgFadetime" value="0.5" type="number"> <p>secs</p> </div>
+                <div style="margin-top: 25px">
+                    <button onclick="$('#bgColor').val(defaultBG).trigger('input')" style="background: var(--emojired)">Reset</button>
+                    <button onclick="addAdvancedAction('bg', [$('#bgColor').val(), $('#bgFadetime').val()])" style="background: var(--emojigreen)">Add</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="popup" id="clearAll" style="display: none">
+            <div class="popupbox">
+                <h1>Clear all sounds?</h1>
+                <p class="popupdesc">Surprisingly, this can't be undone.<span class="nomobile"><br>(hold shift to skip this popup)</span></p>
+                <div style="margin-top: 25px">
+                    <button onclick="$('.popup').hide()" style="width: 120px; font-weight: bold; background: #777777; margin-right: 12px">Back</button>
+                    <button id="clearsounds" style="width: 120px; font-weight: bold; background: var(--emojired)">Clear!</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="popup" id="settingsMenu" style="display: none">
+            <div class="popupbox">
+                <h1>Settings</h1>
+                <p id="settingHelp" style="height: 36px; opacity: 50%" mobile="(tap on a setting for information)">(hover over a setting for information)</p>
+                <p id="settingInfo" style="height: 36px; display: none; padding: 0px 30px"></p>
+                <div class="settingList">
+                    <div class="extraSetting nomobile" title="Disables placing actions using single-key shortcuts"><input class="settingBox" inverted="true" type="checkbox" setting="noActionShortcuts"><p>Action shortcuts</p></div>
+                    <div class="extraSetting" title="Disables most animations on the page (bouncing, pulsing, flashing, etc). Enable if playback is lagging"><input class="settingBox" type="checkbox" setting="noAnimations"><p>Disable Animations</p></div>
+                    <div class="extraSetting" title="Automatically scrolls the screen during playback"><input class="settingBox" type="checkbox" setting="autoScroll"><p>Auto-scroll</p></div>
+                    <div class="extraSetting" title="Pins the section buttons to the bottom of the screen"><input class="settingBox" type="checkbox" setting="pinSectionButtons"><p>Pin section controls</p></div>
+                    <div class="extraSetting" title="Attemps to display a warning message when exiting the page without saving"><input class="settingBox" type="checkbox" setting="exitConfirmation"><p>Exit confirmation</p></div>
+                    <div class="extraSetting requiresNewSaving" style="display: none" title="Reverts to the older saving system where pressing save simply downloads the file"><input class="settingBox" type="checkbox" setting="oldSaving"><p>Old save system</p></div>
+                </div>
+                <div style="margin-top: 25px">
+                    <button style="background: var(--emojiblue)" onclick="$('.popup').hide()">Done</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="popup" id="shortcutMenu" style="display: none">
+            <div class="popupbox" style="width: 800px; overflow: auto;">
+                <h1 style="margin-bottom: 25px">Keyboard Shortcuts</h1>
+                <div class="shortcutList fancyScroll">
+                    <div class="shortcutSection">
+                        <p class="groupName"><b>Sound list</b></p>
+                        <p><b>Left click:</b> Place sound</p>
+                        <p><b>Shift + left click:</b> Place sound at start</p>
+                        <p><b>Right click:</b> Preview sound</p>
+                    </div>
+
+                    <div class="shortcutSection">
+                        <p class="groupName"><b>Action list</b></p>
+                        <p><b>Left click:</b> Place action</p>
+                        <p><b>Shift + left click:</b> Place action at start</p>
+                        <p><b>Right click:</b> Place action, skip popups</p>
+                    </div>
+
+                    <div class="shortcutSection">
+                        <p class="groupName"><b>Sequence</b></p>
+                        <p><b>Left click:</b> Remove icon</p>
+                        <p><b>Right click:</b> Preview sound</p>
+                        <p><b>Drag:</b> Move icon</p>
+
+                        <p><b>Shift + left click:</b> Duplicate (directly after)</p>
+                        <p><b>Shift + right click:</b> Duplicate (end of sequence)</p>
+                        <p><b>Shift + drag:</b> Duplicate to position</p>
+
+                        <p><b>Scroll:</b> Adjust pitch or action</p>
+                        <p><b>Ctrl + scroll:</b> Adjust volume</p>
+                        <p><b>Shift + scroll:</b> Larger adjust</p>
+                        <p><b>Alt + scroll:</b> Smaller adjust</p>
+                        <p><b>Up/down:</b> Same as scrolling</p>
+                    </div>
+
+                    <div>
+                        <div class="shortcutSection">
+                            <p class="groupName"><b>Divider sections</b></p>
+                            <p><b>Ctrl + click:</b> Select/deselect section</p>
+                            <p><b>Ctrl + up/down:</b> Next/previous section</p>
+                            <p><b>Ctrl + right click:</b> Show/hide section</p>
+                            <p><b>Ctrl + D:</b> Deselect section</p>
+                        </div>
+    
+                        <div class="shortcutSection" style="margin-top: 40px">
+                            <p class="groupName"><b>Global</b></p>
+                            <p><b>Space/enter:</b> Play/stop</p>
+                            <p><b>Esc:</b> Close popup</p>
+                            <p><b>Ctrl + S:</b> Save</p>
+                            <p><b>Ctrl + Shift + S:</b> Save as</p>
+                            <p><b>Ctrl + Alt + S:</b> View sequence data</p>
+                            <p><b>Ctrl + O:</b> Load</p>
+                            <p><b>Ctrl + P:</b> Toggle pro mode</p>
+                            <p><b>Shift + /:</b> Settings</p>
+                            <p><b>Ctrl + /:</b> Shortcuts</p>
+                        </div>
+                    </div>
+
+                </div>
+                <div style="margin-top: 25px">
+                    <button style="background: var(--emojiblue)" onclick="$('.popup').hide()">Done</button>
+                </div>
+            </div>
+        </div>
+
+        </div>
+
+    </body>
+    
+    <script type="text/javascript" src="🗿.js" charset="UTF-8"></script>
+    <script type="text/javascript" src="▶.js" charset="UTF-8"></script>
+    <script type="text/javascript" src="💾.js" charset="UTF-8"></script>
+</html>

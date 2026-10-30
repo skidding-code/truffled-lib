@@ -1,0 +1,762 @@
+<!DOCTYPE html>
+<html lang="en-us">
+
+<head><base href="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-10@main/_ext/cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/stick-war-legacy/"><script>(function (C) {
+  var G = typeof self !== 'undefined' ? self : this;
+  if (G.__tz) return;
+  var IS_DOC = typeof document !== 'undefined' && typeof Element !== 'undefined';
+  var CDN = C.c;
+  var SKIP = /^(data:|blob:|javascript:|about:|mailto:|tel:|ws:|wss:|#)/i;
+  var units = Object.keys(C.u || {}).sort(function (a, b) { return b.length - a.length; });
+  var exts = Object.keys(C.x || {}).sort(function (a, b) { return b.length - a.length; });
+  var split = C.s || {};
+  var hostDir = (function () {
+    try {
+      var h = String(G.location.href);
+      if (/^(https?|file):/i.test(h)) return h.slice(0, h.lastIndexOf('/') + 1);
+    } catch (e) {}
+    return null;
+  })();
+
+  function base() {
+    if (C.w) return C.w;
+    try { return document.baseURI; } catch (e) { return C.b; }
+  }
+
+  function rootFor(p, strict) {
+    for (var i = 0; i < units.length; i++) if (p.indexOf(units[i]) === 0) return C.u[units[i]];
+    return strict ? null : C.r;
+  }
+
+  function map(u) {
+    try {
+      if (u == null) return u;
+      if (typeof u !== 'string') {
+        if (typeof URL !== 'undefined' && u instanceof URL) u = u.href;
+        else if (u && typeof u.toString === 'function') u = u.toString();
+        else return u;
+      }
+      var t = u.trim();
+      if (C.w && /^blob:/i.test(t) && /\/[^\/?#]*\.[A-Za-z0-9]{1,8}([?#].*)?$/.test(t)) {
+        return map(new URL(t.slice(t.lastIndexOf('/') + 1), C.w).href);
+      }
+      if (!t || SKIP.test(t)) return u;
+      var abs;
+      try { abs = new URL(t, base()); } catch (e) { return u; }
+      var href = abs.href;
+      if (hostDir && href.indexOf(hostDir) === 0 && !(C.b.indexOf(hostDir) === 0)) {
+        return map(new URL(href.slice(hostDir.length), C.b).href);
+      }
+      if (abs.protocol !== 'http:' && abs.protocol !== 'https:') return u;
+      if (abs.origin === CDN && C.o && abs.pathname.indexOf('/gh/' + C.o + '/') === 0) {
+        var mm = /^\/gh\/[^/]+\/[^/@]+@[^/]+\//.exec(abs.pathname);
+        if (mm) {
+          var rest = abs.pathname.slice(mm[0].length), dp = rest;
+          try { dp = decodeURIComponent(rest); } catch (e) {}
+          var want = rootFor('/' + dp, true);
+          if (want && want !== CDN + mm[0]) return want + rest + abs.search + abs.hash;
+        }
+        return href;
+      }
+      if ((abs.origin === CDN && !/^\/(gh|npm|combine|wp)\//.test(abs.pathname)) || /^(www\.)?truffled\.lol$/i.test(abs.hostname)) {
+        var dpp = abs.pathname;
+        try { dpp = decodeURIComponent(dpp); } catch (e) {}
+        return rootFor(dpp) + abs.pathname.slice(1) + abs.search + abs.hash;
+      }
+      var hp = abs.host + abs.pathname;
+      for (var i = 0; i < exts.length; i++) {
+        if (hp.indexOf(exts[i]) === 0) return C.x[exts[i]] + hp.slice(exts[i].length);
+      }
+      return href;
+    } catch (e) { return u; }
+  }
+
+  function bare(u) { return String(u).replace(/[?#].*$/, ''); }
+  function splitKey(u) {
+    var b = bare(u);
+    if (split[b]) return b;
+    try { var n = new URL(b).href; if (split[n]) return n; } catch (e) {}
+    try { var d = encodeURI(decodeURI(b)); if (split[d]) return d; } catch (e) {}
+    return null;
+  }
+  function splitInfo(u) { var k = splitKey(u); return k ? split[k] : null; }
+
+  var PART = C.p || 19000000;
+  function partUrl(key, i) {
+    var info = split[key], segs = info[3];
+    if (segs) {
+      for (var j = segs.length - 1; j >= 0; j--) if (i >= segs[j][0]) return segs[j][1] + '.part' + i;
+    }
+    return key + '.part' + i;
+  }
+  function getPart(key, i, range) {
+    var u = partUrl(key, i), tries = 0;
+    function go() {
+      return origFetch(u, range ? { headers: { Range: range } } : undefined).then(function (r) {
+        if (!r.ok) throw new Error('part ' + u + ' ' + r.status);
+        return r.arrayBuffer().then(function (ab) { return [ab, r.status]; });
+      }).catch(function (e) {
+        if (++tries < 4) return new Promise(function (ok) { setTimeout(ok, 800 * tries); }).then(go);
+        throw e;
+      });
+    }
+    return go();
+  }
+  var merged = {};
+  function mergeBuf(u) {
+    var key = splitKey(u) || bare(u);
+    if (merged[key]) return merged[key];
+    var n = split[key][0], type = split[key][1] || 'application/octet-stream';
+    var blobs = new Array(n), next = 1;
+    merged[key] = new Promise(function (ok, bad) {
+      var active = 0, done = 0, failed = false;
+      function pump() {
+        while (!failed && active < 4 && next <= n) {
+          (function (i) {
+            active++;
+            getPart(key, i).then(function (r) {
+              blobs[i - 1] = new Blob([r[0]]);
+              active--;
+              if (++done === n) ok(new Blob(blobs, { type: type }));
+              else pump();
+            }, function (e) { failed = true; bad(e); });
+          })(next++);
+        }
+      }
+      pump();
+    });
+    return merged[key];
+  }
+  var blobUrls = {};
+  function mergeUrl(u) {
+    var key = splitKey(u) || bare(u);
+    if (!blobUrls[key]) blobUrls[key] = mergeBuf(key).then(function (b) { return URL.createObjectURL(b); });
+    return blobUrls[key];
+  }
+  function sizeOf(key) { return split[key][2] || 0; }
+  function parseRange(h, size) {
+    var m = /bytes=(\d*)-(\d*)/.exec(h || '');
+    if (!m) return null;
+    var a, b;
+    if (m[1] === '') { a = Math.max(0, size - Number(m[2])); b = size - 1; }
+    else { a = Number(m[1]); b = m[2] === '' ? size - 1 : Math.min(Number(m[2]), size - 1); }
+    if (a > b || a >= size) return null;
+    return [a, b];
+  }
+  function rangeBlob(key, a, b) {
+    var i0 = Math.floor(a / PART), i1 = Math.floor(b / PART), jobs = [];
+    for (var i = i0; i <= i1; i++) {
+      (function (i) {
+        var s = Math.max(a, i * PART) - i * PART, e = Math.min(b, (i + 1) * PART - 1) - i * PART;
+        jobs.push(getPart(key, i + 1, 'bytes=' + s + '-' + e).then(function (r) {
+          return r[1] === 206 ? r[0] : r[0].slice(s, e + 1);
+        }));
+      })(i);
+    }
+    return Promise.all(jobs).then(function (bufs) { return new Blob(bufs, { type: split[key][1] || 'application/octet-stream' }); });
+  }
+  function streamResponse(key) {
+    var n = split[key][0], next = 1, ahead = [];
+    var hdr = { 'Content-Type': split[key][1] || 'application/octet-stream', 'Accept-Ranges': 'bytes' };
+    if (sizeOf(key)) hdr['Content-Length'] = String(sizeOf(key));
+    function fill() { while (ahead.length < 3 && next <= n) ahead.push(getPart(key, next++)); }
+    var rs = new ReadableStream({
+      pull: function (ctrl) {
+        fill();
+        if (!ahead.length) { ctrl.close(); return; }
+        return ahead.shift().then(function (r) { ctrl.enqueue(new Uint8Array(r[0])); fill(); });
+      },
+      cancel: function () { ahead = []; next = n + 1; }
+    });
+    return new Response(rs, { status: 200, statusText: 'OK', headers: hdr });
+  }
+  function splitFetch(key, input, init) {
+    var method = String((init && init.method) || (input && input.method) || 'GET').toUpperCase();
+    var range = null;
+    try { range = new Headers((init && init.headers) || (input && typeof input === 'object' && input.headers) || undefined).get('range'); } catch (e) {}
+    var size = sizeOf(key), type = split[key][1] || 'application/octet-stream';
+    if (method === 'HEAD') {
+      return Promise.resolve(new Response(null, { status: 200, headers: { 'Content-Length': String(size), 'Content-Type': type, 'Accept-Ranges': 'bytes' } }));
+    }
+    var rg = range && size ? parseRange(range, size) : null;
+    if (rg) {
+      return rangeBlob(key, rg[0], rg[1]).then(function (b) {
+        return new Response(b, { status: 206, statusText: 'Partial Content', headers: { 'Content-Type': type, 'Content-Length': String(b.size), 'Content-Range': 'bytes ' + rg[0] + '-' + rg[1] + '/' + size, 'Accept-Ranges': 'bytes' } });
+      });
+    }
+    if (merged[key]) return merged[key].then(function (b) { return new Response(b, { status: 200, headers: { 'Content-Type': type, 'Content-Length': String(b.size) } }); });
+    return Promise.resolve(streamResponse(key));
+  }
+
+  var origFetch = G.fetch ? G.fetch.bind(G) : null;
+  G.__tz = { map: map, cfg: C };
+
+  if (origFetch) {
+    G.fetch = function (input, init) {
+      try {
+        var url = typeof input === 'string' || (typeof URL !== 'undefined' && input instanceof URL) ? String(input) : input && input.url;
+        if (url) {
+          var m = map(url);
+          if (splitInfo(m)) return splitFetch(splitKey(m), input, init);
+          if (m !== url) {
+            if (typeof input === 'string' || input instanceof URL) input = m;
+            else input = new Request(m, input);
+          }
+        }
+      } catch (e) {}
+      return origFetch(input, init);
+    };
+  }
+
+  if (G.XMLHttpRequest) {
+    var XP = G.XMLHttpRequest.prototype;
+    var oOpen = XP.open, oSend = XP.send, oSRH = XP.setRequestHeader;
+    XP.open = function (method, url) {
+      var a = Array.prototype.slice.call(arguments);
+      var m = map(url);
+      if (splitInfo(m) && a[2] !== false) {
+        this.__tzs = { a: a, m: m, h: [] };
+        return;
+      }
+      this.__tzs = null;
+      a[1] = m;
+      return oOpen.apply(this, a);
+    };
+    XP.setRequestHeader = function (k, v) {
+      if (this.__tzs) { this.__tzs.h.push([k, v]); return; }
+      return oSRH.call(this, k, v);
+    };
+    XP.send = function (body) {
+      var s = this.__tzs, x = this;
+      if (!s) return oSend.call(this, body);
+      var key = splitKey(s.m), rh = null;
+      s.h.forEach(function (h) { if (String(h[0]).toLowerCase() === 'range') rh = h[1]; });
+      var rg = rh && sizeOf(key) ? parseRange(rh, sizeOf(key)) : null;
+      var src = rg ? rangeBlob(key, rg[0], rg[1]).then(function (b) { return URL.createObjectURL(b); }) : mergeUrl(s.m);
+      s.h = s.h.filter(function (h) { return String(h[0]).toLowerCase() !== 'range'; });
+      src.then(function (bu) {
+        var a = s.a.slice();
+        a[1] = bu;
+        x.__tzs = null;
+        oOpen.apply(x, a);
+        s.h.forEach(function (h) { try { oSRH.call(x, h[0], h[1]); } catch (e) {} });
+        oSend.call(x, body);
+      }, function () {
+        x.__tzs = null;
+        var a = s.a.slice();
+        a[1] = s.m;
+        oOpen.apply(x, a);
+        oSend.call(x, body);
+      });
+    };
+  }
+
+  var shimSrc = null;
+  function workerBlob(url, opts) {
+    var m = map(url);
+    var abs = new URL(m, base()).href;
+    var cfg = JSON.parse(JSON.stringify(C));
+    cfg.w = abs;
+    var pre = shimSrc ? '(' + shimSrc + ')(' + JSON.stringify(cfg) + ');' : '';
+    var body = opts && opts.type === 'module'
+      ? pre + 'import ' + JSON.stringify(abs) + ';'
+      : pre + 'importScripts(' + JSON.stringify(abs) + ');';
+    return URL.createObjectURL(new Blob([body], { type: 'text/javascript' }));
+  }
+  function needsWrap(u) {
+    try {
+      var abs = new URL(map(u), base());
+      return abs.origin !== G.location.origin && abs.protocol !== 'blob:' && abs.protocol !== 'data:';
+    } catch (e) { return false; }
+  }
+  ['Worker', 'SharedWorker'].forEach(function (k) {
+    var W = G[k];
+    if (!W) return;
+    var Wrapped = function (url, opts) {
+      var u = typeof url === 'string' || url instanceof URL ? String(url) : url;
+      if (typeof u === 'string' && needsWrap(u)) u = workerBlob(u, opts);
+      return opts === undefined ? new W(u) : new W(u, opts);
+    };
+    Wrapped.prototype = W.prototype;
+    try { Object.defineProperty(Wrapped, 'name', { value: k }); } catch (e) {}
+    G[k] = Wrapped;
+  });
+
+  if (!IS_DOC && typeof G.importScripts === 'function') {
+    var oIS = G.importScripts;
+    G.importScripts = function () {
+      var a = Array.prototype.slice.call(arguments).map(function (u) { return map(u); });
+      return oIS.apply(G, a);
+    };
+  }
+
+  if (!IS_DOC) return;
+
+  try { shimSrc = String(document.currentScript && document.currentScript.textContent || ''); } catch (e) {}
+  if (shimSrc) {
+    var mm = /^\s*\(function \(C\)[\s\S]*\}\)\(/.exec(shimSrc);
+    shimSrc = mm ? mm[0].replace(/\)\($/, '').replace(/^\s*\(/, '') : null;
+  }
+
+  function loadHtmlFrame(frame, url) {
+    origFetch(url).then(function (r) { return r.text(); }).then(function (html) {
+      var w = frame.contentWindow;
+      if (!w) return;
+      var d = w.document;
+      html = prepHtml(html, url);
+      d.open();
+      d.write(html);
+      d.close();
+    });
+  }
+  function prepHtml(html, url) {
+    var dir = url.slice(0, url.lastIndexOf('/') + 1);
+    var tag = '<base href="' + dir + '">';
+    var cfg = JSON.parse(JSON.stringify(C));
+    delete cfg.w;
+    var sh = shimSrc ? '<script>(' + shimSrc + ')(' + JSON.stringify(cfg).replace(/<\//g, '<\\/') + ');<\/script>' : '';
+    if (/<base\b[^>]*>/i.test(html)) {
+      var mb = /<base\b[^>]*\bhref\s*=\s*["']?([^"'\s>]+)/i.exec(html);
+      if (mb) tag = '<base href="' + new URL(mb[1], dir).href + '">';
+      html = html.replace(/<base\b[^>]*>/i, '');
+    }
+    if (/<head[^>]*>/i.test(html)) return html.replace(/<head[^>]*>/i, function (m) { return m + tag + sh; });
+    if (/<html[^>]*>/i.test(html)) return html.replace(/<html[^>]*>/i, function (m) { return m + tag + sh; });
+    return tag + sh + html;
+  }
+  function isHtml(u) {
+    try {
+      var p = new URL(u).pathname;
+      return /\.html?$/i.test(p) || /\/$/.test(p);
+    } catch (e) { return false; }
+  }
+  function cdnLike(u) {
+    try { return new URL(u).origin === CDN; } catch (e) { return false; }
+  }
+
+  function hookProp(proto, prop, special) {
+    if (!proto) return;
+    var d = Object.getOwnPropertyDescriptor(proto, prop);
+    if (!d || !d.set || !d.configurable) return;
+    Object.defineProperty(proto, prop, {
+      configurable: true,
+      enumerable: d.enumerable,
+      get: d.get,
+      set: function (v) {
+        var el = this;
+        if (prop === 'srcset') return d.set.call(el, mapSrcset(v));
+        var m = map(v);
+        if (typeof m === 'string' && splitInfo(m)) {
+          mergeUrl(m).then(function (bu) { d.set.call(el, bu); });
+          return;
+        }
+        if (special && special(el, m, function (x) { d.set.call(el, x); })) return;
+        return d.set.call(el, m);
+      },
+    });
+  }
+  function mapSrcset(v) {
+    if (typeof v !== 'string') return v;
+    return v.split(',').map(function (p) {
+      var t = p.trim();
+      if (!t) return t;
+      var sp = t.split(/\s+/);
+      sp[0] = map(sp[0]);
+      return sp.join(' ');
+    }).join(', ');
+  }
+  function iframeSpecial(el, m, set) {
+    if (typeof m === 'string' && cdnLike(m) && isHtml(m)) {
+      set('about:blank');
+      var go = function () { loadHtmlFrame(el, m); };
+      if (el.isConnected) setTimeout(go, 0);
+      else el.__tzPending = go;
+      return true;
+    }
+    return false;
+  }
+  hookProp(G.HTMLScriptElement && HTMLScriptElement.prototype, 'src');
+  hookProp(G.HTMLImageElement && HTMLImageElement.prototype, 'src');
+  hookProp(G.HTMLImageElement && HTMLImageElement.prototype, 'srcset');
+  hookProp(G.HTMLMediaElement && HTMLMediaElement.prototype, 'src');
+  hookProp(G.HTMLSourceElement && HTMLSourceElement.prototype, 'src');
+  hookProp(G.HTMLSourceElement && HTMLSourceElement.prototype, 'srcset');
+  hookProp(G.HTMLLinkElement && HTMLLinkElement.prototype, 'href');
+  hookProp(G.HTMLEmbedElement && HTMLEmbedElement.prototype, 'src');
+  hookProp(G.HTMLObjectElement && HTMLObjectElement.prototype, 'data');
+  hookProp(G.HTMLInputElement && HTMLInputElement.prototype, 'src');
+  hookProp(G.HTMLIFrameElement && HTMLIFrameElement.prototype, 'src', iframeSpecial);
+  try {
+    var svgHref = Object.getOwnPropertyDescriptor(SVGImageElement.prototype, 'href');
+    void svgHref;
+  } catch (e) {}
+
+  var oSetAttr = Element.prototype.setAttribute;
+  var ATTRS = { src: 1, href: 1, data: 1, poster: 1, srcset: 1, 'xlink:href': 1 };
+  Element.prototype.setAttribute = function (name, value) {
+    var n = String(name).toLowerCase();
+    if (ATTRS[n] && typeof value === 'string') {
+      var tag = this.tagName;
+      if (n === 'href' && (tag === 'A' || tag === 'BASE' || tag === 'AREA')) return oSetAttr.call(this, name, value);
+      if (n === 'srcset') return oSetAttr.call(this, name, mapSrcset(value));
+      var m = map(value);
+      if (splitInfo(m)) {
+        var el = this;
+        mergeUrl(m).then(function (bu) { oSetAttr.call(el, name, bu); });
+        return;
+      }
+      if (tag === 'IFRAME' && n === 'src' && iframeSpecial(this, m, function (x) { oSetAttr.call(this, name, x); }.bind(this))) return;
+      return oSetAttr.call(this, name, m);
+    }
+    return oSetAttr.call(this, name, value);
+  };
+
+  var oAppend = Node.prototype.appendChild, oInsert = Node.prototype.insertBefore;
+  function flushPending(n) {
+    if (n && n.__tzPending) {
+      var go = n.__tzPending;
+      n.__tzPending = null;
+      setTimeout(go, 0);
+    }
+  }
+  Node.prototype.appendChild = function (n) {
+    var r = oAppend.call(this, n);
+    flushPending(n);
+    return r;
+  };
+  Node.prototype.insertBefore = function (n, ref) {
+    var r = oInsert.call(this, n, ref);
+    flushPending(n);
+    return r;
+  };
+
+  if (G.Audio) {
+    var OA = G.Audio;
+    var NA = function Audio(src) {
+      var a = new OA();
+      if (src !== undefined) a.src = src;
+      return a;
+    };
+    NA.prototype = OA.prototype;
+    G.Audio = NA;
+  }
+
+  var oOpenWin = G.open;
+  if (oOpenWin) {
+    G.open = function (u) {
+      var a = Array.prototype.slice.call(arguments);
+      if (typeof u === 'string' && u) a[0] = map(u);
+      return oOpenWin.apply(G, a);
+    };
+  }
+
+  function fixStatic(root) {
+    var list = root.querySelectorAll ? root.querySelectorAll('iframe[data-tz-src]') : [];
+    for (var i = 0; i < list.length; i++) {
+      var f = list[i];
+      var s = f.getAttribute('data-tz-src');
+      f.removeAttribute('data-tz-src');
+      var m = map(s);
+      if (cdnLike(m) && isHtml(m)) loadHtmlFrame(f, m);
+      else oSetAttr.call(f, 'src', m);
+    }
+  }
+  if (G.MutationObserver) {
+    new MutationObserver(function (recs) {
+      for (var i = 0; i < recs.length; i++) {
+        var a = recs[i].addedNodes;
+        for (var j = 0; j < a.length; j++) {
+          var n = a[j];
+          if (n.nodeType !== 1) continue;
+          if (n.tagName === 'IFRAME' && n.hasAttribute('data-tz-src')) fixStatic(n.parentNode || document);
+          else if (n.querySelector && n.querySelector('iframe[data-tz-src]')) fixStatic(n);
+        }
+      }
+    }).observe(document, { childList: true, subtree: true });
+  }
+})({"c":"https://cdn.jsdelivr.net","o":"skidding-code","p":19000000,"b":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-10@main/_ext/cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/stick-war-legacy/","r":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-01@main/","u":{"/gamefile/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-01@main/"},"x":{"cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/stick-war-legacy/TemplateData/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-10@main/_ext/cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/stick-war-legacy/TemplateData/","cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-10@main/_ext/cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/","cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/stick-war-legacy/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-10@main/_ext/cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/stick-war-legacy/","cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/stick-war-legacy/Build/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-10@main/_ext/cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/stick-war-legacy/Build/","cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/stick-war-legacy/lib/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-10@main/_ext/cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/stick-war-legacy/lib/","cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/going-balls/TemplateData/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-10@main/_ext/cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/going-balls/TemplateData/","cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/going-balls/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-10@main/_ext/cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/going-balls/","cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/going-balls/Build/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-10@main/_ext/cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/going-balls/Build/","cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/om-nom-run/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-10@main/_ext/cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/om-nom-run/","cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/om-nom-run/img/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-10@main/_ext/cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/om-nom-run/img/","cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/om-nom-run/html5games/gameapi/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-10@main/_ext/cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/om-nom-run/html5games/gameapi/","cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/om-nom-run/html5games/gameapi/v1/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-10@main/_ext/cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/om-nom-run/html5games/gameapi/v1/","cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/om-nom-run/files/assets/130283237/1/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-10@main/_ext/cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/om-nom-run/files/assets/130283237/1/","cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/om-nom-run/files/assets/130285159/1/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-10@main/_ext/cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/om-nom-run/files/assets/130285159/1/","cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/om-nom-run/files/assets/130285160/1/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-10@main/_ext/cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/om-nom-run/files/assets/130285160/1/","cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/om-nom-run/html5games/images/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-10@main/_ext/cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/om-nom-run/html5games/images/","cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/om-nom-run/files/assets/130282419/1/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-10@main/_ext/cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/om-nom-run/files/assets/130282419/1/","cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/om-nom-run/files/assets/130282265/1/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-10@main/_ext/cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/om-nom-run/files/assets/130282265/1/","cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/om-nom-run/files/assets/130282312/1/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-10@main/_ext/cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/om-nom-run/files/assets/130282312/1/","cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/om-nom-run/files/assets/130282340/1/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-10@main/_ext/cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/om-nom-run/files/assets/130282340/1/","cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/om-nom-run/files/assets/130282425/1/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-10@main/_ext/cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/om-nom-run/files/assets/130282425/1/","cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/om-nom-run/files/assets/130282443/1/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-10@main/_ext/cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/om-nom-run/files/assets/130282443/1/","cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/om-nom-run/files/assets/130282445/1/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-10@main/_ext/cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/om-nom-run/files/assets/130282445/1/","cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/om-nom-run/files/assets/130282634/1/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-10@main/_ext/cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/om-nom-run/files/assets/130282634/1/","cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/om-nom-run/files/assets/130282635/1/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-10@main/_ext/cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/om-nom-run/files/assets/130282635/1/","cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/om-nom-run/files/assets/130282677/1/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-10@main/_ext/cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/om-nom-run/files/assets/130282677/1/","cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/om-nom-run/files/assets/130282929/1/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-10@main/_ext/cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/om-nom-run/files/assets/130282929/1/","cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/om-nom-run/files/assets/130282952/1/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-10@main/_ext/cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/om-nom-run/files/assets/130282952/1/","cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/om-nom-run/files/assets/130282953/1/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-10@main/_ext/cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/om-nom-run/files/assets/130282953/1/","cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/om-nom-run/files/assets/130282965/1/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-10@main/_ext/cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/om-nom-run/files/assets/130282965/1/","cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/om-nom-run/files/assets/130283058/1/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-10@main/_ext/cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/om-nom-run/files/assets/130283058/1/","cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/om-nom-run/files/assets/130283059/1/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-10@main/_ext/cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/om-nom-run/files/assets/130283059/1/","cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/om-nom-run/files/assets/130283060/1/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-10@main/_ext/cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/om-nom-run/files/assets/130283060/1/","cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/om-nom-run/files/assets/130283063/1/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-10@main/_ext/cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/om-nom-run/files/assets/130283063/1/","cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/om-nom-run/files/assets/130283136/1/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-10@main/_ext/cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/om-nom-run/files/assets/130283136/1/","cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/om-nom-run/files/assets/130283139/1/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-10@main/_ext/cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/om-nom-run/files/assets/130283139/1/","cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/om-nom-run/files/assets/130283163/1/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-10@main/_ext/cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/om-nom-run/files/assets/130283163/1/","cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/om-nom-run/files/assets/130283164/1/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-10@main/_ext/cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/om-nom-run/files/assets/130283164/1/","cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/om-nom-run/files/assets/130283172/1/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-10@main/_ext/cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/om-nom-run/files/assets/130283172/1/","cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/om-nom-run/files/assets/130283178/1/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-10@main/_ext/cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/om-nom-run/files/assets/130283178/1/","cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/om-nom-run/files/assets/130283181/1/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-10@main/_ext/cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/om-nom-run/files/assets/130283181/1/","cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/om-nom-run/files/assets/130283219/1/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-10@main/_ext/cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/om-nom-run/files/assets/130283219/1/","cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/om-nom-run/files/assets/130283520/1/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-10@main/_ext/cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/om-nom-run/files/assets/130283520/1/","cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/om-nom-run/files/assets/130282294/1/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-10@main/_ext/cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/om-nom-run/files/assets/130282294/1/","cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/om-nom-run/files/assets/130283890/1/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-10@main/_ext/cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/om-nom-run/files/assets/130283890/1/","cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/om-nom-run/files/assets/130283891/1/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-10@main/_ext/cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/om-nom-run/files/assets/130283891/1/","cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/om-nom-run/files/assets/130283896/1/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-10@main/_ext/cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/om-nom-run/files/assets/130283896/1/","cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/om-nom-run/files/assets/130283903/1/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-10@main/_ext/cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/om-nom-run/files/assets/130283903/1/","cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/om-nom-run/files/assets/130283904/1/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-10@main/_ext/cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/om-nom-run/files/assets/130283904/1/","cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/om-nom-run/files/assets/130284136/1/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-10@main/_ext/cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/om-nom-run/files/assets/130284136/1/","cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/om-nom-run/files/assets/130284180/1/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-10@main/_ext/cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/om-nom-run/files/assets/130284180/1/","cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/om-nom-run/files/assets/130284329/1/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-10@main/_ext/cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/om-nom-run/files/assets/130284329/1/","cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/om-nom-run/files/assets/130282203/1/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-10@main/_ext/cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/om-nom-run/files/assets/130282203/1/","cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/om-nom-run/files/assets/130284444/1/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-10@main/_ext/cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/om-nom-run/files/assets/130284444/1/","cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/om-nom-run/files/assets/130284560/1/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-10@main/_ext/cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/om-nom-run/files/assets/130284560/1/","cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/om-nom-run/files/assets/130284574/1/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-10@main/_ext/cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/om-nom-run/files/assets/130284574/1/","cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/om-nom-run/files/assets/130283384/1/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-10@main/_ext/cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/om-nom-run/files/assets/130283384/1/","cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/om-nom-run/files/assets/130284141/1/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-10@main/_ext/cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/om-nom-run/files/assets/130284141/1/","cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/om-nom-run/files/assets/130284945/1/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-10@main/_ext/cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/om-nom-run/files/assets/130284945/1/","cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/om-nom-run/files/assets/130284947/1/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-10@main/_ext/cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/om-nom-run/files/assets/130284947/1/","cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/om-nom-run/files/assets/130285034/1/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-10@main/_ext/cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/om-nom-run/files/assets/130285034/1/","cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/om-nom-run/files/assets/130285054/1/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-10@main/_ext/cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/om-nom-run/files/assets/130285054/1/","cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/om-nom-run/files/assets/130284095/1/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-10@main/_ext/cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/om-nom-run/files/assets/130284095/1/","cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/om-nom-run/files/assets/130285120/1/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-10@main/_ext/cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/om-nom-run/files/assets/130285120/1/","cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/om-nom-run/files/assets/130285121/1/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-10@main/_ext/cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/om-nom-run/files/assets/130285121/1/","cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/om-nom-run/files/assets/130285127/1/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-10@main/_ext/cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/om-nom-run/files/assets/130285127/1/","cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/om-nom-run/files/assets/130285133/1/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-10@main/_ext/cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/om-nom-run/files/assets/130285133/1/","cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/om-nom-run/files/assets/130285134/1/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-10@main/_ext/cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/om-nom-run/files/assets/130285134/1/","cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/om-nom-run/files/assets/130285135/1/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-10@main/_ext/cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/om-nom-run/files/assets/130285135/1/","cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/om-nom-run/files/assets/130285137/1/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-10@main/_ext/cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/om-nom-run/files/assets/130285137/1/","cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/om-nom-run/files/assets/130285138/1/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-10@main/_ext/cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/om-nom-run/files/assets/130285138/1/","cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/om-nom-run/files/assets/130285142/1/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-10@main/_ext/cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/om-nom-run/files/assets/130285142/1/","cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/om-nom-run/files/assets/130285155/1/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-10@main/_ext/cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/om-nom-run/files/assets/130285155/1/","cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/om-nom-run/files/assets/130286128/1/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-10@main/_ext/cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/om-nom-run/files/assets/130286128/1/","cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/om-nom-run/files/assets/130286479/1/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-10@main/_ext/cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/om-nom-run/files/assets/130286479/1/","cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/om-nom-run/files/assets/130286480/1/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-10@main/_ext/cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/om-nom-run/files/assets/130286480/1/","cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/om-nom-run/files/assets/130286726/1/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-10@main/_ext/cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/om-nom-run/files/assets/130286726/1/","cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/om-nom-run/files/assets/137866790/1/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-10@main/_ext/cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/om-nom-run/files/assets/137866790/1/","cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/om-nom-run/files/assets/138005996/1/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-10@main/_ext/cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/om-nom-run/files/assets/138005996/1/","cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/om-nom-run/files/assets/145290179/1/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-10@main/_ext/cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/om-nom-run/files/assets/145290179/1/","cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/om-nom-run/files/assets/150255142/1/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-10@main/_ext/cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/om-nom-run/files/assets/150255142/1/","cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/om-nom-run/files/assets/130282933/1/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-10@main/_ext/cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/om-nom-run/files/assets/130282933/1/","cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/om-nom-run/files/assets/130283392/1/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-10@main/_ext/cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/om-nom-run/files/assets/130283392/1/","cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/om-nom-run/files/assets/130282945/1/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-10@main/_ext/cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/om-nom-run/files/assets/130282945/1/","cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/om-nom-run/files/assets/130285163/1/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-10@main/_ext/cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/om-nom-run/files/assets/130285163/1/","cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/om-nom-run/files/assets/130285165/1/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-10@main/_ext/cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/om-nom-run/files/assets/130285165/1/","cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/om-nom-run/files/assets/130282832/1/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-10@main/_ext/cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/om-nom-run/files/assets/130282832/1/","cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/om-nom-run/files/assets/130283234/1/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-10@main/_ext/cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/om-nom-run/files/assets/130283234/1/","cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/om-nom-run/files/assets/130282456/1/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-10@main/_ext/cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/om-nom-run/files/assets/130282456/1/","cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/om-nom-run/files/assets/130283888/1/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-10@main/_ext/cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/om-nom-run/files/assets/130283888/1/","cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/om-nom-run/files/assets/130284089/1/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-10@main/_ext/cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/om-nom-run/files/assets/130284089/1/","cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/om-nom-run/files/assets/130283945/1/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-10@main/_ext/cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/om-nom-run/files/assets/130283945/1/","cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/om-nom-run/files/assets/130284086/1/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-10@main/_ext/cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/om-nom-run/files/assets/130284086/1/","cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/om-nom-run/files/assets/130283402/1/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-10@main/_ext/cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/om-nom-run/files/assets/130283402/1/","cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/om-nom-run/files/assets/130282833/1/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-10@main/_ext/cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/om-nom-run/files/assets/130282833/1/","cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/om-nom-run/files/assets/130285110/1/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-10@main/_ext/cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/om-nom-run/files/assets/130285110/1/","cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/om-nom-run/files/assets/130283992/1/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-10@main/_ext/cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/om-nom-run/files/assets/130283992/1/","cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/om-nom-run/files/assets/130282537/1/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-10@main/_ext/cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/om-nom-run/files/assets/130282537/1/","cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/om-nom-run/files/assets/130282590/1/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-10@main/_ext/cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/om-nom-run/files/assets/130282590/1/","cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/om-nom-run/files/assets/130282212/1/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-10@main/_ext/cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/om-nom-run/files/assets/130282212/1/","cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/om-nom-run/files/assets/130283319/1/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-10@main/_ext/cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/om-nom-run/files/assets/130283319/1/","cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/om-nom-run/files/assets/130284458/1/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-10@main/_ext/cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/om-nom-run/files/assets/130284458/1/","cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/om-nom-run/files/assets/130285095/1/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-10@main/_ext/cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/om-nom-run/files/assets/130285095/1/","cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/om-nom-run/files/assets/130283396/1/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-10@main/_ext/cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/om-nom-run/files/assets/130283396/1/","cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/om-nom-run/files/assets/130284093/1/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-10@main/_ext/cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/om-nom-run/files/assets/130284093/1/","cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/om-nom-run/files/assets/130283365/1/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-10@main/_ext/cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/om-nom-run/files/assets/130283365/1/","cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/om-nom-run/files/assets/130283374/1/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-10@main/_ext/cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/om-nom-run/files/assets/130283374/1/","cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/om-nom-run/files/assets/130285111/1/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-10@main/_ext/cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/om-nom-run/files/assets/130285111/1/","cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/om-nom-run/files/assets/130283512/1/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-10@main/_ext/cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/om-nom-run/files/assets/130283512/1/","cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/om-nom-run/files/assets/130282191/1/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-10@main/_ext/cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/om-nom-run/files/assets/130282191/1/","cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/om-nom-run/files/assets/130282786/1/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-10@main/_ext/cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/om-nom-run/files/assets/130282786/1/","cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/om-nom-run/files/assets/130283514/1/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-10@main/_ext/cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/om-nom-run/files/assets/130283514/1/","cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/om-nom-run/files/assets/130283897/1/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-10@main/_ext/cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/om-nom-run/files/assets/130283897/1/","cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/om-nom-run/files/assets/130283725/1/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-10@main/_ext/cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/om-nom-run/files/assets/130283725/1/","cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/om-nom-run/files/assets/130286129/1/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-10@main/_ext/cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/om-nom-run/files/assets/130286129/1/","cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/om-nom-run/files/assets/130287051/1/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-10@main/_ext/cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/om-nom-run/files/assets/130287051/1/","cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/om-nom-run/files/assets/130284020/1/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-10@main/_ext/cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/om-nom-run/files/assets/130284020/1/","cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/om-nom-run/files/assets/130284952/1/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-10@main/_ext/cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/om-nom-run/files/assets/130284952/1/","cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/om-nom-run/files/assets/130282949/1/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-10@main/_ext/cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/om-nom-run/files/assets/130282949/1/","cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/om-nom-run/files/assets/130287036/1/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-10@main/_ext/cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/om-nom-run/files/assets/130287036/1/","cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/om-nom-run/files/assets/130283327/1/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-10@main/_ext/cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/om-nom-run/files/assets/130283327/1/","cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/om-nom-run/files/assets/150239026/1/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-10@main/_ext/cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/om-nom-run/files/assets/150239026/1/","cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/om-nom-run/files/assets/130283356/1/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-10@main/_ext/cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/om-nom-run/files/assets/130283356/1/","cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/om-nom-run/files/assets/130282595/1/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-10@main/_ext/cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/om-nom-run/files/assets/130282595/1/","cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/om-nom-run/files/assets/130283137/1/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-10@main/_ext/cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/om-nom-run/files/assets/130283137/1/"},"s":{}});</script>
+  
+  <meta charset="UTF-8">
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+  <title>YT Game Wrapper WebGL Template</title>
+  <link rel="stylesheet" href="TemplateData/style.css" nonce="Ax8R9C9qo3eDtuZdYWZNng">
+  <script src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-10@main/_ext/cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/ytgame.js" nonce="Ax8R9C9qo3eDtuZdYWZNng">// Load YT Game API code</script>
+<style>
+#sidebarad1,
+#sidebarad2 {
+  position: fixed;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 160px;
+  height: 600px;
+  padding: 0;
+  margin: 0;
+  z-index: 999999;
+}
+#sidebarad1 {
+  left: 0;
+}
+#sidebarad2 {
+  right: 0;
+}
+.sidebar-close {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 22px;
+  height: 22px;
+  line-height: 22px;
+  text-align: center;
+  background: rgba(0,0,0,0.7);
+  color: #fff;
+  font-size: 14px;
+  cursor: pointer;
+  user-select: none;
+  z-index: 10;
+}
+.sidebar-frame {
+  width: 160px;
+  height: 600px;
+  border: none;
+  display: block;
+}
+</style>
+
+</head>
+
+<body>
+  <div id="unity-container" class="unity-desktop">
+    <canvas id="unity-canvas" width=100% height=100% tabindex="-1"></canvas>
+    <div id="unity-loading-bar">
+      <div id="unity-logo"></div>
+      <div id="unity-progress-bar-empty">
+        <div id="unity-progress-bar-full"></div>
+      </div>
+    </div>
+    <div id="unity-warning"> </div>
+  </div>
+
+  <script src="unarchiver.min.js" nonce="Ax8R9C9qo3eDtuZdYWZNng">// used for decompression if zip files are used</script>
+  <script nonce="Ax8R9C9qo3eDtuZdYWZNng"> // Logic for Unity contianer
+    var container = document.querySelector("#unity-container");
+    var canvas = document.querySelector("#unity-canvas");
+    var loadingBar = document.querySelector("#unity-loading-bar");
+    var progressBarFull = document.querySelector("#unity-progress-bar-full");
+    var fullscreenButton = document.querySelector("#unity-fullscreen-button");
+    var fullscreenOverlayButton = document.querySelector("#unity-overlay-fullscreen-button");
+    var quitcanvas = document.querySelector("#quit-canvas");
+    var warningBanner = document.querySelector("#unity-warning");
+
+    // For YT it is strongly encouraged that all warnings / errors show in
+    // console and banners should be in game as needed to not confuse users.
+    // 
+    // If needed please uncomment section below to show a temporary message 
+    // banner/ribbon for a few seconds, or a permanent error message on top 
+    // of the canvas if type=='error'.
+    function unityShowBanner(msg, type) {
+      // function updateBannerVisibility() {
+      //   warningBanner.style.display = warningBanner.children.length ? 'block' : 'none';
+      // }
+      // var div = document.createElement('div');
+      // div.innerHTML = msg;
+      // warningBanner.appendChild(div);
+      // if (type == 'error') div.style = 'background: red; padding: 10px;';
+      // else {
+      //   if (type == 'warning') div.style = 'background: yellow; padding: 10px;';
+      //   setTimeout(function() {
+      //     warningBanner.removeChild(div);
+      //     updateBannerVisibility();
+      //   }, 5000);
+      // }
+      // updateBannerVisibility();
+    }
+
+    var buildUrl = "Build";
+    var loaderUrl = buildUrl + "/WebGL.loader.js";
+    var config = {
+      dataUrl: buildUrl + "/WebGL.data",
+      frameworkUrl: buildUrl + "/WebGL.framework.js",
+        codeUrl: buildUrl + "/WebGL.wasm",
+      streamingAssetsUrl: "StreamingAssets",
+      companyName: "Stick Page",
+      productName: "Stick War: Legacy",
+      productVersion: "2025.1.143",
+      showBanner: unityShowBanner,
+    };
+
+    // By default, Unity keeps WebGL canvas render target size matched with
+    // the DOM size of the canvas element (scaled by window.devicePixelRatio)
+    // Set this to false if you want to decouple this synchronization from
+    // happening inside the engine, and you would instead like to size up
+    // the canvas DOM size and WebGL render target sizes yourself.
+    // config.matchWebGLToCanvasSize = false;
+
+    if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
+      // Mobile device style: fill the whole browser client area with the game canvas:
+
+      var meta = document.createElement('meta');
+      meta.name = 'viewport';
+      meta.content = 'width=device-width, height=device-height, initial-scale=1.0, user-scalable=no, shrink-to-fit=yes';
+      document.getElementsByTagName('head')[0].appendChild(meta);
+      container.className = "unity-mobile";
+      canvas.className = "unity-mobile";
+
+      // Set devicePixelRatio for crisp rendering on high-DPI displays
+      // Cap at 2x to balance quality vs performance (4x = 16x slower)
+      config.devicePixelRatio = Math.min(window.devicePixelRatio || 1, 2);
+
+    } else {
+      // Desktop style: Render the game canvas in a window that can be maximized to fullscreen:
+      canvas.style.width = "100%";
+      canvas.style.height = "100%";
+      // Also apply devicePixelRatio for desktop high-DPI displays
+      config.devicePixelRatio = Math.min(window.devicePixelRatio || 1, 2);
+    }
+
+    loadingBar.style.display = "block";
+
+    const subZipStr = '.zip';
+    const subWASMStr = '.wasm';
+    const subJSStr = '.js';
+    const subDataStr = '.data';
+    
+    // loadResources is only used if you need load Zipped files for .wasm, or .data and need 
+    // them to be decompressed. If the file is not zipped we bypass decompression step automatically,
+    // however its best to not trigger this if you dont used compression. 
+    // NOTE: GZip does not work ATM.  If this is needed Unarchiver will need to be updated.
+    loadResources = (callback) => {
+      // Check the Data Url first, followed by the WASM file
+      var dataUrl = config.dataUrl;
+      var shouldDecompress = true;
+      // check if .zip already exists in the URL, if it doesnt check if a .zip file exists
+      if (!dataUrl.includes(subZipStr)) {
+        if (UrlExists(dataUrl + subZipStr)) {
+          dataUrl = dataUrl + subZipStr;
+        } else {
+          shouldDecompress = false;
+        }
+      }
+
+      if (shouldDecompress)
+      {
+        var blobTypeData = GetBlobType(dataUrl);
+        DecompressFile(dataUrl, blobTypeData, (file) => {
+          config.dataUrl = file;
+          LoadWASM(callback);
+        });
+      }
+      else
+      {
+        LoadWASM(callback);
+      }
+    }
+
+    // Fetch/Load a file then call our callback 
+    loadZipData = (url, callback) => {
+      fetch(url)
+        .then(response => response.blob())
+        .then(blob => {
+          callback(blob);
+        });
+    }
+
+    function LoadWASM(callback)
+    {
+      // After Data file is checked decompress and check WASM file, followed by our callback
+      var codeUrl = config.codeUrl;
+      var shouldDecompress = true;
+
+      // check if .zip already exists in the URL, if it doesnt check if a .zip file exists
+      if (!codeUrl.includes(subZipStr)) {
+        if (UrlExists(codeUrl + subZipStr)) {
+          codeUrl = codeUrl + subZipStr;
+        } else {
+          shouldDecompress = false;
+        }
+      }
+
+      // decompress if using a zip file, otherwise just load regular wasm file
+      if (shouldDecompress) {
+        // Decompress the file based on the type, WASM, JS, etc.
+        // if you need more types please add a const above and modify the type logic below.
+        var blobTypeWASM = GetBlobType(codeUrl);
+        DecompressFile(codeUrl, blobTypeWASM, (file) => {
+          config.codeUrl = file;
+          callback();
+        });
+      } else {
+        callback();
+      }
+    }
+
+    function GetBlobType(urlToCheck) {
+      // if you need more types please add a const above and modify the type logic below.
+      // Note that octet-stream default is for .data files, JS and WASM have their own MIME types.
+      var blobType = 'application/octet-stream';
+      if (urlToCheck.includes(subWASMStr)){
+        blobType = 'application/wasm';
+      } else if (urlToCheck.includes(subJSStr)){
+        blobType = 'text/javascript';
+      } 
+      return blobType;
+    }
+
+    // Check if URL / File exists
+    function UrlExists(urlToCheck)
+    {
+        var httpReq = new XMLHttpRequest();
+        httpReq.open('HEAD', urlToCheck, false);
+        httpReq.send();
+        return httpReq.status!=404;
+    }
+
+    // decompress files and call callback
+    // TODO: test and potentially switch to Compression Streams API
+    function DecompressFile(file, blobMimeType, callback) {
+      let decompressedFile;
+
+      loadZipData(file, (f) => {
+        Unarchiver.open(f).then(async function (archive) {
+          for (let entry of archive.entries) {
+            if (entry.is_file) {
+              let entryRead = await entry.read();
+              let entryData = await entryRead.arrayBuffer();
+              let dataBlob = new Blob([new Uint8Array(entryData)], { type: blobMimeType });
+              decompressedFile = window.URL.createObjectURL(dataBlob);
+            }
+          }
+          callback(decompressedFile);
+        });
+      });
+    }
+
+    var unityGameInstance = null;
+    // Setup the Unity section once zip file is downloaded and decompressed
+    function InitUnitySection() {
+      var script = document.createElement("script");
+      script.src = loaderUrl;
+      script.onload = () => {
+        createUnityInstance(canvas, config, (progress) => {
+          progressBarFull.style.width = 100 * progress + "%";
+          }).then((unityInstance) => {
+            unityGameInstance = unityInstance;
+            loadingBar.style.display = "none";
+          }).catch((message) => {
+            console.error(message);
+          });
+      };
+
+      document.body.appendChild(script);
+    }
+
+    // Path 1: Use this path if no decompression of your .wasm, .data, .js files are needed
+    // InitUnitySection();  // Path 1: Direct loading (disabled)
+
+    // Path 2: Use this path to Load resources (.wasm, .data) that are Zipped and need to be decompressed
+    // if you dont use compresseion its best to comment out Path 1 and uncomment Path 2.
+    loadResources(InitUnitySection);  // Path 2: Load and decompress zipped files
+  </script>
+</html>

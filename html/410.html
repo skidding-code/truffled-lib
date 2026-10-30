@@ -1,0 +1,996 @@
+<!doctype html>
+<html lang="en">
+<head><base href="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-30@main/games/pikmin/"><script>(function (C) {
+  var G = typeof self !== 'undefined' ? self : this;
+  if (G.__tz) return;
+  var IS_DOC = typeof document !== 'undefined' && typeof Element !== 'undefined';
+  var CDN = C.c;
+  var SKIP = /^(data:|blob:|javascript:|about:|mailto:|tel:|ws:|wss:|#)/i;
+  var units = Object.keys(C.u || {}).sort(function (a, b) { return b.length - a.length; });
+  var exts = Object.keys(C.x || {}).sort(function (a, b) { return b.length - a.length; });
+  var split = C.s || {};
+  var hostDir = (function () {
+    try {
+      var h = String(G.location.href);
+      if (/^(https?|file):/i.test(h)) return h.slice(0, h.lastIndexOf('/') + 1);
+    } catch (e) {}
+    return null;
+  })();
+
+  function base() {
+    if (C.w) return C.w;
+    try { return document.baseURI; } catch (e) { return C.b; }
+  }
+
+  function rootFor(p, strict) {
+    for (var i = 0; i < units.length; i++) if (p.indexOf(units[i]) === 0) return C.u[units[i]];
+    return strict ? null : C.r;
+  }
+
+  function map(u) {
+    try {
+      if (u == null) return u;
+      if (typeof u !== 'string') {
+        if (typeof URL !== 'undefined' && u instanceof URL) u = u.href;
+        else if (u && typeof u.toString === 'function') u = u.toString();
+        else return u;
+      }
+      var t = u.trim();
+      if (C.w && /^blob:/i.test(t) && /\/[^\/?#]*\.[A-Za-z0-9]{1,8}([?#].*)?$/.test(t)) {
+        return map(new URL(t.slice(t.lastIndexOf('/') + 1), C.w).href);
+      }
+      if (!t || SKIP.test(t)) return u;
+      var abs;
+      try { abs = new URL(t, base()); } catch (e) { return u; }
+      var href = abs.href;
+      if (hostDir && href.indexOf(hostDir) === 0 && !(C.b.indexOf(hostDir) === 0)) {
+        return map(new URL(href.slice(hostDir.length), C.b).href);
+      }
+      if (abs.protocol !== 'http:' && abs.protocol !== 'https:') return u;
+      if (abs.origin === CDN && C.o && abs.pathname.indexOf('/gh/' + C.o + '/') === 0) {
+        var mm = /^\/gh\/[^/]+\/[^/@]+@[^/]+\//.exec(abs.pathname);
+        if (mm) {
+          var rest = abs.pathname.slice(mm[0].length), dp = rest;
+          try { dp = decodeURIComponent(rest); } catch (e) {}
+          var want = rootFor('/' + dp, true);
+          if (want && want !== CDN + mm[0]) return want + rest + abs.search + abs.hash;
+        }
+        return href;
+      }
+      if ((abs.origin === CDN && !/^\/(gh|npm|combine|wp)\//.test(abs.pathname)) || /^(www\.)?truffled\.lol$/i.test(abs.hostname)) {
+        var dpp = abs.pathname;
+        try { dpp = decodeURIComponent(dpp); } catch (e) {}
+        return rootFor(dpp) + abs.pathname.slice(1) + abs.search + abs.hash;
+      }
+      var hp = abs.host + abs.pathname;
+      for (var i = 0; i < exts.length; i++) {
+        if (hp.indexOf(exts[i]) === 0) return C.x[exts[i]] + hp.slice(exts[i].length);
+      }
+      return href;
+    } catch (e) { return u; }
+  }
+
+  function bare(u) { return String(u).replace(/[?#].*$/, ''); }
+  function splitKey(u) {
+    var b = bare(u);
+    if (split[b]) return b;
+    try { var n = new URL(b).href; if (split[n]) return n; } catch (e) {}
+    try { var d = encodeURI(decodeURI(b)); if (split[d]) return d; } catch (e) {}
+    return null;
+  }
+  function splitInfo(u) { var k = splitKey(u); return k ? split[k] : null; }
+
+  var PART = C.p || 19000000;
+  function partUrl(key, i) {
+    var info = split[key], segs = info[3];
+    if (segs) {
+      for (var j = segs.length - 1; j >= 0; j--) if (i >= segs[j][0]) return segs[j][1] + '.part' + i;
+    }
+    return key + '.part' + i;
+  }
+  function getPart(key, i, range) {
+    var u = partUrl(key, i), tries = 0;
+    function go() {
+      return origFetch(u, range ? { headers: { Range: range } } : undefined).then(function (r) {
+        if (!r.ok) throw new Error('part ' + u + ' ' + r.status);
+        return r.arrayBuffer().then(function (ab) { return [ab, r.status]; });
+      }).catch(function (e) {
+        if (++tries < 4) return new Promise(function (ok) { setTimeout(ok, 800 * tries); }).then(go);
+        throw e;
+      });
+    }
+    return go();
+  }
+  var merged = {};
+  function mergeBuf(u) {
+    var key = splitKey(u) || bare(u);
+    if (merged[key]) return merged[key];
+    var n = split[key][0], type = split[key][1] || 'application/octet-stream';
+    var blobs = new Array(n), next = 1;
+    merged[key] = new Promise(function (ok, bad) {
+      var active = 0, done = 0, failed = false;
+      function pump() {
+        while (!failed && active < 4 && next <= n) {
+          (function (i) {
+            active++;
+            getPart(key, i).then(function (r) {
+              blobs[i - 1] = new Blob([r[0]]);
+              active--;
+              if (++done === n) ok(new Blob(blobs, { type: type }));
+              else pump();
+            }, function (e) { failed = true; bad(e); });
+          })(next++);
+        }
+      }
+      pump();
+    });
+    return merged[key];
+  }
+  var blobUrls = {};
+  function mergeUrl(u) {
+    var key = splitKey(u) || bare(u);
+    if (!blobUrls[key]) blobUrls[key] = mergeBuf(key).then(function (b) { return URL.createObjectURL(b); });
+    return blobUrls[key];
+  }
+  function sizeOf(key) { return split[key][2] || 0; }
+  function parseRange(h, size) {
+    var m = /bytes=(\d*)-(\d*)/.exec(h || '');
+    if (!m) return null;
+    var a, b;
+    if (m[1] === '') { a = Math.max(0, size - Number(m[2])); b = size - 1; }
+    else { a = Number(m[1]); b = m[2] === '' ? size - 1 : Math.min(Number(m[2]), size - 1); }
+    if (a > b || a >= size) return null;
+    return [a, b];
+  }
+  function rangeBlob(key, a, b) {
+    var i0 = Math.floor(a / PART), i1 = Math.floor(b / PART), jobs = [];
+    for (var i = i0; i <= i1; i++) {
+      (function (i) {
+        var s = Math.max(a, i * PART) - i * PART, e = Math.min(b, (i + 1) * PART - 1) - i * PART;
+        jobs.push(getPart(key, i + 1, 'bytes=' + s + '-' + e).then(function (r) {
+          return r[1] === 206 ? r[0] : r[0].slice(s, e + 1);
+        }));
+      })(i);
+    }
+    return Promise.all(jobs).then(function (bufs) { return new Blob(bufs, { type: split[key][1] || 'application/octet-stream' }); });
+  }
+  function streamResponse(key) {
+    var n = split[key][0], next = 1, ahead = [];
+    var hdr = { 'Content-Type': split[key][1] || 'application/octet-stream', 'Accept-Ranges': 'bytes' };
+    if (sizeOf(key)) hdr['Content-Length'] = String(sizeOf(key));
+    function fill() { while (ahead.length < 3 && next <= n) ahead.push(getPart(key, next++)); }
+    var rs = new ReadableStream({
+      pull: function (ctrl) {
+        fill();
+        if (!ahead.length) { ctrl.close(); return; }
+        return ahead.shift().then(function (r) { ctrl.enqueue(new Uint8Array(r[0])); fill(); });
+      },
+      cancel: function () { ahead = []; next = n + 1; }
+    });
+    return new Response(rs, { status: 200, statusText: 'OK', headers: hdr });
+  }
+  function splitFetch(key, input, init) {
+    var method = String((init && init.method) || (input && input.method) || 'GET').toUpperCase();
+    var range = null;
+    try { range = new Headers((init && init.headers) || (input && typeof input === 'object' && input.headers) || undefined).get('range'); } catch (e) {}
+    var size = sizeOf(key), type = split[key][1] || 'application/octet-stream';
+    if (method === 'HEAD') {
+      return Promise.resolve(new Response(null, { status: 200, headers: { 'Content-Length': String(size), 'Content-Type': type, 'Accept-Ranges': 'bytes' } }));
+    }
+    var rg = range && size ? parseRange(range, size) : null;
+    if (rg) {
+      return rangeBlob(key, rg[0], rg[1]).then(function (b) {
+        return new Response(b, { status: 206, statusText: 'Partial Content', headers: { 'Content-Type': type, 'Content-Length': String(b.size), 'Content-Range': 'bytes ' + rg[0] + '-' + rg[1] + '/' + size, 'Accept-Ranges': 'bytes' } });
+      });
+    }
+    if (merged[key]) return merged[key].then(function (b) { return new Response(b, { status: 200, headers: { 'Content-Type': type, 'Content-Length': String(b.size) } }); });
+    return Promise.resolve(streamResponse(key));
+  }
+
+  var origFetch = G.fetch ? G.fetch.bind(G) : null;
+  G.__tz = { map: map, cfg: C };
+
+  if (origFetch) {
+    G.fetch = function (input, init) {
+      try {
+        var url = typeof input === 'string' || (typeof URL !== 'undefined' && input instanceof URL) ? String(input) : input && input.url;
+        if (url) {
+          var m = map(url);
+          if (splitInfo(m)) return splitFetch(splitKey(m), input, init);
+          if (m !== url) {
+            if (typeof input === 'string' || input instanceof URL) input = m;
+            else input = new Request(m, input);
+          }
+        }
+      } catch (e) {}
+      return origFetch(input, init);
+    };
+  }
+
+  if (G.XMLHttpRequest) {
+    var XP = G.XMLHttpRequest.prototype;
+    var oOpen = XP.open, oSend = XP.send, oSRH = XP.setRequestHeader;
+    XP.open = function (method, url) {
+      var a = Array.prototype.slice.call(arguments);
+      var m = map(url);
+      if (splitInfo(m) && a[2] !== false) {
+        this.__tzs = { a: a, m: m, h: [] };
+        return;
+      }
+      this.__tzs = null;
+      a[1] = m;
+      return oOpen.apply(this, a);
+    };
+    XP.setRequestHeader = function (k, v) {
+      if (this.__tzs) { this.__tzs.h.push([k, v]); return; }
+      return oSRH.call(this, k, v);
+    };
+    XP.send = function (body) {
+      var s = this.__tzs, x = this;
+      if (!s) return oSend.call(this, body);
+      var key = splitKey(s.m), rh = null;
+      s.h.forEach(function (h) { if (String(h[0]).toLowerCase() === 'range') rh = h[1]; });
+      var rg = rh && sizeOf(key) ? parseRange(rh, sizeOf(key)) : null;
+      var src = rg ? rangeBlob(key, rg[0], rg[1]).then(function (b) { return URL.createObjectURL(b); }) : mergeUrl(s.m);
+      s.h = s.h.filter(function (h) { return String(h[0]).toLowerCase() !== 'range'; });
+      src.then(function (bu) {
+        var a = s.a.slice();
+        a[1] = bu;
+        x.__tzs = null;
+        oOpen.apply(x, a);
+        s.h.forEach(function (h) { try { oSRH.call(x, h[0], h[1]); } catch (e) {} });
+        oSend.call(x, body);
+      }, function () {
+        x.__tzs = null;
+        var a = s.a.slice();
+        a[1] = s.m;
+        oOpen.apply(x, a);
+        oSend.call(x, body);
+      });
+    };
+  }
+
+  var shimSrc = null;
+  function workerBlob(url, opts) {
+    var m = map(url);
+    var abs = new URL(m, base()).href;
+    var cfg = JSON.parse(JSON.stringify(C));
+    cfg.w = abs;
+    var pre = shimSrc ? '(' + shimSrc + ')(' + JSON.stringify(cfg) + ');' : '';
+    var body = opts && opts.type === 'module'
+      ? pre + 'import ' + JSON.stringify(abs) + ';'
+      : pre + 'importScripts(' + JSON.stringify(abs) + ');';
+    return URL.createObjectURL(new Blob([body], { type: 'text/javascript' }));
+  }
+  function needsWrap(u) {
+    try {
+      var abs = new URL(map(u), base());
+      return abs.origin !== G.location.origin && abs.protocol !== 'blob:' && abs.protocol !== 'data:';
+    } catch (e) { return false; }
+  }
+  ['Worker', 'SharedWorker'].forEach(function (k) {
+    var W = G[k];
+    if (!W) return;
+    var Wrapped = function (url, opts) {
+      var u = typeof url === 'string' || url instanceof URL ? String(url) : url;
+      if (typeof u === 'string' && needsWrap(u)) u = workerBlob(u, opts);
+      return opts === undefined ? new W(u) : new W(u, opts);
+    };
+    Wrapped.prototype = W.prototype;
+    try { Object.defineProperty(Wrapped, 'name', { value: k }); } catch (e) {}
+    G[k] = Wrapped;
+  });
+
+  if (!IS_DOC && typeof G.importScripts === 'function') {
+    var oIS = G.importScripts;
+    G.importScripts = function () {
+      var a = Array.prototype.slice.call(arguments).map(function (u) { return map(u); });
+      return oIS.apply(G, a);
+    };
+  }
+
+  if (!IS_DOC) return;
+
+  try { shimSrc = String(document.currentScript && document.currentScript.textContent || ''); } catch (e) {}
+  if (shimSrc) {
+    var mm = /^\s*\(function \(C\)[\s\S]*\}\)\(/.exec(shimSrc);
+    shimSrc = mm ? mm[0].replace(/\)\($/, '').replace(/^\s*\(/, '') : null;
+  }
+
+  function loadHtmlFrame(frame, url) {
+    origFetch(url).then(function (r) { return r.text(); }).then(function (html) {
+      var w = frame.contentWindow;
+      if (!w) return;
+      var d = w.document;
+      html = prepHtml(html, url);
+      d.open();
+      d.write(html);
+      d.close();
+    });
+  }
+  function prepHtml(html, url) {
+    var dir = url.slice(0, url.lastIndexOf('/') + 1);
+    var tag = '<base href="' + dir + '">';
+    var cfg = JSON.parse(JSON.stringify(C));
+    delete cfg.w;
+    var sh = shimSrc ? '<script>(' + shimSrc + ')(' + JSON.stringify(cfg).replace(/<\//g, '<\\/') + ');<\/script>' : '';
+    if (/<base\b[^>]*>/i.test(html)) {
+      var mb = /<base\b[^>]*\bhref\s*=\s*["']?([^"'\s>]+)/i.exec(html);
+      if (mb) tag = '<base href="' + new URL(mb[1], dir).href + '">';
+      html = html.replace(/<base\b[^>]*>/i, '');
+    }
+    if (/<head[^>]*>/i.test(html)) return html.replace(/<head[^>]*>/i, function (m) { return m + tag + sh; });
+    if (/<html[^>]*>/i.test(html)) return html.replace(/<html[^>]*>/i, function (m) { return m + tag + sh; });
+    return tag + sh + html;
+  }
+  function isHtml(u) {
+    try {
+      var p = new URL(u).pathname;
+      return /\.html?$/i.test(p) || /\/$/.test(p);
+    } catch (e) { return false; }
+  }
+  function cdnLike(u) {
+    try { return new URL(u).origin === CDN; } catch (e) { return false; }
+  }
+
+  function hookProp(proto, prop, special) {
+    if (!proto) return;
+    var d = Object.getOwnPropertyDescriptor(proto, prop);
+    if (!d || !d.set || !d.configurable) return;
+    Object.defineProperty(proto, prop, {
+      configurable: true,
+      enumerable: d.enumerable,
+      get: d.get,
+      set: function (v) {
+        var el = this;
+        if (prop === 'srcset') return d.set.call(el, mapSrcset(v));
+        var m = map(v);
+        if (typeof m === 'string' && splitInfo(m)) {
+          mergeUrl(m).then(function (bu) { d.set.call(el, bu); });
+          return;
+        }
+        if (special && special(el, m, function (x) { d.set.call(el, x); })) return;
+        return d.set.call(el, m);
+      },
+    });
+  }
+  function mapSrcset(v) {
+    if (typeof v !== 'string') return v;
+    return v.split(',').map(function (p) {
+      var t = p.trim();
+      if (!t) return t;
+      var sp = t.split(/\s+/);
+      sp[0] = map(sp[0]);
+      return sp.join(' ');
+    }).join(', ');
+  }
+  function iframeSpecial(el, m, set) {
+    if (typeof m === 'string' && cdnLike(m) && isHtml(m)) {
+      set('about:blank');
+      var go = function () { loadHtmlFrame(el, m); };
+      if (el.isConnected) setTimeout(go, 0);
+      else el.__tzPending = go;
+      return true;
+    }
+    return false;
+  }
+  hookProp(G.HTMLScriptElement && HTMLScriptElement.prototype, 'src');
+  hookProp(G.HTMLImageElement && HTMLImageElement.prototype, 'src');
+  hookProp(G.HTMLImageElement && HTMLImageElement.prototype, 'srcset');
+  hookProp(G.HTMLMediaElement && HTMLMediaElement.prototype, 'src');
+  hookProp(G.HTMLSourceElement && HTMLSourceElement.prototype, 'src');
+  hookProp(G.HTMLSourceElement && HTMLSourceElement.prototype, 'srcset');
+  hookProp(G.HTMLLinkElement && HTMLLinkElement.prototype, 'href');
+  hookProp(G.HTMLEmbedElement && HTMLEmbedElement.prototype, 'src');
+  hookProp(G.HTMLObjectElement && HTMLObjectElement.prototype, 'data');
+  hookProp(G.HTMLInputElement && HTMLInputElement.prototype, 'src');
+  hookProp(G.HTMLIFrameElement && HTMLIFrameElement.prototype, 'src', iframeSpecial);
+  try {
+    var svgHref = Object.getOwnPropertyDescriptor(SVGImageElement.prototype, 'href');
+    void svgHref;
+  } catch (e) {}
+
+  var oSetAttr = Element.prototype.setAttribute;
+  var ATTRS = { src: 1, href: 1, data: 1, poster: 1, srcset: 1, 'xlink:href': 1 };
+  Element.prototype.setAttribute = function (name, value) {
+    var n = String(name).toLowerCase();
+    if (ATTRS[n] && typeof value === 'string') {
+      var tag = this.tagName;
+      if (n === 'href' && (tag === 'A' || tag === 'BASE' || tag === 'AREA')) return oSetAttr.call(this, name, value);
+      if (n === 'srcset') return oSetAttr.call(this, name, mapSrcset(value));
+      var m = map(value);
+      if (splitInfo(m)) {
+        var el = this;
+        mergeUrl(m).then(function (bu) { oSetAttr.call(el, name, bu); });
+        return;
+      }
+      if (tag === 'IFRAME' && n === 'src' && iframeSpecial(this, m, function (x) { oSetAttr.call(this, name, x); }.bind(this))) return;
+      return oSetAttr.call(this, name, m);
+    }
+    return oSetAttr.call(this, name, value);
+  };
+
+  var oAppend = Node.prototype.appendChild, oInsert = Node.prototype.insertBefore;
+  function flushPending(n) {
+    if (n && n.__tzPending) {
+      var go = n.__tzPending;
+      n.__tzPending = null;
+      setTimeout(go, 0);
+    }
+  }
+  Node.prototype.appendChild = function (n) {
+    var r = oAppend.call(this, n);
+    flushPending(n);
+    return r;
+  };
+  Node.prototype.insertBefore = function (n, ref) {
+    var r = oInsert.call(this, n, ref);
+    flushPending(n);
+    return r;
+  };
+
+  if (G.Audio) {
+    var OA = G.Audio;
+    var NA = function Audio(src) {
+      var a = new OA();
+      if (src !== undefined) a.src = src;
+      return a;
+    };
+    NA.prototype = OA.prototype;
+    G.Audio = NA;
+  }
+
+  var oOpenWin = G.open;
+  if (oOpenWin) {
+    G.open = function (u) {
+      var a = Array.prototype.slice.call(arguments);
+      if (typeof u === 'string' && u) a[0] = map(u);
+      return oOpenWin.apply(G, a);
+    };
+  }
+
+  function fixStatic(root) {
+    var list = root.querySelectorAll ? root.querySelectorAll('iframe[data-tz-src]') : [];
+    for (var i = 0; i < list.length; i++) {
+      var f = list[i];
+      var s = f.getAttribute('data-tz-src');
+      f.removeAttribute('data-tz-src');
+      var m = map(s);
+      if (cdnLike(m) && isHtml(m)) loadHtmlFrame(f, m);
+      else oSetAttr.call(f, 'src', m);
+    }
+  }
+  if (G.MutationObserver) {
+    new MutationObserver(function (recs) {
+      for (var i = 0; i < recs.length; i++) {
+        var a = recs[i].addedNodes;
+        for (var j = 0; j < a.length; j++) {
+          var n = a[j];
+          if (n.nodeType !== 1) continue;
+          if (n.tagName === 'IFRAME' && n.hasAttribute('data-tz-src')) fixStatic(n.parentNode || document);
+          else if (n.querySelector && n.querySelector('iframe[data-tz-src]')) fixStatic(n);
+        }
+      }
+    }).observe(document, { childList: true, subtree: true });
+  }
+})({"c":"https://cdn.jsdelivr.net","o":"skidding-code","p":19000000,"b":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-30@main/games/pikmin/","r":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-30@main/","u":{"/games/pikmin/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-30@main/"},"x":{},"s":{"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-30@main/games/pikmin/Pikmin%20(USA)%20(Rev%201).rvz":[30,"application/octet-stream",555216756]}});</script>
+<meta charset="utf-8">
+
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pikmin Native</title>
+<!-- Hosts that can't send COOP/COEP headers (GitHub Pages): a service worker adds them (one reload on
+     the first visit). Does nothing when the server already sends them (native/web/serve.py). -->
+<script src="coi-serviceworker.js"></script>
+<style>
+  :root { --bg: #0d1410; --panel: #18231c; --text: #e6efe8; --muted: #9fb3a5; --accent: #e8483a; --line: #2c3b31; }
+  html, body { margin: 0; height: 100%; background: var(--bg); color: var(--text);
+    font: 15px/1.5 system-ui, sans-serif; overflow: hidden; }
+  /* The game fills the tab once it starts (SDL's fill-document mode, web_platform.cpp). */
+  #canvas { position: fixed; inset: 0; display: block; background: #000; width: 100vw; height: 100vh; outline: none; }
+  #panel { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; padding: 16px; }
+  #panel[hidden] { display: none; }
+  #stopped { position: fixed; inset: 0; z-index: 10; display: flex; align-items: center; justify-content: center;
+    padding: 16px; background: rgba(0, 0, 0, 0.7); }
+  .card { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 24px 28px;
+    max-width: 560px; width: 100%; box-sizing: border-box; }
+  h1 { margin: 0 0 8px; font-size: 22px; }
+  p { margin: 8px 0; color: var(--muted); }
+  .row { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 16px; }
+  button, label.button { background: var(--accent); color: #fff; border: 0; border-radius: 6px; padding: 9px 16px;
+    font: inherit; cursor: pointer; }
+  button.secondary, label.button.secondary { background: transparent; border: 1px solid var(--line); color: var(--text); }
+  button.danger { border-color: var(--accent); color: var(--accent); }
+  input[type=file] { display: none; }
+  #status { min-height: 1.5em; color: var(--text); }
+  #error, #gpuWarning { color: #ff9a8f; white-space: pre-wrap; }
+  p.small { font-size: 13px; margin-top: 20px; }
+  /* Empty status / error lines take no room (otherwise a gap sits under the warning above them). */
+  #status:empty, #error:empty { display: none; }
+  h2 { margin: 16px 0 4px; font-size: 15px; }
+  ul.issues { margin: 0; padding-left: 20px; color: var(--muted); }
+  ul.issues li { margin: 2px 0; }
+</style>
+</head>
+<body>
+<canvas id="canvas" tabindex="-1" oncontextmenu="event.preventDefault()"></canvas>
+<div id="panel">
+  <div class="card">
+    <h1>Pikmin Native</h1>
+    <p>Not available in the browser version yet: Super Mario 64 Mode, Online Co&#8209;op, Pikmin 2 Mode, texture packs,
+       custom characters and Discord Rich Presence.</p>
+    <h2>Known issues</h2>
+    <ul class="issues">
+      <li>The game may stutter for a few seconds when loading a level for the first time, due to shader compilation.</li>
+      <li>On some Linux setups, switching to another window while playing can crash the browser's graphics process,
+        which stops the game. Reload to keep playing; progress since your last save is lost.</li>
+    </ul>
+    <p id="gpuWarning" hidden></p>
+    <p id="error"></p>
+    <p id="status"></p>
+    <div class="row">
+      <button id="play" hidden>Play</button>
+      <label class="button" id="chooseLabel" for="disc">Choose disc image (USA, Rev 1)…</label>
+      <input id="disc" type="file" accept=".iso,.gcm,.rvz,.ciso,.gcz,.wia,.wbfs,.tgc,.nfs">
+    </div>
+    <p class="small">Saves and settings are kept in this browser. Export them to a file often. Clearing
+       this site's data deletes them.</p>
+    <div class="row">
+      <button class="secondary" id="export">Export saves</button>
+      <label class="button secondary" for="import">Import saves…</label>
+      <input id="import" type="file" accept=".zip">
+      <button class="secondary danger" id="reset">Reset all data…</button>
+    </div>
+  </div>
+</div>
+<script>
+  const $ = (id) => document.getElementById(id);
+  const canvas = $('canvas');
+  const setStatus = (t) => { $('status').textContent = t; };
+  const setError = (t) => { $('error').textContent = t; };
+
+  function missingFeatures() {
+    const missing = [];
+    if (!self.crossOriginIsolated) missing.push('cross-origin isolation (the page must be served with COOP/COEP headers)');
+    if (!('gpu' in navigator)) missing.push('WebGPU');
+    if (typeof WebAssembly.Suspending !== 'function') missing.push('WebAssembly JavaScript Promise Integration (JSPI)');
+    if (!navigator.storage?.getDirectory) missing.push('the Origin Private File System');
+    return missing;
+  }
+
+  // aurora (gpu.cpp) asks for an adapter with these options and refuses a software (fallback) one,
+  // which a Chromium without a working GPU path hands out -- on Linux, often until Vulkan is turned on.
+  // Same request here, so the page can say so before Play instead of the game stopping at startup.
+  async function checkGpu() {
+    let adapter = null;
+    try {
+      adapter = await navigator.gpu.requestAdapter({ featureLevel: 'compatibility', powerPreference: 'high-performance' });
+    } catch {}
+    if (adapter && !(adapter.info?.isFallbackAdapter ?? adapter.isFallbackAdapter)) return;
+    const linux = /Linux/.test(navigator.userAgent) && !/Android/.test(navigator.userAgent);
+    $('gpuWarning').textContent = (adapter
+      ? 'Your browser only offers software rendering for WebGPU, which the game can\'t use, so it will probably not start.'
+      : 'Your browser didn\'t provide a WebGPU graphics adapter, so the game will probably not start.') +
+      (linux
+        ? '\nTo fix this, open chrome://flags/#enable-vulkan, set it to Enabled and restart the browser.'
+        : '\nCheck that hardware acceleration is turned on in the browser\'s settings.');
+    $('gpuWarning').hidden = false;
+  }
+
+  async function discDir() {
+    return (await navigator.storage.getDirectory()).getDirectoryHandle('disc', { create: true });
+  }
+
+  async function storedDiscName() {
+    for await (const [name, handle] of (await discDir()).entries()) {
+      if (handle.kind === 'file') return name;
+    }
+    return null;
+  }
+
+  const BUNDLED_DISC_NAME = 'Pikmin (USA) (Rev 1).rvz';
+  const BUNDLED_DISC_SIZE = 555216756;
+
+  // Stream into OPFS without keeping the entire disc in memory. Commit the new
+  // image before removing the previous one, so a failed download can be retried.
+  async function storeDiscStream(name, stream, total) {
+    const dir = await discDir();
+    const previous = [];
+    for await (const entry of dir.keys()) previous.push(entry);
+    navigator.storage.persist?.().catch(() => {});
+    const handle = await dir.getFileHandle(name, { create: true });
+    const writable = await handle.createWritable();
+    let done = 0;
+    const progress = new TransformStream({
+      transform(chunk, controller) {
+        done += chunk.byteLength;
+        setStatus(`Loading ${name}… ${Math.floor(done * 100 / total)}%`);
+        controller.enqueue(chunk);
+      },
+      flush() {
+        if (done !== total) throw new Error('The disc download was incomplete. Please retry.');
+      },
+    });
+    try {
+      await stream.pipeThrough(progress).pipeTo(writable);
+    } catch (error) {
+      if (!previous.includes(name)) await dir.removeEntry(name).catch(() => {});
+      throw error;
+    }
+    for (const entry of previous) {
+      if (entry !== name) await dir.removeEntry(entry, { recursive: true });
+    }
+  }
+
+  async function storeDisc(file) {
+    await storeDiscStream(file.name, file.stream(), file.size);
+  }
+
+  async function loadBundledDisc() {
+    const dir = await discDir();
+    try {
+      const file = await (await dir.getFileHandle(BUNDLED_DISC_NAME)).getFile();
+      if (file.size === BUNDLED_DISC_SIZE) {
+        // Remove any older image only after the bundled copy is available.
+        for await (const name of dir.keys()) {
+          if (name !== BUNDLED_DISC_NAME) await dir.removeEntry(name, { recursive: true });
+        }
+        return;
+      }
+    } catch (error) {
+      if (error.name !== 'NotFoundError') throw error;
+    }
+    setStatus(`Loading ${BUNDLED_DISC_NAME}…`);
+    const response = await fetch(encodeURIComponent(BUNDLED_DISC_NAME));
+    if (!response.ok || !response.body) throw new Error(`Disc download failed (HTTP ${response.status}).`);
+    const length = response.headers.get('Content-Length');
+    if (length !== null && Number(length) !== BUNDLED_DISC_SIZE) {
+      await response.body.cancel();
+      throw new Error('The bundled disc has an unexpected size.');
+    }
+    await storeDiscStream(BUNDLED_DISC_NAME, response.body, BUNDLED_DISC_SIZE);
+  }
+
+  // Testing aids (not shown anywhere): ?env=NAME=value;NAME2=value sets environment variables the
+  // game's test aids read (PIKMIN_AUTOBOOT, PIKMIN_TEST_*), and ?config=<url> replaces the data
+  // folder's config.ini with that file before the game starts.
+  const params = new URLSearchParams(location.search);
+  function testEnv() {
+    const env = {};
+    for (const pair of (params.get('env') || '').split(';')) {
+      const eq = pair.indexOf('=');
+      if (eq > 0) env[pair.slice(0, eq)] = pair.slice(eq + 1);
+    }
+    return env;
+  }
+  async function writeTestConfig() {
+    const url = params.get('config');
+    if (!url) return;
+    const text = await (await fetch(url)).text();
+    const data = await (await navigator.storage.getDirectory()).getDirectoryHandle('data', { create: true });
+    const writable = await (await data.getFileHandle('config.ini', { create: true })).createWritable();
+    await writable.write(text);
+    await writable.close();
+    console.log(`[page] config.ini replaced with ${url}`);
+  }
+
+  // ---- Saves: Export / Import (a zip of the data folder, without the shader caches) ----
+  const CRC_TABLE = (() => {
+    const t = new Uint32Array(256);
+    for (let n = 0; n < 256; n++) {
+      let c = n;
+      for (let k = 0; k < 8; k++) c = c & 1 ? 0xEDB88320 ^ (c >>> 1) : c >>> 1;
+      t[n] = c >>> 0;
+    }
+    return t;
+  })();
+  function crc32(bytes) {
+    let c = 0xFFFFFFFF;
+    for (let i = 0; i < bytes.length; i++) c = CRC_TABLE[(c ^ bytes[i]) & 0xFF] ^ (c >>> 8);
+    return (c ^ 0xFFFFFFFF) >>> 0;
+  }
+  const isCache = (name) => /\.db(-wal|-shm)?$/.test(name);
+
+  async function dataDir() {
+    return (await navigator.storage.getDirectory()).getDirectoryHandle('data', { create: true });
+  }
+
+  async function collectSaves(dir, prefix, out) {
+    for await (const [name, handle] of dir.entries()) {
+      if (handle.kind === 'directory') await collectSaves(handle, prefix + name + '/', out);
+      else if (!isCache(name)) out.push({ path: prefix + name, bytes: new Uint8Array(await (await handle.getFile()).arrayBuffer()) });
+    }
+    return out;
+  }
+
+  // A zip with every entry stored (no compression): the saves are small.
+  function makeZip(files) {
+    const enc = new TextEncoder();
+    const now = new Date();
+    const dosTime = (now.getHours() << 11) | (now.getMinutes() << 5) | (now.getSeconds() >> 1);
+    const dosDate = ((now.getFullYear() - 1980) << 9) | ((now.getMonth() + 1) << 5) | now.getDate();
+    const parts = [], central = [];
+    let offset = 0;
+    for (const f of files) {
+      const name = enc.encode(f.path), crc = crc32(f.bytes), size = f.bytes.length;
+      const local = new DataView(new ArrayBuffer(30));
+      local.setUint32(0, 0x04034B50, true); local.setUint16(4, 20, true); local.setUint16(6, 0x0800, true);
+      local.setUint16(10, dosTime, true); local.setUint16(12, dosDate, true);
+      local.setUint32(14, crc, true); local.setUint32(18, size, true); local.setUint32(22, size, true);
+      local.setUint16(26, name.length, true);
+      const entry = new DataView(new ArrayBuffer(46));
+      entry.setUint32(0, 0x02014B50, true); entry.setUint16(4, 20, true); entry.setUint16(6, 20, true);
+      entry.setUint16(8, 0x0800, true); entry.setUint16(12, dosTime, true); entry.setUint16(14, dosDate, true);
+      entry.setUint32(16, crc, true); entry.setUint32(20, size, true);
+      entry.setUint32(24, size, true); entry.setUint16(28, name.length, true); entry.setUint32(42, offset, true);
+      parts.push(local, name, f.bytes);
+      central.push(entry, name);
+      offset += 30 + name.length + size;
+    }
+    const centralSize = central.reduce((n, p) => n + p.byteLength, 0);
+    const end = new DataView(new ArrayBuffer(22));
+    end.setUint32(0, 0x06054B50, true); end.setUint16(8, files.length, true); end.setUint16(10, files.length, true);
+    end.setUint32(12, centralSize, true); end.setUint32(16, offset, true);
+    return new Blob([...parts, ...central, end], { type: 'application/zip' });
+  }
+
+  // Reads stored and deflated entries (zips from this page or from ordinary zip tools).
+  async function readZip(buffer) {
+    const view = new DataView(buffer), dec = new TextDecoder();
+    let eocd = buffer.byteLength - 22;
+    while (eocd >= 0 && view.getUint32(eocd, true) !== 0x06054B50) eocd--;
+    if (eocd < 0) throw new Error('not a zip file');
+    const count = view.getUint16(eocd + 10, true);
+    let p = view.getUint32(eocd + 16, true);
+    const files = [];
+    for (let i = 0; i < count; i++) {
+      if (view.getUint32(p, true) !== 0x02014B50) throw new Error('damaged zip directory');
+      const method = view.getUint16(p + 10, true), compSize = view.getUint32(p + 20, true);
+      const nameLen = view.getUint16(p + 28, true), extraLen = view.getUint16(p + 30, true);
+      const commentLen = view.getUint16(p + 32, true), localOff = view.getUint32(p + 42, true);
+      const path = dec.decode(new Uint8Array(buffer, p + 46, nameLen));
+      p += 46 + nameLen + extraLen + commentLen;
+      if (path.endsWith('/')) continue;
+      const dataStart = localOff + 30 + view.getUint16(localOff + 26, true) + view.getUint16(localOff + 28, true);
+      const raw = new Uint8Array(buffer, dataStart, compSize);
+      let bytes;
+      if (method === 0) bytes = raw;
+      else if (method === 8) bytes = new Uint8Array(await new Response(new Blob([raw]).stream().pipeThrough(new DecompressionStream('deflate-raw'))).arrayBuffer());
+      else throw new Error(`unsupported compression in ${path}`);
+      files.push({ path, bytes });
+    }
+    return files;
+  }
+
+  async function exportSaves() {
+    const files = await collectSaves(await dataDir(), '', []);
+    if (!files.length) { setStatus('Nothing to export yet.'); return; }
+    const url = URL.createObjectURL(makeZip(files));
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `pikmin-native-saves-${new Date().toISOString().slice(0, 10)}.zip`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 60000);
+    setStatus(`Exported ${files.length} files.`);
+  }
+
+  // A memory card save's identity: its .gci header's game code + maker code (bytes 0-5) and file name
+  // (0x08-0x27), whatever the .gci file itself is called -- not bytes 6-7 (padding, banner format), which
+  // differ between copies of the same save. The card folder must hold one .gci per identity, or the game
+  // opens whichever it finds first.
+  const gciKey = (bytes) => bytes.length >= 0x28
+    ? [...bytes.subarray(0, 6), ...bytes.subarray(8, 0x28)].join(',') : null;
+
+  async function importSaves(file) {
+    const files = await readZip(await file.arrayBuffer());
+    const root = await dataDir();
+    let written = 0, replaced = 0;
+    for (const f of files) {
+      const parts = f.path.split('/').filter((s) => s && s !== '.' && s !== '..');
+      if (!parts.length || isCache(parts[parts.length - 1])) continue;
+      let dir = root;
+      for (const part of parts.slice(0, -1)) dir = await dir.getDirectoryHandle(part, { create: true });
+      const name = parts[parts.length - 1];
+      const key = name.toLowerCase().endsWith('.gci') ? gciKey(f.bytes) : null;
+      if (key) {
+        // The same save under another file name (e.g. the empty one the game made on its first start):
+        // the imported one replaces it.
+        const same = [];
+        for await (const [other, handle] of dir.entries()) {
+          if (other === name || handle.kind !== 'file' || !other.toLowerCase().endsWith('.gci')) continue;
+          const head = new Uint8Array(await (await handle.getFile()).slice(0, 0x28).arrayBuffer());
+          if (gciKey(head) === key) same.push(other);
+        }
+        for (const other of same) { await dir.removeEntry(other); replaced++; }
+      }
+      const writable = await (await dir.getFileHandle(name, { create: true })).createWritable();
+      await writable.write(f.bytes);
+      await writable.close();
+      written++;
+    }
+    setStatus(`Imported ${written} files${replaced ? ` (replaced ${replaced} existing memory card save${replaced > 1 ? 's' : ''})` : ''}.`);
+  }
+
+  $('export').addEventListener('click', () => exportSaves().catch((e) => setError(`Export failed: ${e.message}`)));
+  $('import').addEventListener('change', async (event) => {
+    const file = event.target.files[0];
+    event.target.value = ''; // so picking the same file again fires 'change' again
+    if (!file) return;
+    setError('');
+    try {
+      const existing = await collectSaves(await dataDir(), '', []);
+      if (existing.some((f) => f.path.toLowerCase().endsWith('.gci')) &&
+          !confirm(`Import saves from "${file.name}"?\n\nSaves and settings in this browser that are also in the file ` +
+                   '(including a memory card save for the same game) will be overwritten. Export your current ' +
+                   'saves first if you want to keep them.')) {
+        setStatus('Import cancelled.');
+        return;
+      }
+      await importSaves(file);
+    } catch (e) {
+      setError(`Import failed: ${e.message}`);
+    }
+  });
+  // Everything this site keeps: saves, settings, caches and the stored disc image.
+  $('reset').addEventListener('click', async () => {
+    if (!confirm('Delete ALL data this site keeps in this browser?\n\nThis deletes your saves, settings and the ' +
+                 'stored disc image, and can\'t be undone. Export your saves first if you want to keep them.')) {
+      return;
+    }
+    setError('');
+    try {
+      const root = await navigator.storage.getDirectory();
+      const names = [];
+      for await (const name of root.keys()) names.push(name);
+      for (const name of names) await root.removeEntry(name, { recursive: true });
+      setStatus('All data deleted. Reloading…');
+      location.reload();
+    } catch (e) {
+      setError(`Reset failed: ${e.message}`);
+    }
+  });
+
+  // The display's refresh rate for the game's Match Refresh Rate (browsers don't report it): the median of
+  // the last 60 requestAnimationFrame intervals (web_platform.cpp asks for Module.displayRefreshHz).
+  let measuredHz = 0;
+  (() => {
+    const intervals = [];
+    let last = 0;
+    const tick = (t) => {
+      if (last) {
+        intervals.push(t - last);
+        if (intervals.length > 60) intervals.shift();
+        if (intervals.length >= 20) {
+          const sorted = [...intervals].sort((a, b) => a - b);
+          const median = sorted[sorted.length >> 1];
+          if (median > 0) measuredHz = Math.round(1000 / median);
+        }
+      }
+      last = t;
+      requestAnimationFrame(tick);
+    };
+    requestAnimationFrame(tick);
+  })();
+
+  let started = false;
+  let lastCrashCause = '';
+
+  // The game has aborted (e.g. the browser's GPU process restarted, which loses the WebGPU device): show
+  // why, instead of a frozen or black picture with the last audio still playing.
+  function gameStopped() {
+    if (started !== true) return;
+    started = 'stopped'; // no "leave site?" prompt or key capture from here on
+    try { window.Module?.SDL3?.audioContext?.close(); } catch {}
+    try { document.exitPointerLock(); } catch {}
+    const deviceLost = /graphics device was lost|Device lost/i.test(lastCrashCause);
+    const box = document.createElement('div');
+    box.id = 'stopped';
+    box.innerHTML = `<div class="card"><h1>The game stopped</h1><p id="stoppedWhy"></p>
+      <p>Progress since your last save is lost. Reload to keep playing.</p>
+      <div class="row"><button id="stoppedReload">Reload</button>
+      <button class="secondary" id="stoppedExport">Export saves</button></div><p id="stoppedStatus" class="small"></p></div>`;
+    document.body.appendChild(box);
+    $('stoppedWhy').textContent = deviceLost
+      ? "The browser's graphics process restarted, which the game can't recover from yet. On Linux this can " +
+        'happen when switching windows.'
+      : `It hit an error${lastCrashCause ? `: ${lastCrashCause}` : '.'}`;
+    $('stoppedReload').addEventListener('click', () => location.reload());
+    $('stoppedExport').addEventListener('click', () => exportSaves()
+      .then(() => { $('stoppedStatus').textContent = 'Saves exported.'; })
+      .catch((e) => { $('stoppedStatus').textContent = `Export failed: ${e.message}`; }));
+  }
+
+  async function start() {
+    if (started) return;
+    started = true;
+    await writeTestConfig();
+    const env = testEnv();
+    $('panel').hidden = true;
+    canvas.focus();
+    // Ctrl+W (keyboard swarm + walk forward) and the like close the tab, and a page can't stop that
+    // in a normal window: ask first while the game runs. (Fullscreen also locks the keyboard,
+    // web_platform.cpp.) The panel's own reload after a rejected disc goes through.
+    window.addEventListener('beforeunload', (event) => {
+      if (started === true) event.preventDefault();
+    });
+    // Keys whose browser action would take the keyboard away from the game: Tab moves focus out of the
+    // page (keyboard Y), Alt alone focuses the browser's menu, F1 / F3 / F5 / F6 / F7 / F10 open help,
+    // find, reload, the address bar, caret browsing, the menu. SDL can't cancel them itself: its key
+    // handler runs on the game's thread, after the browser has already decided. (F11 / F12 stay.)
+    const browserKeys = new Set(['Tab', 'Alt', 'F1', 'F3', 'F5', 'F6', 'F7', 'F10']);
+    window.addEventListener('keydown', (event) => {
+      if (started === true && browserKeys.has(event.key)) event.preventDefault();
+    }, { capture: true });
+    window.Module = {
+      canvas,
+      preRun: [() => { Object.assign(ENV, env); }],
+      get displayRefreshHz() { return measuredHz; },
+      print: (t) => console.log(t),
+      printErr: (t) => {
+        console.warn(t);
+        // The game prints why it is about to stop ("[crash] cause: ...", crash_handler.h), then aborts.
+        if (t.startsWith('[crash] cause: ')) lastCrashCause = t.slice('[crash] cause: '.length);
+        if (t.startsWith('Aborted(')) gameStopped();
+      },
+      // web_platform.cpp: the disc image can't be used -- the game has stopped, so a reload is needed.
+      onDiscRejected: (message) => {
+        $('panel').hidden = false;
+        setError(message);
+        setStatus('Choose a different disc image.');
+        $('play').hidden = true;
+        started = 'rejected';
+      },
+    };
+    const script = document.createElement('script');
+    script.src = 'pikmin_boot.js';
+    document.body.appendChild(script);
+  }
+
+  $('disc').addEventListener('change', async (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
+    setError('');
+    try {
+      await storeDisc(file);
+    } catch (e) {
+      setError(`Couldn't store the disc image: ${e}`);
+      return;
+    }
+    if (started === 'rejected') {
+      setStatus('Stored. Reloading…');
+      location.reload();
+      return;
+    }
+    start();
+  });
+  $('play').addEventListener('click', start);
+
+  (async () => {
+    const missing = missingFeatures();
+    if (missing.length) {
+      setError(`This browser can't run Pikmin Native. Missing: ${missing.join('; ')}.\n` +
+               'Use a current Chromium-based browser (Chrome, Edge, Brave, Opera).');
+      $('chooseLabel').hidden = true;
+      return;
+    }
+    checkGpu();
+    $('disc').disabled = true;
+    $('reset').disabled = true;
+    try {
+      await loadBundledDisc();
+      setStatus(`Disc image: ${BUNDLED_DISC_NAME}`);
+      await start();
+    } catch (error) {
+      started = false;
+      $('panel').hidden = false;
+      setStatus('Choose a disc image below to try again.');
+      setError(`Couldn't load Pikmin: ${error.message}`);
+    } finally {
+      $('disc').disabled = false;
+      $('reset').disabled = false;
+    }
+  })();
+</script>
+</body>
+</html>

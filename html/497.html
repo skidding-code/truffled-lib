@@ -1,0 +1,887 @@
+
+<!DOCTYPE html>
+<html lang="en-us">
+
+<head><base href="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-34@main/games/smashkarts/"><script>(function (C) {
+  var G = typeof self !== 'undefined' ? self : this;
+  if (G.__tz) return;
+  var IS_DOC = typeof document !== 'undefined' && typeof Element !== 'undefined';
+  var CDN = C.c;
+  var SKIP = /^(data:|blob:|javascript:|about:|mailto:|tel:|ws:|wss:|#)/i;
+  var units = Object.keys(C.u || {}).sort(function (a, b) { return b.length - a.length; });
+  var exts = Object.keys(C.x || {}).sort(function (a, b) { return b.length - a.length; });
+  var split = C.s || {};
+  var hostDir = (function () {
+    try {
+      var h = String(G.location.href);
+      if (/^(https?|file):/i.test(h)) return h.slice(0, h.lastIndexOf('/') + 1);
+    } catch (e) {}
+    return null;
+  })();
+
+  function base() {
+    if (C.w) return C.w;
+    try { return document.baseURI; } catch (e) { return C.b; }
+  }
+
+  function rootFor(p, strict) {
+    for (var i = 0; i < units.length; i++) if (p.indexOf(units[i]) === 0) return C.u[units[i]];
+    return strict ? null : C.r;
+  }
+
+  function map(u) {
+    try {
+      if (u == null) return u;
+      if (typeof u !== 'string') {
+        if (typeof URL !== 'undefined' && u instanceof URL) u = u.href;
+        else if (u && typeof u.toString === 'function') u = u.toString();
+        else return u;
+      }
+      var t = u.trim();
+      if (C.w && /^blob:/i.test(t) && /\/[^\/?#]*\.[A-Za-z0-9]{1,8}([?#].*)?$/.test(t)) {
+        return map(new URL(t.slice(t.lastIndexOf('/') + 1), C.w).href);
+      }
+      if (!t || SKIP.test(t)) return u;
+      var abs;
+      try { abs = new URL(t, base()); } catch (e) { return u; }
+      var href = abs.href;
+      if (hostDir && href.indexOf(hostDir) === 0 && !(C.b.indexOf(hostDir) === 0)) {
+        return map(new URL(href.slice(hostDir.length), C.b).href);
+      }
+      if (abs.protocol !== 'http:' && abs.protocol !== 'https:') return u;
+      if (abs.origin === CDN && C.o && abs.pathname.indexOf('/gh/' + C.o + '/') === 0) {
+        var mm = /^\/gh\/[^/]+\/[^/@]+@[^/]+\//.exec(abs.pathname);
+        if (mm) {
+          var rest = abs.pathname.slice(mm[0].length), dp = rest;
+          try { dp = decodeURIComponent(rest); } catch (e) {}
+          var want = rootFor('/' + dp, true);
+          if (want && want !== CDN + mm[0]) return want + rest + abs.search + abs.hash;
+        }
+        return href;
+      }
+      if ((abs.origin === CDN && !/^\/(gh|npm|combine|wp)\//.test(abs.pathname)) || /^(www\.)?truffled\.lol$/i.test(abs.hostname)) {
+        var dpp = abs.pathname;
+        try { dpp = decodeURIComponent(dpp); } catch (e) {}
+        return rootFor(dpp) + abs.pathname.slice(1) + abs.search + abs.hash;
+      }
+      var hp = abs.host + abs.pathname;
+      for (var i = 0; i < exts.length; i++) {
+        if (hp.indexOf(exts[i]) === 0) return C.x[exts[i]] + hp.slice(exts[i].length);
+      }
+      return href;
+    } catch (e) { return u; }
+  }
+
+  function bare(u) { return String(u).replace(/[?#].*$/, ''); }
+  function splitKey(u) {
+    var b = bare(u);
+    if (split[b]) return b;
+    try { var n = new URL(b).href; if (split[n]) return n; } catch (e) {}
+    try { var d = encodeURI(decodeURI(b)); if (split[d]) return d; } catch (e) {}
+    return null;
+  }
+  function splitInfo(u) { var k = splitKey(u); return k ? split[k] : null; }
+
+  var PART = C.p || 19000000;
+  function partUrl(key, i) {
+    var info = split[key], segs = info[3];
+    if (segs) {
+      for (var j = segs.length - 1; j >= 0; j--) if (i >= segs[j][0]) return segs[j][1] + '.part' + i;
+    }
+    return key + '.part' + i;
+  }
+  function getPart(key, i, range) {
+    var u = partUrl(key, i), tries = 0;
+    function go() {
+      return origFetch(u, range ? { headers: { Range: range } } : undefined).then(function (r) {
+        if (!r.ok) throw new Error('part ' + u + ' ' + r.status);
+        return r.arrayBuffer().then(function (ab) { return [ab, r.status]; });
+      }).catch(function (e) {
+        if (++tries < 4) return new Promise(function (ok) { setTimeout(ok, 800 * tries); }).then(go);
+        throw e;
+      });
+    }
+    return go();
+  }
+  var merged = {};
+  function mergeBuf(u) {
+    var key = splitKey(u) || bare(u);
+    if (merged[key]) return merged[key];
+    var n = split[key][0], type = split[key][1] || 'application/octet-stream';
+    var blobs = new Array(n), next = 1;
+    merged[key] = new Promise(function (ok, bad) {
+      var active = 0, done = 0, failed = false;
+      function pump() {
+        while (!failed && active < 4 && next <= n) {
+          (function (i) {
+            active++;
+            getPart(key, i).then(function (r) {
+              blobs[i - 1] = new Blob([r[0]]);
+              active--;
+              if (++done === n) ok(new Blob(blobs, { type: type }));
+              else pump();
+            }, function (e) { failed = true; bad(e); });
+          })(next++);
+        }
+      }
+      pump();
+    });
+    return merged[key];
+  }
+  var blobUrls = {};
+  function mergeUrl(u) {
+    var key = splitKey(u) || bare(u);
+    if (!blobUrls[key]) blobUrls[key] = mergeBuf(key).then(function (b) { return URL.createObjectURL(b); });
+    return blobUrls[key];
+  }
+  function sizeOf(key) { return split[key][2] || 0; }
+  function parseRange(h, size) {
+    var m = /bytes=(\d*)-(\d*)/.exec(h || '');
+    if (!m) return null;
+    var a, b;
+    if (m[1] === '') { a = Math.max(0, size - Number(m[2])); b = size - 1; }
+    else { a = Number(m[1]); b = m[2] === '' ? size - 1 : Math.min(Number(m[2]), size - 1); }
+    if (a > b || a >= size) return null;
+    return [a, b];
+  }
+  function rangeBlob(key, a, b) {
+    var i0 = Math.floor(a / PART), i1 = Math.floor(b / PART), jobs = [];
+    for (var i = i0; i <= i1; i++) {
+      (function (i) {
+        var s = Math.max(a, i * PART) - i * PART, e = Math.min(b, (i + 1) * PART - 1) - i * PART;
+        jobs.push(getPart(key, i + 1, 'bytes=' + s + '-' + e).then(function (r) {
+          return r[1] === 206 ? r[0] : r[0].slice(s, e + 1);
+        }));
+      })(i);
+    }
+    return Promise.all(jobs).then(function (bufs) { return new Blob(bufs, { type: split[key][1] || 'application/octet-stream' }); });
+  }
+  function streamResponse(key) {
+    var n = split[key][0], next = 1, ahead = [];
+    var hdr = { 'Content-Type': split[key][1] || 'application/octet-stream', 'Accept-Ranges': 'bytes' };
+    if (sizeOf(key)) hdr['Content-Length'] = String(sizeOf(key));
+    function fill() { while (ahead.length < 3 && next <= n) ahead.push(getPart(key, next++)); }
+    var rs = new ReadableStream({
+      pull: function (ctrl) {
+        fill();
+        if (!ahead.length) { ctrl.close(); return; }
+        return ahead.shift().then(function (r) { ctrl.enqueue(new Uint8Array(r[0])); fill(); });
+      },
+      cancel: function () { ahead = []; next = n + 1; }
+    });
+    return new Response(rs, { status: 200, statusText: 'OK', headers: hdr });
+  }
+  function splitFetch(key, input, init) {
+    var method = String((init && init.method) || (input && input.method) || 'GET').toUpperCase();
+    var range = null;
+    try { range = new Headers((init && init.headers) || (input && typeof input === 'object' && input.headers) || undefined).get('range'); } catch (e) {}
+    var size = sizeOf(key), type = split[key][1] || 'application/octet-stream';
+    if (method === 'HEAD') {
+      return Promise.resolve(new Response(null, { status: 200, headers: { 'Content-Length': String(size), 'Content-Type': type, 'Accept-Ranges': 'bytes' } }));
+    }
+    var rg = range && size ? parseRange(range, size) : null;
+    if (rg) {
+      return rangeBlob(key, rg[0], rg[1]).then(function (b) {
+        return new Response(b, { status: 206, statusText: 'Partial Content', headers: { 'Content-Type': type, 'Content-Length': String(b.size), 'Content-Range': 'bytes ' + rg[0] + '-' + rg[1] + '/' + size, 'Accept-Ranges': 'bytes' } });
+      });
+    }
+    if (merged[key]) return merged[key].then(function (b) { return new Response(b, { status: 200, headers: { 'Content-Type': type, 'Content-Length': String(b.size) } }); });
+    return Promise.resolve(streamResponse(key));
+  }
+
+  var origFetch = G.fetch ? G.fetch.bind(G) : null;
+  G.__tz = { map: map, cfg: C };
+
+  if (origFetch) {
+    G.fetch = function (input, init) {
+      try {
+        var url = typeof input === 'string' || (typeof URL !== 'undefined' && input instanceof URL) ? String(input) : input && input.url;
+        if (url) {
+          var m = map(url);
+          if (splitInfo(m)) return splitFetch(splitKey(m), input, init);
+          if (m !== url) {
+            if (typeof input === 'string' || input instanceof URL) input = m;
+            else input = new Request(m, input);
+          }
+        }
+      } catch (e) {}
+      return origFetch(input, init);
+    };
+  }
+
+  if (G.XMLHttpRequest) {
+    var XP = G.XMLHttpRequest.prototype;
+    var oOpen = XP.open, oSend = XP.send, oSRH = XP.setRequestHeader;
+    XP.open = function (method, url) {
+      var a = Array.prototype.slice.call(arguments);
+      var m = map(url);
+      if (splitInfo(m) && a[2] !== false) {
+        this.__tzs = { a: a, m: m, h: [] };
+        return;
+      }
+      this.__tzs = null;
+      a[1] = m;
+      return oOpen.apply(this, a);
+    };
+    XP.setRequestHeader = function (k, v) {
+      if (this.__tzs) { this.__tzs.h.push([k, v]); return; }
+      return oSRH.call(this, k, v);
+    };
+    XP.send = function (body) {
+      var s = this.__tzs, x = this;
+      if (!s) return oSend.call(this, body);
+      var key = splitKey(s.m), rh = null;
+      s.h.forEach(function (h) { if (String(h[0]).toLowerCase() === 'range') rh = h[1]; });
+      var rg = rh && sizeOf(key) ? parseRange(rh, sizeOf(key)) : null;
+      var src = rg ? rangeBlob(key, rg[0], rg[1]).then(function (b) { return URL.createObjectURL(b); }) : mergeUrl(s.m);
+      s.h = s.h.filter(function (h) { return String(h[0]).toLowerCase() !== 'range'; });
+      src.then(function (bu) {
+        var a = s.a.slice();
+        a[1] = bu;
+        x.__tzs = null;
+        oOpen.apply(x, a);
+        s.h.forEach(function (h) { try { oSRH.call(x, h[0], h[1]); } catch (e) {} });
+        oSend.call(x, body);
+      }, function () {
+        x.__tzs = null;
+        var a = s.a.slice();
+        a[1] = s.m;
+        oOpen.apply(x, a);
+        oSend.call(x, body);
+      });
+    };
+  }
+
+  var shimSrc = null;
+  function workerBlob(url, opts) {
+    var m = map(url);
+    var abs = new URL(m, base()).href;
+    var cfg = JSON.parse(JSON.stringify(C));
+    cfg.w = abs;
+    var pre = shimSrc ? '(' + shimSrc + ')(' + JSON.stringify(cfg) + ');' : '';
+    var body = opts && opts.type === 'module'
+      ? pre + 'import ' + JSON.stringify(abs) + ';'
+      : pre + 'importScripts(' + JSON.stringify(abs) + ');';
+    return URL.createObjectURL(new Blob([body], { type: 'text/javascript' }));
+  }
+  function needsWrap(u) {
+    try {
+      var abs = new URL(map(u), base());
+      return abs.origin !== G.location.origin && abs.protocol !== 'blob:' && abs.protocol !== 'data:';
+    } catch (e) { return false; }
+  }
+  ['Worker', 'SharedWorker'].forEach(function (k) {
+    var W = G[k];
+    if (!W) return;
+    var Wrapped = function (url, opts) {
+      var u = typeof url === 'string' || url instanceof URL ? String(url) : url;
+      if (typeof u === 'string' && needsWrap(u)) u = workerBlob(u, opts);
+      return opts === undefined ? new W(u) : new W(u, opts);
+    };
+    Wrapped.prototype = W.prototype;
+    try { Object.defineProperty(Wrapped, 'name', { value: k }); } catch (e) {}
+    G[k] = Wrapped;
+  });
+
+  if (!IS_DOC && typeof G.importScripts === 'function') {
+    var oIS = G.importScripts;
+    G.importScripts = function () {
+      var a = Array.prototype.slice.call(arguments).map(function (u) { return map(u); });
+      return oIS.apply(G, a);
+    };
+  }
+
+  if (!IS_DOC) return;
+
+  try { shimSrc = String(document.currentScript && document.currentScript.textContent || ''); } catch (e) {}
+  if (shimSrc) {
+    var mm = /^\s*\(function \(C\)[\s\S]*\}\)\(/.exec(shimSrc);
+    shimSrc = mm ? mm[0].replace(/\)\($/, '').replace(/^\s*\(/, '') : null;
+  }
+
+  function loadHtmlFrame(frame, url) {
+    origFetch(url).then(function (r) { return r.text(); }).then(function (html) {
+      var w = frame.contentWindow;
+      if (!w) return;
+      var d = w.document;
+      html = prepHtml(html, url);
+      d.open();
+      d.write(html);
+      d.close();
+    });
+  }
+  function prepHtml(html, url) {
+    var dir = url.slice(0, url.lastIndexOf('/') + 1);
+    var tag = '<base href="' + dir + '">';
+    var cfg = JSON.parse(JSON.stringify(C));
+    delete cfg.w;
+    var sh = shimSrc ? '<script>(' + shimSrc + ')(' + JSON.stringify(cfg).replace(/<\//g, '<\\/') + ');<\/script>' : '';
+    if (/<base\b[^>]*>/i.test(html)) {
+      var mb = /<base\b[^>]*\bhref\s*=\s*["']?([^"'\s>]+)/i.exec(html);
+      if (mb) tag = '<base href="' + new URL(mb[1], dir).href + '">';
+      html = html.replace(/<base\b[^>]*>/i, '');
+    }
+    if (/<head[^>]*>/i.test(html)) return html.replace(/<head[^>]*>/i, function (m) { return m + tag + sh; });
+    if (/<html[^>]*>/i.test(html)) return html.replace(/<html[^>]*>/i, function (m) { return m + tag + sh; });
+    return tag + sh + html;
+  }
+  function isHtml(u) {
+    try {
+      var p = new URL(u).pathname;
+      return /\.html?$/i.test(p) || /\/$/.test(p);
+    } catch (e) { return false; }
+  }
+  function cdnLike(u) {
+    try { return new URL(u).origin === CDN; } catch (e) { return false; }
+  }
+
+  function hookProp(proto, prop, special) {
+    if (!proto) return;
+    var d = Object.getOwnPropertyDescriptor(proto, prop);
+    if (!d || !d.set || !d.configurable) return;
+    Object.defineProperty(proto, prop, {
+      configurable: true,
+      enumerable: d.enumerable,
+      get: d.get,
+      set: function (v) {
+        var el = this;
+        if (prop === 'srcset') return d.set.call(el, mapSrcset(v));
+        var m = map(v);
+        if (typeof m === 'string' && splitInfo(m)) {
+          mergeUrl(m).then(function (bu) { d.set.call(el, bu); });
+          return;
+        }
+        if (special && special(el, m, function (x) { d.set.call(el, x); })) return;
+        return d.set.call(el, m);
+      },
+    });
+  }
+  function mapSrcset(v) {
+    if (typeof v !== 'string') return v;
+    return v.split(',').map(function (p) {
+      var t = p.trim();
+      if (!t) return t;
+      var sp = t.split(/\s+/);
+      sp[0] = map(sp[0]);
+      return sp.join(' ');
+    }).join(', ');
+  }
+  function iframeSpecial(el, m, set) {
+    if (typeof m === 'string' && cdnLike(m) && isHtml(m)) {
+      set('about:blank');
+      var go = function () { loadHtmlFrame(el, m); };
+      if (el.isConnected) setTimeout(go, 0);
+      else el.__tzPending = go;
+      return true;
+    }
+    return false;
+  }
+  hookProp(G.HTMLScriptElement && HTMLScriptElement.prototype, 'src');
+  hookProp(G.HTMLImageElement && HTMLImageElement.prototype, 'src');
+  hookProp(G.HTMLImageElement && HTMLImageElement.prototype, 'srcset');
+  hookProp(G.HTMLMediaElement && HTMLMediaElement.prototype, 'src');
+  hookProp(G.HTMLSourceElement && HTMLSourceElement.prototype, 'src');
+  hookProp(G.HTMLSourceElement && HTMLSourceElement.prototype, 'srcset');
+  hookProp(G.HTMLLinkElement && HTMLLinkElement.prototype, 'href');
+  hookProp(G.HTMLEmbedElement && HTMLEmbedElement.prototype, 'src');
+  hookProp(G.HTMLObjectElement && HTMLObjectElement.prototype, 'data');
+  hookProp(G.HTMLInputElement && HTMLInputElement.prototype, 'src');
+  hookProp(G.HTMLIFrameElement && HTMLIFrameElement.prototype, 'src', iframeSpecial);
+  try {
+    var svgHref = Object.getOwnPropertyDescriptor(SVGImageElement.prototype, 'href');
+    void svgHref;
+  } catch (e) {}
+
+  var oSetAttr = Element.prototype.setAttribute;
+  var ATTRS = { src: 1, href: 1, data: 1, poster: 1, srcset: 1, 'xlink:href': 1 };
+  Element.prototype.setAttribute = function (name, value) {
+    var n = String(name).toLowerCase();
+    if (ATTRS[n] && typeof value === 'string') {
+      var tag = this.tagName;
+      if (n === 'href' && (tag === 'A' || tag === 'BASE' || tag === 'AREA')) return oSetAttr.call(this, name, value);
+      if (n === 'srcset') return oSetAttr.call(this, name, mapSrcset(value));
+      var m = map(value);
+      if (splitInfo(m)) {
+        var el = this;
+        mergeUrl(m).then(function (bu) { oSetAttr.call(el, name, bu); });
+        return;
+      }
+      if (tag === 'IFRAME' && n === 'src' && iframeSpecial(this, m, function (x) { oSetAttr.call(this, name, x); }.bind(this))) return;
+      return oSetAttr.call(this, name, m);
+    }
+    return oSetAttr.call(this, name, value);
+  };
+
+  var oAppend = Node.prototype.appendChild, oInsert = Node.prototype.insertBefore;
+  function flushPending(n) {
+    if (n && n.__tzPending) {
+      var go = n.__tzPending;
+      n.__tzPending = null;
+      setTimeout(go, 0);
+    }
+  }
+  Node.prototype.appendChild = function (n) {
+    var r = oAppend.call(this, n);
+    flushPending(n);
+    return r;
+  };
+  Node.prototype.insertBefore = function (n, ref) {
+    var r = oInsert.call(this, n, ref);
+    flushPending(n);
+    return r;
+  };
+
+  if (G.Audio) {
+    var OA = G.Audio;
+    var NA = function Audio(src) {
+      var a = new OA();
+      if (src !== undefined) a.src = src;
+      return a;
+    };
+    NA.prototype = OA.prototype;
+    G.Audio = NA;
+  }
+
+  var oOpenWin = G.open;
+  if (oOpenWin) {
+    G.open = function (u) {
+      var a = Array.prototype.slice.call(arguments);
+      if (typeof u === 'string' && u) a[0] = map(u);
+      return oOpenWin.apply(G, a);
+    };
+  }
+
+  function fixStatic(root) {
+    var list = root.querySelectorAll ? root.querySelectorAll('iframe[data-tz-src]') : [];
+    for (var i = 0; i < list.length; i++) {
+      var f = list[i];
+      var s = f.getAttribute('data-tz-src');
+      f.removeAttribute('data-tz-src');
+      var m = map(s);
+      if (cdnLike(m) && isHtml(m)) loadHtmlFrame(f, m);
+      else oSetAttr.call(f, 'src', m);
+    }
+  }
+  if (G.MutationObserver) {
+    new MutationObserver(function (recs) {
+      for (var i = 0; i < recs.length; i++) {
+        var a = recs[i].addedNodes;
+        for (var j = 0; j < a.length; j++) {
+          var n = a[j];
+          if (n.nodeType !== 1) continue;
+          if (n.tagName === 'IFRAME' && n.hasAttribute('data-tz-src')) fixStatic(n.parentNode || document);
+          else if (n.querySelector && n.querySelector('iframe[data-tz-src]')) fixStatic(n);
+        }
+      }
+    }).observe(document, { childList: true, subtree: true });
+  }
+})({"c":"https://cdn.jsdelivr.net","o":"skidding-code","p":19000000,"b":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-34@main/games/smashkarts/","r":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-34@main/","u":{"/games/smashkarts/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-34@main/"},"x":{"www.gstatic.com/firebasejs/9.9.3/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-04@main/_ext/www.gstatic.com/firebasejs/9.9.3/","hb.vntsm.com/v4/live/srv/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-05@main/_ext/hb.vntsm.com/v4/live/srv/","imasdk.googleapis.com/js/sdkloader/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-05@main/_ext/imasdk.googleapis.com/js/sdkloader/","cdn.jsdelivr.net/gh/prebid/currency-file@1/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-05@main/_ext/cdn.jsdelivr.net/gh/prebid/currency-file@1/","d-code.liadm.com/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-05@main/_ext/d-code.liadm.com/","hb.vntsm.com/v4/live/vms/assets/libs/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-05@main/_ext/hb.vntsm.com/v4/live/vms/assets/libs/","cdn.hadronid.net/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-34@main/_ext/cdn.hadronid.net/","cdn.id5-sync.com/api/1.0/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-34@main/_ext/cdn.id5-sync.com/api/1.0/","secure.cdn.fastclick.net/js/pubcid/latest/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-34@main/_ext/secure.cdn.fastclick.net/js/pubcid/latest/","secure.cdn.fastclick.net/js/cnvr-launcher/latest/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-34@main/_ext/secure.cdn.fastclick.net/js/cnvr-launcher/latest/","fastlane.rubiconproject.com/a/api/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-05@main/_ext/fastlane.rubiconproject.com/a/api/","secure.cdn.fastclick.net/js/cnvr-coreid/latest/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-34@main/_ext/secure.cdn.fastclick.net/js/cnvr-coreid/latest/","cdn.smashkarts.io/house/or/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-34@main/_ext/cdn.smashkarts.io/house/or/","ep2.adtrafficquality.google/sodar/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-04@main/_ext/ep2.adtrafficquality.google/sodar/","ep2.adtrafficquality.google/sodar/sodar2/257/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-04@main/_ext/ep2.adtrafficquality.google/sodar/sodar2/257/","id5-sync.com/i/258/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-34@main/_ext/id5-sync.com/i/258/","elb.the-ozone-project.com/static/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-05@main/_ext/elb.the-ozone-project.com/static/","scripts.opti-digital.com/js/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-05@main/_ext/scripts.opti-digital.com/js/","acdn.adnxs.com/dmp/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-05@main/_ext/acdn.adnxs.com/dmp/","sdk.streamrail.com/cs-config/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-05@main/_ext/sdk.streamrail.com/cs-config/","ads.pubmatic.com/AdServer/js/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-05@main/_ext/ads.pubmatic.com/AdServer/js/","js-sec.indexww.com/um/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-05@main/_ext/js-sec.indexww.com/um/","eus.rubiconproject.com/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-05@main/_ext/eus.rubiconproject.com/","www.gstatic.com/docs/documents/images/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-04@main/_ext/www.gstatic.com/docs/documents/images/","www.gstatic.com/feedback/js/help/prod/service/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-04@main/_ext/www.gstatic.com/feedback/js/help/prod/service/","www.gstatic.com/charts/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-04@main/_ext/www.gstatic.com/charts/","www.gstatic.com/firebasejs/8.10.0/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-04@main/_ext/www.gstatic.com/firebasejs/8.10.0/","imasdk.googleapis.com/js/core/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-05@main/_ext/imasdk.googleapis.com/js/core/","www.gstatic.com/firebasejs/10.9.0/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-04@main/_ext/www.gstatic.com/firebasejs/10.9.0/"},"s":{}});</script>
+	<script src="scripts/constants.js"></script>
+	
+	<meta charset="utf-8">
+	<link rel="icon" href="images/favicon.png" sizes="16x16">
+	<!-- og: Open graph meta tags allow you to control what content shows up when a page is shared on Facebook -->
+	<meta property="og:site_name" content="SmashKarts.io">
+	<meta property="og:title" content="Smash Karts" />
+	<meta property="og:url" content="https://smashkarts.io/" />
+	<meta property="og:type" content="website" />
+	<meta property="og:description"
+		  content="Smash Karts is a free io Multiplayer Kart Battle Arena game. Drive fast. Fire rockets. Make big explosions." />
+	<meta property="og:image" content="images/icon-144.png" />
+	<meta property="og:image:width" content="144" />
+	<meta property="og:image:height" content="144" />
+	<meta itemprop="name" content="Smash Karts" />
+	<meta itemprop="url" content="https://smashkarts.io/" />
+	<meta itemprop="description"
+		  content="Smash Karts is a free io Multiplayer Kart Battle Arena game. Drive fast. Fire rockets. Make big explosions." />
+	<meta itemprop="thumbnailUrl" content="https://smashkarts.io/" />
+	<link rel="image_src" href="https://smashkarts.io/" />
+	<meta itemprop="image" content="https://smashkarts.io/" />
+	<meta name="twitter:title" content="Smash Karts" />
+	<meta name="twitter:image" content="images/icon-144.png" />
+	<meta name="twitter:url" content="https://smashkarts.io/" />
+	<meta name="twitter:card" content="summary_large_image" />
+	<meta name="twitter:description"
+		  content="Smash Karts is a free io Multiplayer Kart Battle Arena game. Drive fast. Fire rockets. Make big explosions." />
+	<meta name="description"
+		  content="Smash Karts is a free io Multiplayer Kart Battle Arena game. Drive fast. Fire rockets. Make big explosions." />
+	<meta name="google-site-verification" content="Kb9JniKgGSfuiJM_DNO2-Va7cSC00GlcBzbDw1Lgw_4" />
+	<meta itemprop="image primaryImageOfPage" content="images/smashkarts.png" />
+
+	<link rel="manifest" href="manifest.json">
+
+	<meta name="apple-mobile-web-app-title" content="Smash Karts">
+	<meta name="apple-mobile-web-app-capable" content="yes">
+	<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+	<link rel="apple-touch-icon" href="images/icon-144.png">
+
+	<!-- <script type="text/javascript" src="xmlhttprequest-length-computable.js"></script> -->
+	<!--<script type="text/javascript" src="xmlhttprequest-length-computable.min.js"></script>
+	<script type="text/javascript">
+		window.xmlHTTPRequestLengthComputable = {
+			CONTENT_ENCODING_MULTIPLE: 3.0
+		}
+	</script> -->
+	
+	<!-- Youtube Game Schema -->
+	<script type="application/ld+json">
+		{
+			"@context": "http://schema.org",
+			"@type":"VideoGame",
+			"publisher": "Tall Team",
+			"name":[
+				{
+					"@language":"en",
+					"@value":"Smash Karts"
+				}
+			],
+			"description":[
+				{
+					"@language":"en",
+					"@value":"Smash Karts is a free io Multiplayer Kart Battle Arena game. Drive fast. Fire rockets. Make big explosions."
+				}
+			],
+			"applicationCategory":[
+				"Game"
+			],
+			"operatingSystem":[
+				"WEB"
+			],
+			"genre":[
+				"Car Battle",
+				"Shooter",
+				"Multiplayer"
+			],
+			"url":"https://smashkarts.io/",
+			"image":"images/SmashKartsPoster.jpg",
+			"screenshot":"images/SmashKartsBackground.jpg"
+		}
+	</script>
+	<title>Smash Karts</title>
+	<link rel="stylesheet" href="css/main.css" />
+	<meta name="viewport" content="minimal-ui, user-scalable=no, initial-scale=1, maximum-scale=1, width=device-width, viewport-fit=cover" />
+
+	<script src="scripts/ads-init.js"></script>
+
+</head>
+
+<body>
+<div id="mainContainer">
+	<div id="mainContainerBg"></div>
+	<div id="leftContainer">
+		<div id="gameContainer">
+			<canvas id="gameCanvas"></canvas>
+
+			<!-- On canvas ad containers -->
+			<div id="adContainerLoadingLeft"> <!-- loading -->
+				<div id="smashkarts-io_300x600_2"></div> <!-- adinplay -->
+			</div>	
+			<div id="adContainerMainMenu"> <!-- main menu -->
+				<div id="smashkarts-io_300x250"></div> <!-- adinplay -->
+			
+				<!-- playwire -->
+				<div id="pw_mainmenu"></div>
+				<!-- dummy placement to ensure rewarded videos init correctly when ads are disabled for season pass holders -->
+				<div id="pw_mainmenu_dummy" data-pw-desk="med_rect_atf" data-pw-mobi="med_rect_atf"></div> 
+			</div>
+			<div id="adContainerWin"> <!-- win ceremony -->
+				<div id="smashkarts-io_300x250_2"></div> <!-- adinplay -->
+
+				<!-- playwire -->
+				<div id="pw_roundend"></div>
+				<!-- <div data-pw-desk="med_rect_btf" data-pw-mobi="med_rect_btf"></div> -->
+			</div>
+			<div id="adContainerSpectate"> <!-- spectate -->
+				<div id="smashkarts-io_300x250_3"></div> <!-- adinplay -->
+			</div>
+			<div id="adContainerDeath"> <!-- death -->
+
+				<!-- adinplay -->
+				<div id="smashkarts-io_728x90-new"></div>
+				<div id="smashkarts-io_320x100"></div>
+
+				<!-- playwire -->
+				<div id="pw_ondeath"></div>
+				<!-- <div data-pw-desk="leaderboard_atf" data-pw-mobi="leaderboard_atf"></div> -->
+			</div>
+		</div>
+		<div id="btmContainer">
+			<div id="btmAdPlaceholder">
+				<div id="btmAdPlaceholderBg"></div>
+				<div id="btmAdBlockerContainer">
+					<img id="btmAdBlockerImg" src="images/turnoffadblock.png">
+					<h1 id="btmAdBlockerText">Disable AdBlock for extra XP</h1>
+				</div>
+			</div>
+			<h1 id="btmAdResText">unset</h1>
+		</div>
+		<div id="pw-video-container"> <!-- playwire -->
+			<div id="pw-video-placeholder"></div>
+		</div>
+		<div id="preroll"></div> <!-- adinplay -->
+		<iframe id="xsolla-iframe"></iframe>
+	</div>
+	<div id="rightContainer">
+		<div id="rightAdPlaceholder">
+			<div id="rightAdPlaceholderBg"></div>
+			<div id="rightAdBlockerContainer">
+				<img id="rightAdBlockerImg" src="images/turnoffadblock.png">
+				<h1 id="rightAdBlockerText">Disable AdBlock for extra XP</h1>
+			</div>
+		</div>
+		<h1 id="rightAdResText">unset</h1>
+	</div>
+</div>
+<div id="loader">
+	<img class="logo" src="images/smashkarts.png">
+	<div class="spinner"></div>
+	<div class="progress">
+		<div class="full"></div>
+	</div>
+</div>
+<div id="rotate-landscape">
+	<img src="images/r.png" class="center">
+</div>
+
+<script src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-04@main/_ext/www.gstatic.com/firebasejs/9.9.3/firebase-app-compat.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-04@main/_ext/www.gstatic.com/firebasejs/9.9.3/firebase-auth-compat.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-04@main/_ext/www.gstatic.com/firebasejs/9.9.3/firebase-database-compat.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-04@main/_ext/www.gstatic.com/firebasejs/9.9.3/firebase-analytics-compat.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-04@main/_ext/www.gstatic.com/firebasejs/9.9.3/firebase-functions-compat.js"></script>
+
+<script src="scripts/main.js"></script>
+<script src="scripts/auth.js"></script>
+<script src="scripts/shop.js"></script>
+<script src="scripts/cc.js"></script>
+ 
+<script src="scripts/ads-common-logic.js"></script>
+<script src="scripts/ads-offcanvas-logic.js"></script>
+<script src="scripts/ads-positioning-logic.js"></script>
+<script src="scripts/ads-injector.js"></script>
+
+<script>
+	//Used for installing progressive web apps 
+	if ('serviceWorker' in navigator)
+	{
+		navigator.serviceWorker.register('service-worker2.js');
+	}
+
+	const firebaseConfig = {
+    apiKey: "AIzaSyAdY2qq9083amKDS0R8tn2tjIKQB8mocco",
+    authDomain: "webgltest-17af1.firebaseapp.com",
+    databaseURL: "https://webgltest-17af1.firebaseio.com",
+    projectId: "webgltest-17af1",
+    messagingSenderId: "480659433590",
+    appId: "1:480659433590:web:a01ad1599e963843a0d757",
+    measurementId: "G-1W23DRFHK9"
+};
+
+	
+	// Initialize Firebase
+	firebase.initializeApp(firebaseConfig);
+
+	
+
+	analytics = firebase.analytics();
+	gtag('config', 'G-1W23DRFHK9', {'cookie_flags': 'samesite=none;secure'}); 
+	
+	firebaseSetScreen("loading_start");
+	firebaseLogEvent("loading_page_start");
+
+	updateAdBlockDetected();
+	updateLoadingAdBanner();
+	
+	var timerStart = Date.now();
+	var sentGameInstanceStartEvent = false;
+
+	// choose the data file based on whether there's support for the ASTC texture compression format
+	var dataFile = "/f800a46e6dd608e4a2b3059ba4707938.data.br";
+	var mobileDataFile = "/580c03bbee85a0fbd586162febb28b01.data.br";
+	
+	//safety check to ensure we dont try to use the mobileDataFile if the filename hasnt been parsed during the build phase
+	if(!mobileDataFile.includes("MOBILE_DATA_FILENAME"))
+	{
+		var c = document.createElement("canvas");
+		var gl = c.getContext("webgl");
+		var gl2 = c.getContext("webgl2");
+		if ((gl && gl.getExtension('WEBGL_compressed_texture_astc')) || (gl2 && gl2.getExtension('WEBGL_compressed_texutre_astc'))) 
+		{
+			dataFile = mobileDataFile;
+		}
+	}
+
+	const buildUrl = "https://smashkartsgc.b-cdn.net/Build2020New";
+
+	const loaderUrl = buildUrl + "/76f034cff49013ce85bd6945ebf32347.loader.js";
+	const config = {
+		dataUrl: buildUrl + dataFile,
+		frameworkUrl: buildUrl + "/1c904c1d8e7110fc7d2c33884479c8d0.framework.js.br",
+		codeUrl: buildUrl + "/490eef7eb6d3ba0376a5851f590ad3c0.wasm.br",
+		// #if MEMORY_FILENAME
+		//         memoryUrl: buildUrl + "/",
+		// #endif
+		// #if SYMBOLS_FILENAME
+		//         symbolsUrl: buildUrl + "/",
+		// #endif
+		streamingAssetsUrl: "StreamingAssets",
+		companyName: "TallTeam",
+		productName: "Smash Karts",
+		productVersion: "2.5.0",
+	};
+
+	var mainContainer = document.querySelector("#mainContainer");
+	var gameContainer = document.querySelector("#gameContainer");
+	var canvas = document.querySelector("#gameCanvas");
+	var loadingBar = document.querySelector("#loader");
+	var progressBarFull = document.querySelector("#loader .progress .full");
+	var rotateLandscape = document.querySelector("#rotate-landscape");
+
+	var btmAdContainer = document.getElementById("btmContainer");
+	var btmAdPlaceholder = document.getElementById("btmAdPlaceholder");
+	var btmAdResText = document.getElementById("btmAdResText");
+
+	var rightAdContainer = document.getElementById("rightContainer");
+	var rightAdPlaceholder = document.getElementById("rightAdPlaceholder");
+	var rightAdResText = document.getElementById("rightAdResText");
+
+	if (isMobile())
+	{
+		mainContainer.className = "unity-mobile";
+
+		// if(isIos())
+		// {
+		// 	//Allow scrolling on mobile iOS so user can scroll off the top tab bar
+		// 	document.body.style.overflow = "visible";
+		// }
+	}
+	else
+	{
+		rotateLandscape.id = "rotateLandscapeOff";
+		rotateLandscape.style.display = "none";
+	}
+	const progress = document.querySelector("#loader .progress");
+	progress.style.display = "block";
+	progressBarFull.style.width = "0%";
+
+	var script = document.createElement("script");
+	script.src = loaderUrl;
+
+	var progressCreateUnityInstance = 0;
+	var progressPostCreateUnityInstance = 0;
+	var updateProgressInterval = setInterval(updateProgress, 100);
+
+	var gameInstance;
+	script.onload = () =>
+	{
+		createUnityInstance(canvas, config, (progress) =>
+		{
+			progressCreateUnityInstance = 100 * progress;
+			setProgressWidth();
+		}).then((unityInstance) =>
+		{
+			if (isMobile()) document.body.style.background = "#000000";
+			loadingBar.style.display = "none";
+			window.unityGame = unityInstance;
+			gameInstance = unityInstance;
+
+			if (updateProgressInterval) clearInterval(updateProgressInterval);
+
+			var lt = Date.now() - timerStart;
+			firebaseLogEventWithParam("loading_page_complete", "time", lt);
+			setV(lt);
+
+			onUnityLoadComplete();
+		}).catch((message) =>
+		{
+			alert("TT UnityLoader Error" + message);
+		});
+	};
+	document.body.appendChild(script);
+
+	function onUnityLoadComplete()
+	{
+		//tell unity what ad providers are enabled
+		window.unityGame.SendMessage(unityFirebaseGameOjbectName, "SetDisplayAdProvider", displayAdProvider);
+		window.unityGame.SendMessage(unityFirebaseGameOjbectName, "SetVideoAdProvider", videoAdProvider);
+		
+		trySendAdBlockDetectedMessage();
+	}
+
+	function updateProgress()
+	{
+		if (progressCreateUnityInstance > 85)
+		{
+			progressPostCreateUnityInstance += 1;
+			setProgressWidth();
+		}
+	}
+
+	function setProgressWidth()
+	{
+		if (progressCreateUnityInstance == 100.0)
+		{
+			progressBarFull.style.width = "100%";
+		}
+		else
+		{
+			var percent;
+			if (isMobile())
+			{
+				percent = progressCreateUnityInstance * 0.6 + (progressPostCreateUnityInstance * 0.5 * 0.2 + progressCreateUnityInstance * 0.5 * 0.2 * 0.05);
+				percent = Math.min(percent, 90);
+			}
+			else
+			{
+				percent = progressCreateUnityInstance * 0.9 + progressPostCreateUnityInstance * 0.1;
+				percent = Math.min(percent, 95);
+			}
+			progressBarFull.style.width = percent + "%";
+		}
+	}
+
+	function setAdinPlaySubIdForABTest(val)
+	{
+		//set adinplay subid which enables segmented daily reports
+		aiptag.subid = val;
+	}
+
+	function onLoad()
+	{
+		updateGameCanvasSize();
+	}
+
+	function onResize()
+	{
+		updateGameCanvasSize();
+	}
+
+	function updateGameCanvasSize()
+	{
+		//set game canvas size
+		var borderWidth = displayingRightAd() ? offCanvasBorderSize : 0;
+		var borderHeight = displayingBtmAd() ?  offCanvasBorderSize : 0;
+
+		//main container padding
+		var mainContainerStyle = getComputedStyle(mainContainer);
+		var mainContainerPadLeft = parseInt(mainContainerStyle.getPropertyValue("padding-left"));
+		var mainContainerPadRight = parseInt(mainContainerStyle.getPropertyValue("padding-right"));
+		var mainContainerPadTop = parseInt(mainContainerStyle.getPropertyValue("padding-top"));
+		var mainContainerPadBtm = parseInt(mainContainerStyle.getPropertyValue("padding-bottom"));
+
+		canvas.style.width = window.innerWidth - borderWidth - mainContainerPadLeft - mainContainerPadRight - rightAdContainer.getBoundingClientRect().width + "px";
+		canvas.style.height = window.innerHeight - borderHeight - mainContainerPadTop - mainContainerPadBtm - btmAdContainer.getBoundingClientRect().height + "px";
+	}
+
+	window.addEventListener("load", onLoad);
+	window.addEventListener("resize", onResize);
+
+</script>
+</body>
+</html>
+
+<script>
+	window.dataLayer = window.dataLayer || [];
+	function gtag(){dataLayer.push(arguments);}
+	gtag('js', new Date());
+	gtag('config', 'G-WLTG1S4STB');
+</script>

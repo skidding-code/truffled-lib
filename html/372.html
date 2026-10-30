@@ -1,0 +1,1118 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head><base href="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-26@main/_ext/cdn.jsdelivr.net/gh/genizy/biologyexams@main/nubbys-number-factory/"><script>(function (C) {
+  var G = typeof self !== 'undefined' ? self : this;
+  if (G.__tz) return;
+  var IS_DOC = typeof document !== 'undefined' && typeof Element !== 'undefined';
+  var CDN = C.c;
+  var SKIP = /^(data:|blob:|javascript:|about:|mailto:|tel:|ws:|wss:|#)/i;
+  var units = Object.keys(C.u || {}).sort(function (a, b) { return b.length - a.length; });
+  var exts = Object.keys(C.x || {}).sort(function (a, b) { return b.length - a.length; });
+  var split = C.s || {};
+  var hostDir = (function () {
+    try {
+      var h = String(G.location.href);
+      if (/^(https?|file):/i.test(h)) return h.slice(0, h.lastIndexOf('/') + 1);
+    } catch (e) {}
+    return null;
+  })();
+
+  function base() {
+    if (C.w) return C.w;
+    try { return document.baseURI; } catch (e) { return C.b; }
+  }
+
+  function rootFor(p, strict) {
+    for (var i = 0; i < units.length; i++) if (p.indexOf(units[i]) === 0) return C.u[units[i]];
+    return strict ? null : C.r;
+  }
+
+  function map(u) {
+    try {
+      if (u == null) return u;
+      if (typeof u !== 'string') {
+        if (typeof URL !== 'undefined' && u instanceof URL) u = u.href;
+        else if (u && typeof u.toString === 'function') u = u.toString();
+        else return u;
+      }
+      var t = u.trim();
+      if (C.w && /^blob:/i.test(t) && /\/[^\/?#]*\.[A-Za-z0-9]{1,8}([?#].*)?$/.test(t)) {
+        return map(new URL(t.slice(t.lastIndexOf('/') + 1), C.w).href);
+      }
+      if (!t || SKIP.test(t)) return u;
+      var abs;
+      try { abs = new URL(t, base()); } catch (e) { return u; }
+      var href = abs.href;
+      if (hostDir && href.indexOf(hostDir) === 0 && !(C.b.indexOf(hostDir) === 0)) {
+        return map(new URL(href.slice(hostDir.length), C.b).href);
+      }
+      if (abs.protocol !== 'http:' && abs.protocol !== 'https:') return u;
+      if (abs.origin === CDN && C.o && abs.pathname.indexOf('/gh/' + C.o + '/') === 0) {
+        var mm = /^\/gh\/[^/]+\/[^/@]+@[^/]+\//.exec(abs.pathname);
+        if (mm) {
+          var rest = abs.pathname.slice(mm[0].length), dp = rest;
+          try { dp = decodeURIComponent(rest); } catch (e) {}
+          var want = rootFor('/' + dp, true);
+          if (want && want !== CDN + mm[0]) return want + rest + abs.search + abs.hash;
+        }
+        return href;
+      }
+      if ((abs.origin === CDN && !/^\/(gh|npm|combine|wp)\//.test(abs.pathname)) || /^(www\.)?truffled\.lol$/i.test(abs.hostname)) {
+        var dpp = abs.pathname;
+        try { dpp = decodeURIComponent(dpp); } catch (e) {}
+        return rootFor(dpp) + abs.pathname.slice(1) + abs.search + abs.hash;
+      }
+      var hp = abs.host + abs.pathname;
+      for (var i = 0; i < exts.length; i++) {
+        if (hp.indexOf(exts[i]) === 0) return C.x[exts[i]] + hp.slice(exts[i].length);
+      }
+      return href;
+    } catch (e) { return u; }
+  }
+
+  function bare(u) { return String(u).replace(/[?#].*$/, ''); }
+  function splitKey(u) {
+    var b = bare(u);
+    if (split[b]) return b;
+    try { var n = new URL(b).href; if (split[n]) return n; } catch (e) {}
+    try { var d = encodeURI(decodeURI(b)); if (split[d]) return d; } catch (e) {}
+    return null;
+  }
+  function splitInfo(u) { var k = splitKey(u); return k ? split[k] : null; }
+
+  var PART = C.p || 19000000;
+  function partUrl(key, i) {
+    var info = split[key], segs = info[3];
+    if (segs) {
+      for (var j = segs.length - 1; j >= 0; j--) if (i >= segs[j][0]) return segs[j][1] + '.part' + i;
+    }
+    return key + '.part' + i;
+  }
+  function getPart(key, i, range) {
+    var u = partUrl(key, i), tries = 0;
+    function go() {
+      return origFetch(u, range ? { headers: { Range: range } } : undefined).then(function (r) {
+        if (!r.ok) throw new Error('part ' + u + ' ' + r.status);
+        return r.arrayBuffer().then(function (ab) { return [ab, r.status]; });
+      }).catch(function (e) {
+        if (++tries < 4) return new Promise(function (ok) { setTimeout(ok, 800 * tries); }).then(go);
+        throw e;
+      });
+    }
+    return go();
+  }
+  var merged = {};
+  function mergeBuf(u) {
+    var key = splitKey(u) || bare(u);
+    if (merged[key]) return merged[key];
+    var n = split[key][0], type = split[key][1] || 'application/octet-stream';
+    var blobs = new Array(n), next = 1;
+    merged[key] = new Promise(function (ok, bad) {
+      var active = 0, done = 0, failed = false;
+      function pump() {
+        while (!failed && active < 4 && next <= n) {
+          (function (i) {
+            active++;
+            getPart(key, i).then(function (r) {
+              blobs[i - 1] = new Blob([r[0]]);
+              active--;
+              if (++done === n) ok(new Blob(blobs, { type: type }));
+              else pump();
+            }, function (e) { failed = true; bad(e); });
+          })(next++);
+        }
+      }
+      pump();
+    });
+    return merged[key];
+  }
+  var blobUrls = {};
+  function mergeUrl(u) {
+    var key = splitKey(u) || bare(u);
+    if (!blobUrls[key]) blobUrls[key] = mergeBuf(key).then(function (b) { return URL.createObjectURL(b); });
+    return blobUrls[key];
+  }
+  function sizeOf(key) { return split[key][2] || 0; }
+  function parseRange(h, size) {
+    var m = /bytes=(\d*)-(\d*)/.exec(h || '');
+    if (!m) return null;
+    var a, b;
+    if (m[1] === '') { a = Math.max(0, size - Number(m[2])); b = size - 1; }
+    else { a = Number(m[1]); b = m[2] === '' ? size - 1 : Math.min(Number(m[2]), size - 1); }
+    if (a > b || a >= size) return null;
+    return [a, b];
+  }
+  function rangeBlob(key, a, b) {
+    var i0 = Math.floor(a / PART), i1 = Math.floor(b / PART), jobs = [];
+    for (var i = i0; i <= i1; i++) {
+      (function (i) {
+        var s = Math.max(a, i * PART) - i * PART, e = Math.min(b, (i + 1) * PART - 1) - i * PART;
+        jobs.push(getPart(key, i + 1, 'bytes=' + s + '-' + e).then(function (r) {
+          return r[1] === 206 ? r[0] : r[0].slice(s, e + 1);
+        }));
+      })(i);
+    }
+    return Promise.all(jobs).then(function (bufs) { return new Blob(bufs, { type: split[key][1] || 'application/octet-stream' }); });
+  }
+  function streamResponse(key) {
+    var n = split[key][0], next = 1, ahead = [];
+    var hdr = { 'Content-Type': split[key][1] || 'application/octet-stream', 'Accept-Ranges': 'bytes' };
+    if (sizeOf(key)) hdr['Content-Length'] = String(sizeOf(key));
+    function fill() { while (ahead.length < 3 && next <= n) ahead.push(getPart(key, next++)); }
+    var rs = new ReadableStream({
+      pull: function (ctrl) {
+        fill();
+        if (!ahead.length) { ctrl.close(); return; }
+        return ahead.shift().then(function (r) { ctrl.enqueue(new Uint8Array(r[0])); fill(); });
+      },
+      cancel: function () { ahead = []; next = n + 1; }
+    });
+    return new Response(rs, { status: 200, statusText: 'OK', headers: hdr });
+  }
+  function splitFetch(key, input, init) {
+    var method = String((init && init.method) || (input && input.method) || 'GET').toUpperCase();
+    var range = null;
+    try { range = new Headers((init && init.headers) || (input && typeof input === 'object' && input.headers) || undefined).get('range'); } catch (e) {}
+    var size = sizeOf(key), type = split[key][1] || 'application/octet-stream';
+    if (method === 'HEAD') {
+      return Promise.resolve(new Response(null, { status: 200, headers: { 'Content-Length': String(size), 'Content-Type': type, 'Accept-Ranges': 'bytes' } }));
+    }
+    var rg = range && size ? parseRange(range, size) : null;
+    if (rg) {
+      return rangeBlob(key, rg[0], rg[1]).then(function (b) {
+        return new Response(b, { status: 206, statusText: 'Partial Content', headers: { 'Content-Type': type, 'Content-Length': String(b.size), 'Content-Range': 'bytes ' + rg[0] + '-' + rg[1] + '/' + size, 'Accept-Ranges': 'bytes' } });
+      });
+    }
+    if (merged[key]) return merged[key].then(function (b) { return new Response(b, { status: 200, headers: { 'Content-Type': type, 'Content-Length': String(b.size) } }); });
+    return Promise.resolve(streamResponse(key));
+  }
+
+  var origFetch = G.fetch ? G.fetch.bind(G) : null;
+  G.__tz = { map: map, cfg: C };
+
+  if (origFetch) {
+    G.fetch = function (input, init) {
+      try {
+        var url = typeof input === 'string' || (typeof URL !== 'undefined' && input instanceof URL) ? String(input) : input && input.url;
+        if (url) {
+          var m = map(url);
+          if (splitInfo(m)) return splitFetch(splitKey(m), input, init);
+          if (m !== url) {
+            if (typeof input === 'string' || input instanceof URL) input = m;
+            else input = new Request(m, input);
+          }
+        }
+      } catch (e) {}
+      return origFetch(input, init);
+    };
+  }
+
+  if (G.XMLHttpRequest) {
+    var XP = G.XMLHttpRequest.prototype;
+    var oOpen = XP.open, oSend = XP.send, oSRH = XP.setRequestHeader;
+    XP.open = function (method, url) {
+      var a = Array.prototype.slice.call(arguments);
+      var m = map(url);
+      if (splitInfo(m) && a[2] !== false) {
+        this.__tzs = { a: a, m: m, h: [] };
+        return;
+      }
+      this.__tzs = null;
+      a[1] = m;
+      return oOpen.apply(this, a);
+    };
+    XP.setRequestHeader = function (k, v) {
+      if (this.__tzs) { this.__tzs.h.push([k, v]); return; }
+      return oSRH.call(this, k, v);
+    };
+    XP.send = function (body) {
+      var s = this.__tzs, x = this;
+      if (!s) return oSend.call(this, body);
+      var key = splitKey(s.m), rh = null;
+      s.h.forEach(function (h) { if (String(h[0]).toLowerCase() === 'range') rh = h[1]; });
+      var rg = rh && sizeOf(key) ? parseRange(rh, sizeOf(key)) : null;
+      var src = rg ? rangeBlob(key, rg[0], rg[1]).then(function (b) { return URL.createObjectURL(b); }) : mergeUrl(s.m);
+      s.h = s.h.filter(function (h) { return String(h[0]).toLowerCase() !== 'range'; });
+      src.then(function (bu) {
+        var a = s.a.slice();
+        a[1] = bu;
+        x.__tzs = null;
+        oOpen.apply(x, a);
+        s.h.forEach(function (h) { try { oSRH.call(x, h[0], h[1]); } catch (e) {} });
+        oSend.call(x, body);
+      }, function () {
+        x.__tzs = null;
+        var a = s.a.slice();
+        a[1] = s.m;
+        oOpen.apply(x, a);
+        oSend.call(x, body);
+      });
+    };
+  }
+
+  var shimSrc = null;
+  function workerBlob(url, opts) {
+    var m = map(url);
+    var abs = new URL(m, base()).href;
+    var cfg = JSON.parse(JSON.stringify(C));
+    cfg.w = abs;
+    var pre = shimSrc ? '(' + shimSrc + ')(' + JSON.stringify(cfg) + ');' : '';
+    var body = opts && opts.type === 'module'
+      ? pre + 'import ' + JSON.stringify(abs) + ';'
+      : pre + 'importScripts(' + JSON.stringify(abs) + ');';
+    return URL.createObjectURL(new Blob([body], { type: 'text/javascript' }));
+  }
+  function needsWrap(u) {
+    try {
+      var abs = new URL(map(u), base());
+      return abs.origin !== G.location.origin && abs.protocol !== 'blob:' && abs.protocol !== 'data:';
+    } catch (e) { return false; }
+  }
+  ['Worker', 'SharedWorker'].forEach(function (k) {
+    var W = G[k];
+    if (!W) return;
+    var Wrapped = function (url, opts) {
+      var u = typeof url === 'string' || url instanceof URL ? String(url) : url;
+      if (typeof u === 'string' && needsWrap(u)) u = workerBlob(u, opts);
+      return opts === undefined ? new W(u) : new W(u, opts);
+    };
+    Wrapped.prototype = W.prototype;
+    try { Object.defineProperty(Wrapped, 'name', { value: k }); } catch (e) {}
+    G[k] = Wrapped;
+  });
+
+  if (!IS_DOC && typeof G.importScripts === 'function') {
+    var oIS = G.importScripts;
+    G.importScripts = function () {
+      var a = Array.prototype.slice.call(arguments).map(function (u) { return map(u); });
+      return oIS.apply(G, a);
+    };
+  }
+
+  if (!IS_DOC) return;
+
+  try { shimSrc = String(document.currentScript && document.currentScript.textContent || ''); } catch (e) {}
+  if (shimSrc) {
+    var mm = /^\s*\(function \(C\)[\s\S]*\}\)\(/.exec(shimSrc);
+    shimSrc = mm ? mm[0].replace(/\)\($/, '').replace(/^\s*\(/, '') : null;
+  }
+
+  function loadHtmlFrame(frame, url) {
+    origFetch(url).then(function (r) { return r.text(); }).then(function (html) {
+      var w = frame.contentWindow;
+      if (!w) return;
+      var d = w.document;
+      html = prepHtml(html, url);
+      d.open();
+      d.write(html);
+      d.close();
+    });
+  }
+  function prepHtml(html, url) {
+    var dir = url.slice(0, url.lastIndexOf('/') + 1);
+    var tag = '<base href="' + dir + '">';
+    var cfg = JSON.parse(JSON.stringify(C));
+    delete cfg.w;
+    var sh = shimSrc ? '<script>(' + shimSrc + ')(' + JSON.stringify(cfg).replace(/<\//g, '<\\/') + ');<\/script>' : '';
+    if (/<base\b[^>]*>/i.test(html)) {
+      var mb = /<base\b[^>]*\bhref\s*=\s*["']?([^"'\s>]+)/i.exec(html);
+      if (mb) tag = '<base href="' + new URL(mb[1], dir).href + '">';
+      html = html.replace(/<base\b[^>]*>/i, '');
+    }
+    if (/<head[^>]*>/i.test(html)) return html.replace(/<head[^>]*>/i, function (m) { return m + tag + sh; });
+    if (/<html[^>]*>/i.test(html)) return html.replace(/<html[^>]*>/i, function (m) { return m + tag + sh; });
+    return tag + sh + html;
+  }
+  function isHtml(u) {
+    try {
+      var p = new URL(u).pathname;
+      return /\.html?$/i.test(p) || /\/$/.test(p);
+    } catch (e) { return false; }
+  }
+  function cdnLike(u) {
+    try { return new URL(u).origin === CDN; } catch (e) { return false; }
+  }
+
+  function hookProp(proto, prop, special) {
+    if (!proto) return;
+    var d = Object.getOwnPropertyDescriptor(proto, prop);
+    if (!d || !d.set || !d.configurable) return;
+    Object.defineProperty(proto, prop, {
+      configurable: true,
+      enumerable: d.enumerable,
+      get: d.get,
+      set: function (v) {
+        var el = this;
+        if (prop === 'srcset') return d.set.call(el, mapSrcset(v));
+        var m = map(v);
+        if (typeof m === 'string' && splitInfo(m)) {
+          mergeUrl(m).then(function (bu) { d.set.call(el, bu); });
+          return;
+        }
+        if (special && special(el, m, function (x) { d.set.call(el, x); })) return;
+        return d.set.call(el, m);
+      },
+    });
+  }
+  function mapSrcset(v) {
+    if (typeof v !== 'string') return v;
+    return v.split(',').map(function (p) {
+      var t = p.trim();
+      if (!t) return t;
+      var sp = t.split(/\s+/);
+      sp[0] = map(sp[0]);
+      return sp.join(' ');
+    }).join(', ');
+  }
+  function iframeSpecial(el, m, set) {
+    if (typeof m === 'string' && cdnLike(m) && isHtml(m)) {
+      set('about:blank');
+      var go = function () { loadHtmlFrame(el, m); };
+      if (el.isConnected) setTimeout(go, 0);
+      else el.__tzPending = go;
+      return true;
+    }
+    return false;
+  }
+  hookProp(G.HTMLScriptElement && HTMLScriptElement.prototype, 'src');
+  hookProp(G.HTMLImageElement && HTMLImageElement.prototype, 'src');
+  hookProp(G.HTMLImageElement && HTMLImageElement.prototype, 'srcset');
+  hookProp(G.HTMLMediaElement && HTMLMediaElement.prototype, 'src');
+  hookProp(G.HTMLSourceElement && HTMLSourceElement.prototype, 'src');
+  hookProp(G.HTMLSourceElement && HTMLSourceElement.prototype, 'srcset');
+  hookProp(G.HTMLLinkElement && HTMLLinkElement.prototype, 'href');
+  hookProp(G.HTMLEmbedElement && HTMLEmbedElement.prototype, 'src');
+  hookProp(G.HTMLObjectElement && HTMLObjectElement.prototype, 'data');
+  hookProp(G.HTMLInputElement && HTMLInputElement.prototype, 'src');
+  hookProp(G.HTMLIFrameElement && HTMLIFrameElement.prototype, 'src', iframeSpecial);
+  try {
+    var svgHref = Object.getOwnPropertyDescriptor(SVGImageElement.prototype, 'href');
+    void svgHref;
+  } catch (e) {}
+
+  var oSetAttr = Element.prototype.setAttribute;
+  var ATTRS = { src: 1, href: 1, data: 1, poster: 1, srcset: 1, 'xlink:href': 1 };
+  Element.prototype.setAttribute = function (name, value) {
+    var n = String(name).toLowerCase();
+    if (ATTRS[n] && typeof value === 'string') {
+      var tag = this.tagName;
+      if (n === 'href' && (tag === 'A' || tag === 'BASE' || tag === 'AREA')) return oSetAttr.call(this, name, value);
+      if (n === 'srcset') return oSetAttr.call(this, name, mapSrcset(value));
+      var m = map(value);
+      if (splitInfo(m)) {
+        var el = this;
+        mergeUrl(m).then(function (bu) { oSetAttr.call(el, name, bu); });
+        return;
+      }
+      if (tag === 'IFRAME' && n === 'src' && iframeSpecial(this, m, function (x) { oSetAttr.call(this, name, x); }.bind(this))) return;
+      return oSetAttr.call(this, name, m);
+    }
+    return oSetAttr.call(this, name, value);
+  };
+
+  var oAppend = Node.prototype.appendChild, oInsert = Node.prototype.insertBefore;
+  function flushPending(n) {
+    if (n && n.__tzPending) {
+      var go = n.__tzPending;
+      n.__tzPending = null;
+      setTimeout(go, 0);
+    }
+  }
+  Node.prototype.appendChild = function (n) {
+    var r = oAppend.call(this, n);
+    flushPending(n);
+    return r;
+  };
+  Node.prototype.insertBefore = function (n, ref) {
+    var r = oInsert.call(this, n, ref);
+    flushPending(n);
+    return r;
+  };
+
+  if (G.Audio) {
+    var OA = G.Audio;
+    var NA = function Audio(src) {
+      var a = new OA();
+      if (src !== undefined) a.src = src;
+      return a;
+    };
+    NA.prototype = OA.prototype;
+    G.Audio = NA;
+  }
+
+  var oOpenWin = G.open;
+  if (oOpenWin) {
+    G.open = function (u) {
+      var a = Array.prototype.slice.call(arguments);
+      if (typeof u === 'string' && u) a[0] = map(u);
+      return oOpenWin.apply(G, a);
+    };
+  }
+
+  function fixStatic(root) {
+    var list = root.querySelectorAll ? root.querySelectorAll('iframe[data-tz-src]') : [];
+    for (var i = 0; i < list.length; i++) {
+      var f = list[i];
+      var s = f.getAttribute('data-tz-src');
+      f.removeAttribute('data-tz-src');
+      var m = map(s);
+      if (cdnLike(m) && isHtml(m)) loadHtmlFrame(f, m);
+      else oSetAttr.call(f, 'src', m);
+    }
+  }
+  if (G.MutationObserver) {
+    new MutationObserver(function (recs) {
+      for (var i = 0; i < recs.length; i++) {
+        var a = recs[i].addedNodes;
+        for (var j = 0; j < a.length; j++) {
+          var n = a[j];
+          if (n.nodeType !== 1) continue;
+          if (n.tagName === 'IFRAME' && n.hasAttribute('data-tz-src')) fixStatic(n.parentNode || document);
+          else if (n.querySelector && n.querySelector('iframe[data-tz-src]')) fixStatic(n);
+        }
+      }
+    }).observe(document, { childList: true, subtree: true });
+  }
+})({"c":"https://cdn.jsdelivr.net","o":"skidding-code","p":19000000,"b":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-26@main/_ext/cdn.jsdelivr.net/gh/genizy/biologyexams@main/nubbys-number-factory/","r":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-01@main/","u":{"/gamefile/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-01@main/","/games/mcsm/game.data":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-25@main/"},"x":{"cdn.jsdelivr.net/gh/genizy/biologyexams@main/nubbys-number-factory/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-26@main/_ext/cdn.jsdelivr.net/gh/genizy/biologyexams@main/nubbys-number-factory/","ep2.adtrafficquality.google/sodar/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-04@main/_ext/ep2.adtrafficquality.google/sodar/","ep2.adtrafficquality.google/sodar/sodar2/257/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-04@main/_ext/ep2.adtrafficquality.google/sodar/sodar2/257/","cdn.jsdelivr.net/gh/genizy/biologyexams@main/oshi-oshi-punch/TemplateData/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-26@main/_ext/cdn.jsdelivr.net/gh/genizy/biologyexams@main/oshi-oshi-punch/TemplateData/","cdn.jsdelivr.net/gh/genizy/biologyexams@main/oshi-oshi-punch/Build/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-26@main/_ext/cdn.jsdelivr.net/gh/genizy/biologyexams@main/oshi-oshi-punch/Build/"},"s":{"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-25@main/games/mcsm/game.data":[358,"application/octet-stream",6787781280,[[1,"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-25@main/games/mcsm/game.data"],[132,"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-40@main/games/mcsm/game.data"],[263,"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-41@main/games/mcsm/game.data"]]],"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-26@main/_ext/cdn.jsdelivr.net/gh/genizy/biologyexams@main/oshi-oshi-punch/Build/OshiOshiPunch_WebGL.wasm.part2":[2,"application/octet-stream",19426489],"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-26@main/_ext/cdn.jsdelivr.net/gh/genizy/biologyexams@main/oshi-oshi-punch/Build/OshiOshiPunch_WebGL.data.part1":[2,"application/octet-stream",20866662],"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-26@main/_ext/cdn.jsdelivr.net/gh/genizy/biologyexams@main/oshi-oshi-punch/Build/OshiOshiPunch_WebGL.wasm.part1":[2,"application/octet-stream",20866662]}});</script>
+
+        
+    <meta charset="utf-8" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta name="viewport" content="viewport-fit=cover, width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0" />
+    <title>GXC Game</title>
+    <style>
+      @-webkit-keyframes rotation {
+        from {
+          -webkit-transform: rotate(0deg);
+        }
+
+        to {
+          -webkit-transform: rotate(360deg);
+        }
+      }
+
+      @-moz-keyframes rotation {
+        from {
+          -moz-transform: rotate(0deg);
+        }
+
+        to {
+          -moz-transform: rotate(360deg);
+        }
+      }
+
+      @-o-keyframes rotation {
+        from {
+          -o-transform: rotate(0deg);
+        }
+
+        to {
+          -o-transform: rotate(360deg);
+        }
+      }
+
+      @keyframes rotation {
+        from {
+          transform: rotate(0deg);
+        }
+
+        to {
+          transform: rotate(360deg);
+        }
+      }
+
+      html {
+        background: #060612;
+      }
+
+      body {
+        font-family: arial;
+        margin: 0;
+        padding: 0;
+        min-height: 100vh;
+        min-height: -webkit-fill-available;
+        min-height: fill-available;
+        min-height: 100svh; /* Otherwise contents can be covered by an address bar in Safari on iOS 15 */
+        min-width: 100vw;
+        background: radial-gradient(
+          56.63% 56.63% at 50% 43.37%,
+          #1c1726 0%,
+          #060612 100%
+        );
+        display: flex;
+        flex-direction: column;
+        overflow-x: hidden;
+        place-items: center;
+      }
+
+      body.scrollingDisabled {
+        overflow: hidden;
+      }
+
+      .emscripten {
+        padding-right: 0;
+        display: block;
+      }
+
+      div.emscripten {
+        text-align: center;
+      }
+
+      /* the canvas *must not* have any border or padding, or mouse coords will be wrong */
+      canvas.emscripten {
+        display: none;
+        border: 0px none;
+        background-color: black;
+        position: relative;
+        transition: opacity 5s ease-in;
+        -webkit-transition: opacity 5s ease-in;
+        opacity: 0;
+        filter: blur(0) grayscale(0);
+        margin-top: auto;
+        margin-bottom: auto;
+        image-rendering: optimizeSpeed;             /* Older versions of FF          */
+        image-rendering: -moz-crisp-edges;          /* FF 6.0+                       */
+        image-rendering: -webkit-optimize-contrast; /* Safari                        */
+        image-rendering: -o-crisp-edges;            /* OS X & Windows Opera (12.02+) */
+        image-rendering: pixelated;                 /* Awesome future-browsers       */
+        -ms-interpolation-mode: nearest-neighbor;   /* IE                            */
+      }
+
+      canvas.active {
+        animation-name: fadeIn;
+        animation-duration: 2s;
+        opacity: 1;
+      }
+
+      canvas.paused {
+        animation-name: blur;
+        animation-duration: 0.5s;
+        filter: blur(2px) grayscale(1);
+      }
+
+      canvas.unpaused {
+        animation-name: none;
+      }
+
+      canvas.animatedSizeTransitions {
+        transition: width 0.3s ease, height 0.3s ease;
+      }
+
+      @keyframes fadeIn {
+        0% {
+          opacity: 0;
+        }
+
+        100% {
+          opacity: 1;
+        }
+      }
+
+      @keyframes blur {
+        0% {
+          filter: blur(0) grayscale(0);
+        }
+
+        100% {
+          filter: blur(2px) grayscale(1);
+        }
+      }
+
+      .spinner {
+        height: 30px;
+        width: 30px;
+
+        -webkit-animation: rotation 0.8s linear infinite;
+        -moz-animation: rotation 0.8s linear infinite;
+        -o-animation: rotation 0.8s linear infinite;
+        animation: rotation 0.8s linear infinite;
+
+        border: 5px solid #bdff00;
+        border-top: 5px solid #719900;
+        border-radius: 100%;
+      }
+
+      .floating-control {
+        position: absolute;
+        display: none;
+        border: none;
+
+        left: 0px;
+        top: 0px;
+        width: 400px;
+        height: 100%;
+        padding: 10px;
+
+        font-family: monospace;
+        font-size: 8;
+        color: white;
+        background: rgba(53, 18, 84, 0.8);
+        box-shadow: rgb(9 8 13 / 20%) -2px 2px 4px, rgb(9 8 13 / 40%) -4px 4px 16px;
+      }
+
+      #status {
+        display: inline-block;
+        vertical-align: top;
+        font-weight: bold;
+        color: white;
+      }
+
+      #progress {
+        width: 250px;
+        height: 10px;
+        -webkit-appearance: none;
+        appearance: none;
+        padding: 5px;
+      }
+
+      /* Determines the style of the background of the progress bar */
+      progress[value]::-webkit-progress-bar {
+        background-color: #8492a6;
+        height: 10px;
+        border-radius: 15px;
+      }
+      /* Determines the style of the completed part of the progress bar */
+      progress[value]::-webkit-progress-value {
+        background-image: -webkit-linear-gradient(left, #719900, #bdff00);
+        height: 10px;
+        border-radius: 15px;
+      }
+
+      div.loading {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        pointer-events: none;
+      }
+      div.loading > * {
+        padding: 10px;
+        margin: 10px;
+      }
+
+      .output-container {
+        text-align: center;
+        margin-top: auto;
+      }
+      .output-button {
+        border: none;
+        width: 200px;
+        height: 25px;
+        margin: 5px;
+        border-radius: 5px;
+        cursor: pointer;
+        background-color: black;
+        color: #20c20e;
+        font-family: "Lucida Console", Monaco, monospace;
+      }
+
+      #output {
+        display: none;
+        height: 200px;
+        background-color: black;
+        color: white;
+        font-family: "Lucida Console", Monaco, monospace;
+        outline: none;
+        border: none;
+        padding: 0;
+        width: 100%;
+      }
+
+      #message-container {
+        display: none;
+        min-height: 50px;
+        background-color: rgba(20, 20, 20, 0.5);
+        outline: none;
+        border: none;
+        padding: 0;
+        width: 100%;
+        position: absolute;
+        top: 0;
+      }
+
+      #messages {
+        margin-left: 50px;
+        color: white;
+        font-family: "Lucida Console", Monaco, monospace;
+        outline: none;
+        border: none;
+        padding: 0;
+      }
+
+      img.qrCode {
+         opacity: 1.0;
+         width: 50%;
+         height: 50%;
+      }
+
+      #pauseMenuContainer {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+
+      #pauseMenuContainer[hidden] {
+        display: none !important;
+        opacity: 0;
+      }
+
+      #pauseMenuBorder {
+        background: linear-gradient(135deg, #FA1E4E, transparent 40%);
+        padding: 1px;
+        border-radius: 4px;
+        clip-path: polygon(10.5px 0, 100% 0, 100% 100%, 0 100%, 0 10.5px);
+        width: 70vw;
+        max-width: 400px;
+      }
+
+      #pauseMenu {
+        display: flex;
+        flex-direction: column;
+        padding: 60px 30px 60px 30px;
+        background: linear-gradient(180deg, #2E273F 16.15%, rgba(46, 39, 63, 0.79) 56.25%, #2E273F 91.15%);
+        border-radius: 4px;
+        clip-path: polygon(10px 0, 100% 0, 100% 100%, 0 100%, 0 10px);
+        animation-name: fadeIn;
+        animation-duration: 0.5s;
+        opacity: 1;
+      }
+
+      #pauseMenu button {
+        font-weight: 500;
+        font-size: 17px;
+        color: white;
+        background: #FA1E4E;
+        border: 1px solid #FA1E4E;
+        border-radius: 6px;
+        padding: 12px 24px;
+        margin: 5px 0;
+        -webkit-user-select: none;
+        user-select: none;
+      }
+
+      #pauseMenu button#quitButton {
+        background: #FA1E4E40;
+      }
+
+      #pauseMenu button:hover {
+        filter: brightness(1.15);
+      }
+
+      #pauseMenu button:active {
+        filter: brightness(0.85);
+      }
+
+      #pauseMenu button[hidden] {
+        display: none;
+      }
+
+      .graph .labels.x-labels {
+        background-color: white;
+        text-anchor: middle;
+      }
+
+      .graph .labels.y-labels {
+        text-anchor: end;
+      }
+
+      .graph {
+        font-family: Averta, -apple-system, "Segoe UI", system-ui, sans-serif;
+        font-feature-settings: "tnum", "lnum";
+        font-style: normal;
+        font-size: 14px;
+        font-weight: 600;
+        line-height: 21px;
+        text-decoration-line: none;
+        letter-spacing: 0.25px;
+        background-color: transparent;
+        fill: #ccc;
+      }
+
+      .graph .grid {
+        stroke: #ccc;
+        stroke-dasharray: 0;
+        stroke-width: 1;
+      }
+
+      .labels {
+        font-size: 4px;
+      }
+
+      .label-title {
+        font-weight: bold;
+        text-transform: uppercase;
+        font-size: 4px;
+      }
+
+      .peer0 {
+        fill: #fa1f4e;
+        stroke: #fa1f4e;
+      }
+      .peer1 {
+        fill: #a970ff;
+        stroke: #a970ff;
+      }
+      .peer2 {
+        fill: #4574ee;
+        stroke: #4574ee;
+      }
+      .peer3 {
+        fill: #c3ff6f;
+        stroke: #c3ff6f;
+      }
+
+      .peer {
+        stroke-width: 0;
+      }
+
+      .peer-frame-delay {
+        fill: none;
+        stroke-width: 1;
+      }
+
+      .acceptable-rollback-button {
+        border: none;
+        width: 50px;
+        height: 25px;
+        margin: 5px;
+        border-radius: 5px;
+        cursor: pointer;
+        background-color: black;
+        color: #20c20e;
+        font-family: "Lucida Console", Monaco, monospace;
+      }
+
+      .peer-acceptable-rollback {
+        fill: none;
+        stroke-width: 1;
+        opacity: 0.3;
+      }
+
+      .relay-rtt {
+        stroke-width: 2;
+      }
+    </style>
+
+</head>
+
+  <body>
+    <canvas
+      class="emscripten"
+      id="canvas"
+      oncontextmenu="event.preventDefault()"
+      tabindex="-1"
+    >
+    </canvas>
+    <div id="pauseMenuContainer" hidden>
+      <div id="pauseMenuBorder">
+        <div id="pauseMenu">
+          <button id="resumeButton" onclick="resume()">
+            Resume
+          </button>
+          <button id="quitButton" onclick="quitIfSupported()">
+            Quit
+          </button>
+        </div>
+        </div>
+    </div>
+    <div class="loading">
+      <div class="spinner" id="spinner"></div>
+      <div class="emscripten" id="status">Downloading...</div>
+
+      <progress value="0" max="100" id="progress" hidden="1"></progress>
+      <img id="QRCode" class="qrCode" src="runner.svg" alt="URL QR Code" hidden="1"></img>
+      <img id="QR2Code" class="qrCode" src="runnerLocal.svg" alt="URL QR2 Code" hidden="1"></img>
+    </div>
+
+    <div class="floating-control" id="multiplayer-stats-container">
+      <div class="multiplayer-stats-network" id="multiplayer-stats-network">
+        <svg version="1.2" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" class="graph" aria-labelledby="title" role="img" viewbox="-20 -10 130 140">
+          <title id="title">Network stats</title>
+          <g class="grid x-grid" id="xGrid">
+            <line x1="0" y1="100" x2="100" y2="100"></line>
+
+            <line x1="12.25" y1="99" x2="12.25" y2="101"></line>
+            <line x1="25" y1="98" x2="25" y2="102"></line>
+            <line x1="37.5" y1="99" x2="37.5" y2="101"></line>
+            <line x1="50" y1="98" x2="50" y2="102"></line>
+            <line x1="62.5" y1="99" x2="62.5" y2="101"></line>
+            <line x1="75" y1="98" x2="75" y2="102"></line>
+            <line x1="87.5" y1="99" x2="87.5" y2="101"></line>
+            <line x1="100" y1="98" x2="100" y2="102"></line>
+          </g>
+          <g class="grid y-grid" id="yGrid">
+            <line x1="0" y1="0" x2="0" y2="100"></line>
+
+            <line x1="-2" y1="0" x2="2" y2="0"></line>
+            <line x1="-1" y1="12.5" x2="1" y2="12.50"></line>
+            <line x1="-2" y1="25" x2="2" y2="25"></line>
+            <line x1="-1" y1="37.5" x2="1" y2="37.5"></line>
+            <line x1="-2" y1="50" x2="2" y2="50"></line>
+            <line x1="-1" y1="62.5" x2="1" y2="62.5"></line>
+            <line x1="-2" y1="75" x2="2" y2="75"></line>
+            <line x1="-1" y1="87.5" x2="1" y2="87.5"></line>
+          </g>
+          <g class="labels x-labels">
+            <text x="0" y="110">-8</text>
+            <text x="25" y="110">-4</text>
+            <text x="50" y="110">0</text>
+            <text x="75" y="110">4</text>
+            <text x="100" y="110">8</text>
+            <text x="50" y="115" class="label-title">Time shift</text>
+          </g>
+          <g class="labels y-labels">
+            <text x="-4" y="0" alignment-baseline="middle">16</text>
+            <text x="-4" y="25" alignment-baseline="middle">12</text>
+            <text x="-4" y="50" alignment-baseline="middle">8</text>
+            <text x="-4" y="75" alignment-baseline="middle">4</text>
+            <text x="-4" y="100" alignment-baseline="middle">0</text>
+            <text x="-10" y="50" class="label-title" alignment-baseline="middle">RTT</text>
+          </g>
+
+          <g id="stats-network-peers">
+          </g>
+
+          <g id="stats-network-peer-frame-delays">
+          </g>
+
+          <g id="stats-network-relay-rtt">
+          </g>
+        </svg>
+      </div>
+      <div>
+        <b>Acceptable rollback frames marker:</b>
+        <div>
+          <button class="acceptable-rollback-button" onclick="set_acceptable_rollback(0)">Off</button>
+          <button class="acceptable-rollback-button" onclick="set_acceptable_rollback(1)">+1</button>
+          <button class="acceptable-rollback-button" onclick="set_acceptable_rollback(2)">+2</button>
+          <button class="acceptable-rollback-button" onclick="set_acceptable_rollback(4)">+4</button>
+        </div>
+      </div>
+      <div id="multiplayer-stats">
+        [no stats available]
+      </div>
+    </div>
+
+    <div class="wallpaper-container" id="wallpaper-container" style="display: none">
+      <button class="output-button" onclick="toggleElement('wallpaper-config-iframe')">
+        Toggle configurator
+      </button>
+    </div>
+    <!-- The wallpaper config is displayed in an iframe to make it possible to use keyboard for entering values (it's consumed by
+        the runner in the original document). -->
+    <iframe class="floating-control" id="wallpaper-config-iframe" src="about:blank"></iframe>
+
+    <div id="message-container">
+      <div id="messages">
+      </div>
+    </div>
+
+   <script async
+     data-ad-client="ca-pub-123"
+     data-ad-frequency-hint="30s"
+     data-adbreak-test="on"
+     src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js">
+   </script>
+
+   <script>
+     window.adsbygoogle = window.adsbygoogle || [];
+     const adBreak =  adConfig = function(o) {adsbygoogle.push(o);}
+   </script>
+<script>
+function mergeFiles(fileParts) {
+  return new Promise((resolve, reject) => {
+    let buffers = [];
+
+    function fetchPart(index) {
+      if (index >= fileParts.length) {
+        let mergedBlob = new Blob(buffers);
+        let mergedFileUrl = URL.createObjectURL(mergedBlob);
+        resolve(mergedFileUrl);
+        return;
+      }
+      fetch(fileParts[index])
+        .then((response) => response.arrayBuffer())
+        .then((data) => {
+          buffers.push(data);
+          fetchPart(index + 1);
+        })
+        .catch(reject);
+    }
+    fetchPart(0);
+  });
+}
+
+function getParts(file, start, end) {
+  let parts = [];
+  for (let i = start; i <= end; i++) {
+    parts.push(file + ".part" + i);
+  }
+  return parts;
+}
+
+Promise.all([
+  mergeFiles(getParts("game.unx", 1, 2)),
+  mergeFiles(getParts("audiogroup2.dat", 1, 3))
+]).then(([gameUnxUrl, audioGroup2Url]) => {
+  window.gameUnxUrl = gameUnxUrl;
+  window.audioGroup2Url = audioGroup2Url;
+
+  const originalFetch = window.fetch;
+  window.fetch = async function (...args) {
+    let [url, options] = args;
+    if (typeof url === 'string') {
+      if (url.includes("game.unx")) {
+        url = window.gameUnxUrl;
+      } else if (url.includes("audiogroup2.dat")) {
+        url = window.audioGroup2Url;
+      }
+    } else if (url instanceof Request) {
+      if (url.url.includes("game.unx")) {
+        url = new Request(window.gameUnxUrl, url);
+      } else if (url.url.includes("audiogroup2.dat")) {
+        url = new Request(window.audioGroup2Url, url);
+      }
+    }
+    return originalFetch.call(this, url, options);
+  };
+
+  const originalOpen = XMLHttpRequest.prototype.open;
+  XMLHttpRequest.prototype.open = function (method, url, ...rest) {
+    if (url.includes("game.unx")) {
+      url = window.gameUnxUrl;
+    } else if (url.includes("audiogroup2.dat")) {
+      url = window.audioGroup2Url;
+    }
+    return originalOpen.call(this, method, url, ...rest);
+  };
+  let worker = document.createElement("script");
+  worker.src = "tickWorker.js";
+  worker.id = "tick-worker";
+  worker.type = "javascript/worker";
+  document.body.appendChild(worker);
+
+  let index = document.createElement("script");
+  index.src = "index.js";
+  document.body.appendChild(index);
+
+  let runner = document.createElement("script");
+  runner.src = "runner.js";
+  document.body.appendChild(runner);
+
+}).catch(error => {
+  console.error("Failed to merge files:", error);
+});
+</script>
+
+  </body>
+</html>

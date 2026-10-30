@@ -1,0 +1,1248 @@
+<!DOCTYPE html>
+<html lang="en-us">
+
+<head><base href="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-20@main/_ext/cdn.jsdelivr.net/gh/Pixelsuft/hl@main/"><script>(function (C) {
+  var G = typeof self !== 'undefined' ? self : this;
+  if (G.__tz) return;
+  var IS_DOC = typeof document !== 'undefined' && typeof Element !== 'undefined';
+  var CDN = C.c;
+  var SKIP = /^(data:|blob:|javascript:|about:|mailto:|tel:|ws:|wss:|#)/i;
+  var units = Object.keys(C.u || {}).sort(function (a, b) { return b.length - a.length; });
+  var exts = Object.keys(C.x || {}).sort(function (a, b) { return b.length - a.length; });
+  var split = C.s || {};
+  var hostDir = (function () {
+    try {
+      var h = String(G.location.href);
+      if (/^(https?|file):/i.test(h)) return h.slice(0, h.lastIndexOf('/') + 1);
+    } catch (e) {}
+    return null;
+  })();
+
+  function base() {
+    if (C.w) return C.w;
+    try { return document.baseURI; } catch (e) { return C.b; }
+  }
+
+  function rootFor(p, strict) {
+    for (var i = 0; i < units.length; i++) if (p.indexOf(units[i]) === 0) return C.u[units[i]];
+    return strict ? null : C.r;
+  }
+
+  function map(u) {
+    try {
+      if (u == null) return u;
+      if (typeof u !== 'string') {
+        if (typeof URL !== 'undefined' && u instanceof URL) u = u.href;
+        else if (u && typeof u.toString === 'function') u = u.toString();
+        else return u;
+      }
+      var t = u.trim();
+      if (C.w && /^blob:/i.test(t) && /\/[^\/?#]*\.[A-Za-z0-9]{1,8}([?#].*)?$/.test(t)) {
+        return map(new URL(t.slice(t.lastIndexOf('/') + 1), C.w).href);
+      }
+      if (!t || SKIP.test(t)) return u;
+      var abs;
+      try { abs = new URL(t, base()); } catch (e) { return u; }
+      var href = abs.href;
+      if (hostDir && href.indexOf(hostDir) === 0 && !(C.b.indexOf(hostDir) === 0)) {
+        return map(new URL(href.slice(hostDir.length), C.b).href);
+      }
+      if (abs.protocol !== 'http:' && abs.protocol !== 'https:') return u;
+      if (abs.origin === CDN && C.o && abs.pathname.indexOf('/gh/' + C.o + '/') === 0) {
+        var mm = /^\/gh\/[^/]+\/[^/@]+@[^/]+\//.exec(abs.pathname);
+        if (mm) {
+          var rest = abs.pathname.slice(mm[0].length), dp = rest;
+          try { dp = decodeURIComponent(rest); } catch (e) {}
+          var want = rootFor('/' + dp, true);
+          if (want && want !== CDN + mm[0]) return want + rest + abs.search + abs.hash;
+        }
+        return href;
+      }
+      if ((abs.origin === CDN && !/^\/(gh|npm|combine|wp)\//.test(abs.pathname)) || /^(www\.)?truffled\.lol$/i.test(abs.hostname)) {
+        var dpp = abs.pathname;
+        try { dpp = decodeURIComponent(dpp); } catch (e) {}
+        return rootFor(dpp) + abs.pathname.slice(1) + abs.search + abs.hash;
+      }
+      var hp = abs.host + abs.pathname;
+      for (var i = 0; i < exts.length; i++) {
+        if (hp.indexOf(exts[i]) === 0) return C.x[exts[i]] + hp.slice(exts[i].length);
+      }
+      return href;
+    } catch (e) { return u; }
+  }
+
+  function bare(u) { return String(u).replace(/[?#].*$/, ''); }
+  function splitKey(u) {
+    var b = bare(u);
+    if (split[b]) return b;
+    try { var n = new URL(b).href; if (split[n]) return n; } catch (e) {}
+    try { var d = encodeURI(decodeURI(b)); if (split[d]) return d; } catch (e) {}
+    return null;
+  }
+  function splitInfo(u) { var k = splitKey(u); return k ? split[k] : null; }
+
+  var PART = C.p || 19000000;
+  function partUrl(key, i) {
+    var info = split[key], segs = info[3];
+    if (segs) {
+      for (var j = segs.length - 1; j >= 0; j--) if (i >= segs[j][0]) return segs[j][1] + '.part' + i;
+    }
+    return key + '.part' + i;
+  }
+  function getPart(key, i, range) {
+    var u = partUrl(key, i), tries = 0;
+    function go() {
+      return origFetch(u, range ? { headers: { Range: range } } : undefined).then(function (r) {
+        if (!r.ok) throw new Error('part ' + u + ' ' + r.status);
+        return r.arrayBuffer().then(function (ab) { return [ab, r.status]; });
+      }).catch(function (e) {
+        if (++tries < 4) return new Promise(function (ok) { setTimeout(ok, 800 * tries); }).then(go);
+        throw e;
+      });
+    }
+    return go();
+  }
+  var merged = {};
+  function mergeBuf(u) {
+    var key = splitKey(u) || bare(u);
+    if (merged[key]) return merged[key];
+    var n = split[key][0], type = split[key][1] || 'application/octet-stream';
+    var blobs = new Array(n), next = 1;
+    merged[key] = new Promise(function (ok, bad) {
+      var active = 0, done = 0, failed = false;
+      function pump() {
+        while (!failed && active < 4 && next <= n) {
+          (function (i) {
+            active++;
+            getPart(key, i).then(function (r) {
+              blobs[i - 1] = new Blob([r[0]]);
+              active--;
+              if (++done === n) ok(new Blob(blobs, { type: type }));
+              else pump();
+            }, function (e) { failed = true; bad(e); });
+          })(next++);
+        }
+      }
+      pump();
+    });
+    return merged[key];
+  }
+  var blobUrls = {};
+  function mergeUrl(u) {
+    var key = splitKey(u) || bare(u);
+    if (!blobUrls[key]) blobUrls[key] = mergeBuf(key).then(function (b) { return URL.createObjectURL(b); });
+    return blobUrls[key];
+  }
+  function sizeOf(key) { return split[key][2] || 0; }
+  function parseRange(h, size) {
+    var m = /bytes=(\d*)-(\d*)/.exec(h || '');
+    if (!m) return null;
+    var a, b;
+    if (m[1] === '') { a = Math.max(0, size - Number(m[2])); b = size - 1; }
+    else { a = Number(m[1]); b = m[2] === '' ? size - 1 : Math.min(Number(m[2]), size - 1); }
+    if (a > b || a >= size) return null;
+    return [a, b];
+  }
+  function rangeBlob(key, a, b) {
+    var i0 = Math.floor(a / PART), i1 = Math.floor(b / PART), jobs = [];
+    for (var i = i0; i <= i1; i++) {
+      (function (i) {
+        var s = Math.max(a, i * PART) - i * PART, e = Math.min(b, (i + 1) * PART - 1) - i * PART;
+        jobs.push(getPart(key, i + 1, 'bytes=' + s + '-' + e).then(function (r) {
+          return r[1] === 206 ? r[0] : r[0].slice(s, e + 1);
+        }));
+      })(i);
+    }
+    return Promise.all(jobs).then(function (bufs) { return new Blob(bufs, { type: split[key][1] || 'application/octet-stream' }); });
+  }
+  function streamResponse(key) {
+    var n = split[key][0], next = 1, ahead = [];
+    var hdr = { 'Content-Type': split[key][1] || 'application/octet-stream', 'Accept-Ranges': 'bytes' };
+    if (sizeOf(key)) hdr['Content-Length'] = String(sizeOf(key));
+    function fill() { while (ahead.length < 3 && next <= n) ahead.push(getPart(key, next++)); }
+    var rs = new ReadableStream({
+      pull: function (ctrl) {
+        fill();
+        if (!ahead.length) { ctrl.close(); return; }
+        return ahead.shift().then(function (r) { ctrl.enqueue(new Uint8Array(r[0])); fill(); });
+      },
+      cancel: function () { ahead = []; next = n + 1; }
+    });
+    return new Response(rs, { status: 200, statusText: 'OK', headers: hdr });
+  }
+  function splitFetch(key, input, init) {
+    var method = String((init && init.method) || (input && input.method) || 'GET').toUpperCase();
+    var range = null;
+    try { range = new Headers((init && init.headers) || (input && typeof input === 'object' && input.headers) || undefined).get('range'); } catch (e) {}
+    var size = sizeOf(key), type = split[key][1] || 'application/octet-stream';
+    if (method === 'HEAD') {
+      return Promise.resolve(new Response(null, { status: 200, headers: { 'Content-Length': String(size), 'Content-Type': type, 'Accept-Ranges': 'bytes' } }));
+    }
+    var rg = range && size ? parseRange(range, size) : null;
+    if (rg) {
+      return rangeBlob(key, rg[0], rg[1]).then(function (b) {
+        return new Response(b, { status: 206, statusText: 'Partial Content', headers: { 'Content-Type': type, 'Content-Length': String(b.size), 'Content-Range': 'bytes ' + rg[0] + '-' + rg[1] + '/' + size, 'Accept-Ranges': 'bytes' } });
+      });
+    }
+    if (merged[key]) return merged[key].then(function (b) { return new Response(b, { status: 200, headers: { 'Content-Type': type, 'Content-Length': String(b.size) } }); });
+    return Promise.resolve(streamResponse(key));
+  }
+
+  var origFetch = G.fetch ? G.fetch.bind(G) : null;
+  G.__tz = { map: map, cfg: C };
+
+  if (origFetch) {
+    G.fetch = function (input, init) {
+      try {
+        var url = typeof input === 'string' || (typeof URL !== 'undefined' && input instanceof URL) ? String(input) : input && input.url;
+        if (url) {
+          var m = map(url);
+          if (splitInfo(m)) return splitFetch(splitKey(m), input, init);
+          if (m !== url) {
+            if (typeof input === 'string' || input instanceof URL) input = m;
+            else input = new Request(m, input);
+          }
+        }
+      } catch (e) {}
+      return origFetch(input, init);
+    };
+  }
+
+  if (G.XMLHttpRequest) {
+    var XP = G.XMLHttpRequest.prototype;
+    var oOpen = XP.open, oSend = XP.send, oSRH = XP.setRequestHeader;
+    XP.open = function (method, url) {
+      var a = Array.prototype.slice.call(arguments);
+      var m = map(url);
+      if (splitInfo(m) && a[2] !== false) {
+        this.__tzs = { a: a, m: m, h: [] };
+        return;
+      }
+      this.__tzs = null;
+      a[1] = m;
+      return oOpen.apply(this, a);
+    };
+    XP.setRequestHeader = function (k, v) {
+      if (this.__tzs) { this.__tzs.h.push([k, v]); return; }
+      return oSRH.call(this, k, v);
+    };
+    XP.send = function (body) {
+      var s = this.__tzs, x = this;
+      if (!s) return oSend.call(this, body);
+      var key = splitKey(s.m), rh = null;
+      s.h.forEach(function (h) { if (String(h[0]).toLowerCase() === 'range') rh = h[1]; });
+      var rg = rh && sizeOf(key) ? parseRange(rh, sizeOf(key)) : null;
+      var src = rg ? rangeBlob(key, rg[0], rg[1]).then(function (b) { return URL.createObjectURL(b); }) : mergeUrl(s.m);
+      s.h = s.h.filter(function (h) { return String(h[0]).toLowerCase() !== 'range'; });
+      src.then(function (bu) {
+        var a = s.a.slice();
+        a[1] = bu;
+        x.__tzs = null;
+        oOpen.apply(x, a);
+        s.h.forEach(function (h) { try { oSRH.call(x, h[0], h[1]); } catch (e) {} });
+        oSend.call(x, body);
+      }, function () {
+        x.__tzs = null;
+        var a = s.a.slice();
+        a[1] = s.m;
+        oOpen.apply(x, a);
+        oSend.call(x, body);
+      });
+    };
+  }
+
+  var shimSrc = null;
+  function workerBlob(url, opts) {
+    var m = map(url);
+    var abs = new URL(m, base()).href;
+    var cfg = JSON.parse(JSON.stringify(C));
+    cfg.w = abs;
+    var pre = shimSrc ? '(' + shimSrc + ')(' + JSON.stringify(cfg) + ');' : '';
+    var body = opts && opts.type === 'module'
+      ? pre + 'import ' + JSON.stringify(abs) + ';'
+      : pre + 'importScripts(' + JSON.stringify(abs) + ');';
+    return URL.createObjectURL(new Blob([body], { type: 'text/javascript' }));
+  }
+  function needsWrap(u) {
+    try {
+      var abs = new URL(map(u), base());
+      return abs.origin !== G.location.origin && abs.protocol !== 'blob:' && abs.protocol !== 'data:';
+    } catch (e) { return false; }
+  }
+  ['Worker', 'SharedWorker'].forEach(function (k) {
+    var W = G[k];
+    if (!W) return;
+    var Wrapped = function (url, opts) {
+      var u = typeof url === 'string' || url instanceof URL ? String(url) : url;
+      if (typeof u === 'string' && needsWrap(u)) u = workerBlob(u, opts);
+      return opts === undefined ? new W(u) : new W(u, opts);
+    };
+    Wrapped.prototype = W.prototype;
+    try { Object.defineProperty(Wrapped, 'name', { value: k }); } catch (e) {}
+    G[k] = Wrapped;
+  });
+
+  if (!IS_DOC && typeof G.importScripts === 'function') {
+    var oIS = G.importScripts;
+    G.importScripts = function () {
+      var a = Array.prototype.slice.call(arguments).map(function (u) { return map(u); });
+      return oIS.apply(G, a);
+    };
+  }
+
+  if (!IS_DOC) return;
+
+  try { shimSrc = String(document.currentScript && document.currentScript.textContent || ''); } catch (e) {}
+  if (shimSrc) {
+    var mm = /^\s*\(function \(C\)[\s\S]*\}\)\(/.exec(shimSrc);
+    shimSrc = mm ? mm[0].replace(/\)\($/, '').replace(/^\s*\(/, '') : null;
+  }
+
+  function loadHtmlFrame(frame, url) {
+    origFetch(url).then(function (r) { return r.text(); }).then(function (html) {
+      var w = frame.contentWindow;
+      if (!w) return;
+      var d = w.document;
+      html = prepHtml(html, url);
+      d.open();
+      d.write(html);
+      d.close();
+    });
+  }
+  function prepHtml(html, url) {
+    var dir = url.slice(0, url.lastIndexOf('/') + 1);
+    var tag = '<base href="' + dir + '">';
+    var cfg = JSON.parse(JSON.stringify(C));
+    delete cfg.w;
+    var sh = shimSrc ? '<script>(' + shimSrc + ')(' + JSON.stringify(cfg).replace(/<\//g, '<\\/') + ');<\/script>' : '';
+    if (/<base\b[^>]*>/i.test(html)) {
+      var mb = /<base\b[^>]*\bhref\s*=\s*["']?([^"'\s>]+)/i.exec(html);
+      if (mb) tag = '<base href="' + new URL(mb[1], dir).href + '">';
+      html = html.replace(/<base\b[^>]*>/i, '');
+    }
+    if (/<head[^>]*>/i.test(html)) return html.replace(/<head[^>]*>/i, function (m) { return m + tag + sh; });
+    if (/<html[^>]*>/i.test(html)) return html.replace(/<html[^>]*>/i, function (m) { return m + tag + sh; });
+    return tag + sh + html;
+  }
+  function isHtml(u) {
+    try {
+      var p = new URL(u).pathname;
+      return /\.html?$/i.test(p) || /\/$/.test(p);
+    } catch (e) { return false; }
+  }
+  function cdnLike(u) {
+    try { return new URL(u).origin === CDN; } catch (e) { return false; }
+  }
+
+  function hookProp(proto, prop, special) {
+    if (!proto) return;
+    var d = Object.getOwnPropertyDescriptor(proto, prop);
+    if (!d || !d.set || !d.configurable) return;
+    Object.defineProperty(proto, prop, {
+      configurable: true,
+      enumerable: d.enumerable,
+      get: d.get,
+      set: function (v) {
+        var el = this;
+        if (prop === 'srcset') return d.set.call(el, mapSrcset(v));
+        var m = map(v);
+        if (typeof m === 'string' && splitInfo(m)) {
+          mergeUrl(m).then(function (bu) { d.set.call(el, bu); });
+          return;
+        }
+        if (special && special(el, m, function (x) { d.set.call(el, x); })) return;
+        return d.set.call(el, m);
+      },
+    });
+  }
+  function mapSrcset(v) {
+    if (typeof v !== 'string') return v;
+    return v.split(',').map(function (p) {
+      var t = p.trim();
+      if (!t) return t;
+      var sp = t.split(/\s+/);
+      sp[0] = map(sp[0]);
+      return sp.join(' ');
+    }).join(', ');
+  }
+  function iframeSpecial(el, m, set) {
+    if (typeof m === 'string' && cdnLike(m) && isHtml(m)) {
+      set('about:blank');
+      var go = function () { loadHtmlFrame(el, m); };
+      if (el.isConnected) setTimeout(go, 0);
+      else el.__tzPending = go;
+      return true;
+    }
+    return false;
+  }
+  hookProp(G.HTMLScriptElement && HTMLScriptElement.prototype, 'src');
+  hookProp(G.HTMLImageElement && HTMLImageElement.prototype, 'src');
+  hookProp(G.HTMLImageElement && HTMLImageElement.prototype, 'srcset');
+  hookProp(G.HTMLMediaElement && HTMLMediaElement.prototype, 'src');
+  hookProp(G.HTMLSourceElement && HTMLSourceElement.prototype, 'src');
+  hookProp(G.HTMLSourceElement && HTMLSourceElement.prototype, 'srcset');
+  hookProp(G.HTMLLinkElement && HTMLLinkElement.prototype, 'href');
+  hookProp(G.HTMLEmbedElement && HTMLEmbedElement.prototype, 'src');
+  hookProp(G.HTMLObjectElement && HTMLObjectElement.prototype, 'data');
+  hookProp(G.HTMLInputElement && HTMLInputElement.prototype, 'src');
+  hookProp(G.HTMLIFrameElement && HTMLIFrameElement.prototype, 'src', iframeSpecial);
+  try {
+    var svgHref = Object.getOwnPropertyDescriptor(SVGImageElement.prototype, 'href');
+    void svgHref;
+  } catch (e) {}
+
+  var oSetAttr = Element.prototype.setAttribute;
+  var ATTRS = { src: 1, href: 1, data: 1, poster: 1, srcset: 1, 'xlink:href': 1 };
+  Element.prototype.setAttribute = function (name, value) {
+    var n = String(name).toLowerCase();
+    if (ATTRS[n] && typeof value === 'string') {
+      var tag = this.tagName;
+      if (n === 'href' && (tag === 'A' || tag === 'BASE' || tag === 'AREA')) return oSetAttr.call(this, name, value);
+      if (n === 'srcset') return oSetAttr.call(this, name, mapSrcset(value));
+      var m = map(value);
+      if (splitInfo(m)) {
+        var el = this;
+        mergeUrl(m).then(function (bu) { oSetAttr.call(el, name, bu); });
+        return;
+      }
+      if (tag === 'IFRAME' && n === 'src' && iframeSpecial(this, m, function (x) { oSetAttr.call(this, name, x); }.bind(this))) return;
+      return oSetAttr.call(this, name, m);
+    }
+    return oSetAttr.call(this, name, value);
+  };
+
+  var oAppend = Node.prototype.appendChild, oInsert = Node.prototype.insertBefore;
+  function flushPending(n) {
+    if (n && n.__tzPending) {
+      var go = n.__tzPending;
+      n.__tzPending = null;
+      setTimeout(go, 0);
+    }
+  }
+  Node.prototype.appendChild = function (n) {
+    var r = oAppend.call(this, n);
+    flushPending(n);
+    return r;
+  };
+  Node.prototype.insertBefore = function (n, ref) {
+    var r = oInsert.call(this, n, ref);
+    flushPending(n);
+    return r;
+  };
+
+  if (G.Audio) {
+    var OA = G.Audio;
+    var NA = function Audio(src) {
+      var a = new OA();
+      if (src !== undefined) a.src = src;
+      return a;
+    };
+    NA.prototype = OA.prototype;
+    G.Audio = NA;
+  }
+
+  var oOpenWin = G.open;
+  if (oOpenWin) {
+    G.open = function (u) {
+      var a = Array.prototype.slice.call(arguments);
+      if (typeof u === 'string' && u) a[0] = map(u);
+      return oOpenWin.apply(G, a);
+    };
+  }
+
+  function fixStatic(root) {
+    var list = root.querySelectorAll ? root.querySelectorAll('iframe[data-tz-src]') : [];
+    for (var i = 0; i < list.length; i++) {
+      var f = list[i];
+      var s = f.getAttribute('data-tz-src');
+      f.removeAttribute('data-tz-src');
+      var m = map(s);
+      if (cdnLike(m) && isHtml(m)) loadHtmlFrame(f, m);
+      else oSetAttr.call(f, 'src', m);
+    }
+  }
+  if (G.MutationObserver) {
+    new MutationObserver(function (recs) {
+      for (var i = 0; i < recs.length; i++) {
+        var a = recs[i].addedNodes;
+        for (var j = 0; j < a.length; j++) {
+          var n = a[j];
+          if (n.nodeType !== 1) continue;
+          if (n.tagName === 'IFRAME' && n.hasAttribute('data-tz-src')) fixStatic(n.parentNode || document);
+          else if (n.querySelector && n.querySelector('iframe[data-tz-src]')) fixStatic(n);
+        }
+      }
+    }).observe(document, { childList: true, subtree: true });
+  }
+})({"c":"https://cdn.jsdelivr.net","o":"skidding-code","p":19000000,"b":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-20@main/_ext/cdn.jsdelivr.net/gh/Pixelsuft/hl@main/","r":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-01@main/","u":{"/gamefile/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-01@main/"},"x":{"cdn.jsdelivr.net/gh/Pixelsuft/hl@main/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-20@main/_ext/cdn.jsdelivr.net/gh/Pixelsuft/hl@main/","cdn.jsdelivr.net/gh/Pixelsuft/hl@main/opposing_force_en_out/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-20@main/_ext/cdn.jsdelivr.net/gh/Pixelsuft/hl@main/opposing_force_en_out/"},"s":{}});</script>
+
+	<meta charset="utf-8">
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+	<link rel="shortcut icon" type="image/x-icon" href="favicon.ico">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+	<meta name="MobileOptimized" content="640" />
+	<meta name="HandheldFriendly" content="true" />
+	<title>Pixelsuft hl</title>
+
+	<script>
+		document.addEventListener('contextmenu', event => event.preventDefault());
+		window.onbeforeunload = function(e) {
+			// Cancel the event
+			e.preventDefault();
+
+			// Chrome requires returnValue to be set
+			e.returnValue = 'Really want to quit the game?';
+		};
+
+		//Prevent Ctrl+S (and Ctrl+W for old browsers and Edge)
+		document.onkeydown = function(e) {
+			e = e || window.event; //Get event
+
+			if (!e.ctrlKey) return;
+
+			var code = e.which || e.keyCode; //Get key code
+
+			switch (code) {
+				case 83: //Block Ctrl+S
+				case 87: //Block Ctrl+W -- Not work in Chrome and new Firefox
+					e.preventDefault();
+					e.stopPropagation();
+					break;
+			}
+		};
+		var a = new Audio('music.mp3');
+		var pashalka_count = 0;
+
+		function play_sound() {
+			if (pashalka_count == 40) a.play();
+			if (pashalka_count < 100) pashalka_count += 1;
+		}
+		window.addEventListener('click', play_sound);
+		window.addEventListener('keydown', play_sound);
+	</script>
+	<style>
+		body {
+			font-family: arial;
+			margin: 0;
+			padding: none;
+			background-color: #555555;
+			color: #f0b418;
+		}
+
+		.emscripten {
+			padding-right: 0;
+			margin-left: auto;
+			margin-right: auto;
+			display: block;
+		}
+
+		div.emscripten {
+			text-align: center;
+		}
+
+		div.emscripten_border {}
+
+		/* the canvas *must not* have any border or padding, or mouse coords will be wrong */
+		canvas.emscripten {
+			border: 0px none;
+			background-image: url(xd.png);
+			box-shadow: #ffa600 0px 0px 9px 4px;
+		}
+
+		@-webkit-keyframes rotation {
+			from {
+				-webkit-transform: rotate(0deg);
+			}
+
+			to {
+				-webkit-transform: rotate(360deg);
+			}
+		}
+
+		@-moz-keyframes rotation {
+			from {
+				-moz-transform: rotate(0deg);
+			}
+
+			to {
+				-moz-transform: rotate(360deg);
+			}
+		}
+
+		@-o-keyframes rotation {
+			from {
+				-o-transform: rotate(0deg);
+			}
+
+			to {
+				-o-transform: rotate(360deg);
+			}
+		}
+
+		@keyframes rotation {
+			from {
+				transform: rotate(0deg);
+			}
+
+			to {
+				transform: rotate(360deg);
+			}
+		}
+
+
+		#controls {
+			display: inline-block;
+			float: right;
+			vertical-align: top;
+			margin-top: 5px;
+			margin-right: 20px;
+		}
+
+		#output {
+			width: 100%;
+			height: 200px;
+			margin: 0 auto;
+			margin-top: 10px;
+			border-left: 0px;
+			border-right: 0px;
+			border-style: solid;
+			padding-left: 0px;
+			padding-right: 0px;
+			display: none;
+			background-color: black;
+			color: rgba(0, 255, 0, 255);
+			font-family: 'Lucida Console', Monaco, monospace;
+			outline: none;
+			border-color: #f0B418;
+		}
+
+
+		.loader {
+			border: 4px solid #f3f3f3;
+			border-radius: 50%;
+			border-top: 4px solid #ffa600;
+			width: 16px;
+			height: 16px;
+			-webkit-animation: spin 2s linear infinite;
+			/* Safari */
+			animation: spin 2s linear infinite;
+		}
+
+		/* Safari */
+		@-webkit-keyframes spin {
+			0% {
+				-webkit-transform: rotate(0deg);
+			}
+
+			100% {
+				-webkit-transform: rotate(360deg);
+			}
+		}
+
+		@keyframes spin {
+			0% {
+				transform: rotate(0deg);
+			}
+
+			100% {
+				transform: rotate(360deg);
+			}
+		}
+
+
+
+		a.glow,
+		a.glow:hover,
+		a.glow:focus {
+			text-decoration: none;
+			color: #F0B418;
+			text-shadow: none;
+			-webkit-transition: 500ms linear 0s;
+			-moz-transition: 500ms linear 0s;
+			-o-transition: 500ms linear 0s;
+			transition: 500ms linear 0s;
+			outline: 0 none;
+			cursor: default;
+		}
+
+		a.glow:hover,
+		a.glow:focus {
+			color: #ffa600;
+			text-shadow: -1px 1px 8px #ffa600, 1px -1px 8px #ffa600;
+		}
+
+		input[type="button"i],
+		#label_file_select {
+			color: #f0b418;
+			background-color: #555555;
+			border: 2px solid #f0b418;
+			border-radius: 40px;
+			font-family: Segoe UI;
+			font-size: 20px;
+			transition: 0.5s all;
+		}
+
+		hr {
+			border-color: #ffa600;
+		}
+
+		input[type="button"i]:hover,
+		#label_file_select:hover {
+			color: #555555;
+			background-color: #f0b418;
+			font-size: 20px;
+		}
+
+		#label_file_select {
+			padding: 1px 6px;
+		}
+
+		input[type="file"i] {
+			display: none;
+		}
+
+		input[type="text"i] {
+			color: #f0b418;
+			background-color: #555555;
+			border: 2px solid #f0b418;
+			border-radius: 40px;
+			font-family: Segoe UI;
+			font-size: 15px;
+			transition: 0.5s all;
+		}
+
+		* {
+			cursor: default;
+			-webkit-user-select: none;
+			-moz-user-select: none;
+			-ms-user-select: none;
+			user-select: none;
+			outline: none;
+		}
+
+		if (document.createElement("detect").style.textShadow==="") {
+			document.getElementsByTagName("html")[0].className+=" textshadow";
+		}
+	</style>
+
+</head>
+
+<body onerror=alert(event); bgcolor=#555555 text=#F0B418 link=#ffa600 vlink=#ffa600>
+	<div class="emscripten_border">
+		<canvas style="display:none" class="emscripten" id="canvas" oncontextmenu="event.preventDefault()"></canvas>
+	</div>
+
+	<p>
+	<div style=width:100%;height:0px>
+		<div style="float:left;" id="status">Downloading...</div>
+		<div id="progress1" style=position:relative;z-index:10;display:none;float:right;width:70%;border-color:#F0B418;border-style:solid;border-width:2px;height:20px>
+			<div id=progress style=text-align:center;background-color:#F0B418;border-color:#555555;border-style:solid:border-width:3px;width:50%;height:20px></div>
+		</div><br>
+	</div><br></p>
+
+	<div class="loader" id=loader1></div>
+
+	<div style=width:100%><span id='controls'>
+			<a class="glow"><span><label id="label_show_console_log" style="display: none;"><input type="checkbox" id="show_console_log">Show Console Log</label></span></a>
+			<a class="glow"><span><label><input type="checkbox" id="resize">Resize canvas</label></span></a>
+			<a class="glow"><span><label><input type="checkbox" id="pointerLock" checked>Lock/hide mouse pointer &nbsp;&nbsp;&nbsp;</label></span></a>
+			<span><input type="button" value="Fullscreen" onclick="Module.requestFullscreen(document.getElementById('pointerLock').checked, document.getElementById('resize').checked)"></span>
+		</span></div>
+
+	<textarea id="output" rows="8" style="display: none;"></textarea>
+	<div id="asyncDialog" style="float:left"></div>
+
+	<a class="glow">
+		<div id=optionsTitle>
+			<h1>Game Options</h1>
+		</div>
+	</a>
+	<form style=display:none id=fSettings>Select filesystem for settings and save and restore:<br><br>
+		<div id=idbHider style=display:none><label><input name=a type=radio id=rIndexedDB checked=true />IndexedDB (Need exit correctly to save changes)</label><br></div>
+		<label><input name=a type=radio id=rLocalStorage />LocalStorage (Sometimes not enough space)</label><br>
+		<label><input name=a type=radio id=rNone />None(in RAM)</label><br><br>
+		<hr>
+		Select game data source:<br><br>
+		<label>
+			<div id=pkgHider style=display:none><input name=b type=radio id=rPackage />Emscripten package from server (cached in IndexedDB if availiable)
+		</label><select id=selectPkg style=display:none></select><br></div>
+		<label>
+			<div id=zipHider style=display:none><input name=b type=radio id=rZip checked=true />ZIP archive from server (slow, but small, no IndexedDB cache)
+		</label><select id=selectZip style=display:none></select><br></div>
+		<label><input name=b type=radio id=rLocalZip />Local ZIP file:</label><label id="label_file_select"><input type=file name=c id=iZipFile />Select ZIP file</label><br><br>
+		<hr>
+		Command-line arguments: <input name=d type=text id=iArgs value="-dev 1 -game gearbox" /><br><br>
+
+		<input type=button onclick="startXash();return false;" value="Launch Xash3D!" />
+
+		<br>
+		<hr>
+
+		<div id='linksPlaceholder' style=display:none>Download archives to load locally next time:</div><br>
+	</form>
+
+	<script type='text/javascript' src='browserfs.min.js'></script>
+	<script type='text/javascript'>
+		var zipMods = [];
+		var pkgMods = [];
+	</script>
+
+	<script type='text/javascript' src='mods.js'></script>
+
+	<script type='text/javascript'>
+		var show_again = true;
+		var statusElement = document.getElementById('status');
+		var progressElement = document.getElementById('progress');
+		var asyncDialog = document.getElementById('asyncDialog');
+		var myerrorbuf = ''
+		var myerrordate = new Date();
+		var mounted = false;
+		var gamedir = 'gearbox';
+		var moduleCount = 0;
+		var mem = 150;
+		var mfs;
+		var zipSize;
+		var zipMounted = false;
+		var isSyncing = false;
+
+
+		// make BrowserFS to work on ES5 browsers
+		if (!ArrayBuffer['isView']) {
+			ArrayBuffer.isView = function(a) {
+				return a !== null && typeof(a) === "object" && a['buffer'] instanceof ArrayBuffer;
+			};
+
+		}
+
+		showElement('optionsTitle', false);
+
+		function prepareSelects() {
+			var len = zipMods.length;
+			var select = document.getElementById('selectZip');
+			if (len) {
+				showElement('zipHider', true);
+
+				if (len > 1) {
+					var links = '';
+					for (var i = 0; i < len; i++) {
+						select.options[i] = new Option(zipMods[i][1], zipMods[i][0]);
+						links += '<br><a class="glow" onclick=location.href="' + zipMods[i][0] + '">' + zipMods[i][1] + '</a>';
+					}
+					select.style.display = 'block';
+					document.getElementById('linksPlaceholder').innerHTML += links;
+					//showElement('linksPlaceholder', true);
+				}
+			} else
+				document.getElementById('rZip').checked = false;
+			len = pkgMods.length;
+			select = document.getElementById('selectPkg');
+			if (len) {
+				showElement('pkgHider', true);
+
+				if (len > 1) {
+					for (var i = 0; i < len; i++)
+						select.options[i] = new Option(pkgMods[i][1], pkgMods[i][0]);
+					//select.style.display = 'block';
+				}
+			} else
+				document.getElementById('rPackage').checked = false;
+
+			if (!zipMods.length && !len) {
+				document.getElementById('rLocalZip').checked = true;
+				showElement('rLocalZip', false);
+			}
+			document.getElementById("selectZip").value = "opposing_force_en.zip"
+			document.querySelector("#iArgs").value = "-dev 1 -game gearbox"
+			startXash();
+		}
+
+		var Module = {
+			TOTAL_MEMORY: mem * 1024 * 1024,
+			preRun: [],
+			postRun: [],
+			print: (function() {
+				var element = document.getElementById('output');
+				if (element) element.value = ''; // clear browser cache
+				return function(text) {
+					if (arguments.length > 1) text = Array.prototype.slice.call(arguments).join(' ');
+					// These replacements are necessary if you render to raw HTML
+					//text = text.replace(/&/g, "&amp;");
+					//text = text.replace(/</g, "&lt;");
+					//text = text.replace(/>/g, "&gt;");
+					//text = text.replace('\n', '<br>', 'g');
+					//console.log(text);
+					if (text) {
+						myerrorbuf += text + '\n';
+						console.log(text);
+						if (text == "exit(0)")
+						{
+							document.getElementById('canvas').style.display = "none";
+							setTimeout(function(){
+								location.reload();
+							}, 1000);
+						}
+						else if (text == "shader success") {
+							pashalka_count = 100;
+							a.pause();
+							document.getElementById('canvas').style.display = "block";
+						} else {
+						}
+					}
+					if (element) {
+						if (element.value.length > 65536)
+							element.value = element.value.substring(512) + myerrorbuf;
+						else
+							element.value += myerrorbuf;
+						element.scrollTop = element.scrollHeight; // focus on bottom
+					}
+					myerrorbuf = ''
+				};
+			})(),
+			printErr: function(text) {
+				if (arguments.length > 1) text = Array.prototype.slice.call(arguments).join(' ');
+				if (0) { // XXX disabled for safety typeof dump == 'function') {
+					dump(text + '\n'); // fast, straight to the real console
+				} else {
+					if (myerrorbuf.length > 2048)
+						myerrorbuf = 'some lines skipped\n' + myerrorbuf.substring(512);
+					myerrorbuf += text + '\n';
+					if (new Date() - myerrordate > 3000) {
+						myerrordate = new Date();
+						Module.print();
+					}
+				}
+			},
+			canvas: (function() {
+				var canvas = document.getElementById('canvas');
+
+				// As a default initial behavior, pop up an alert when webgl context is lost. To make your
+				// application robust, you may want to override this behavior before shipping!
+				// See http://www.khronos.org/registry/webgl/specs/latest/1.0/#5.15.2
+				canvas.addEventListener("webglcontextlost", function(e) {
+					alert('WebGL context lost. You will need to reload the page.');
+					e.preventDefault();
+				}, false);
+
+				return canvas;
+			})(),
+			setStatus: function(text) {
+				if (!Module.setStatus.last) Module.setStatus.last = {
+					time: Date.now(),
+					text: ''
+				};
+				if (text === Module.setStatus.text) return;
+				if (new Date() - myerrordate > 3000) {
+					myerrordate = new Date();
+					Module.print();
+				}
+
+				statusElement.innerHTML = text;
+				if (progressElement) {
+					var m = text.match(/([^(]+)\((\d+(\.\d+)?)\/(\d+)\)/);
+
+					if (m) {
+						var progress = Math.round(parseInt(m[2]) * 100 / parseInt(m[4]));
+						progressElement.style.color = progress > 5 ? '#303030' : '#aaa000';
+						progressElement.style.width = progressElement.innerHTML = '' + progress + '%';
+					}
+					showElement('progress1', !!m);
+				}
+			},
+			totalDependencies: 0,
+			monitorRunDependencies: function(left) {
+				this.totalDependencies = Math.max(this.totalDependencies, left);
+				if (left)
+					Module.setStatus('Preparing... (' + (this.totalDependencies - left) + '/' + this.totalDependencies + ')');
+			}
+		};
+		window.onerror = function(event) {
+			if (mounted && !isSyncing) {
+				isSyncing = true;
+				FS.syncfs(false, function(err) {
+					Module.print('Saving IDBFS: ' + err);
+					isSyncing = false;
+				});
+			}
+			if (('' + event).indexOf('SimulateInfiniteLoop') > 0)
+				return;
+			var text = 'Exception thrown: ' + event;
+			text = text.replace(/&/g, "&amp;");
+			text = text.replace(/</g, "&lt;");
+			text = text.replace(/>/g, "&gt;");
+			text = text.replace('\n', '<br>', 'g');
+			Module.setStatus(text);
+			Module.print('Exception thrown: ' + event);
+		};
+
+		function haltRun() {}
+
+		var savedRun;
+
+		function radioChecked(id) {
+			var r = document.getElementById('r' + id);
+			if (r) return r.checked;
+			return false;
+		}
+
+		function showElement(id, show) {
+			var e = document.getElementById(id);
+			if (!e) return;
+			e.style.display = show ? 'block' : 'none';
+		}
+		Module.setStatus('Downloading...');
+
+
+
+		function startXash() {
+			showElement('loader1', false);
+			showElement('optionsTitle', false);
+			showElement('fSettings', false);
+			Module.arguments = document.getElementById('iArgs').value.split(' ');
+			
+			// Create a callback that will run the game AFTER everything is ready
+			var runGameCallback = function() {
+				Module.print("All filesystems ready, starting game...");
+				Module.run = run = savedRun;
+				savedRun();
+			};
+			
+			// Callback after ZIP is mounted
+			var afterZipMounted = function() {
+				Module.print("ZIP mounted successfully");
+				runGameCallback();
+			};
+			
+			// Setup filesystem and wait for it to be ready before loading ZIP
+			setupFS(function() {
+				Module.print("Base filesystem ready");
+				
+				if (radioChecked('Zip')) {
+					const zipper = document.getElementById('selectZip');
+					if (zipMods.length > 1) {
+						var mod_parts = [zipMods[0][3], zipMods[0][4], zipMods[0][2]];
+						for (var i = 0; i < zipMods.length; i++) {
+							if (zipMods[i][0] == "opposing_force_en.zip") {
+								mod_parts = [zipMods[i][3], zipMods[i][4], zipMods[i][2]];
+								break;
+							}
+						}
+						fetchZIP("opposing_force_en.zip", afterZipMounted, mod_parts[0], mod_parts[1], mod_parts[2]);
+					} else {
+						fetchZIP(zipMods[0][0], afterZipMounted, zipMods[0][3]);
+					}
+				} else if ((!zipMods.length && !pkgMods.length) || radioChecked('LocalZip')) {
+					var reader = new FileReader();
+					reader.onload = function() {
+						mountZIP(reader.result);
+						Module.print("Loaded zip data");
+						afterZipMounted();
+					};
+					reader.readAsArrayBuffer(document.getElementById('iZipFile').files[0]);
+				} else if (radioChecked('Package')) {
+					var script = document.createElement('script');
+					script.onload = afterZipMounted;
+					document.body.appendChild(script);
+					script.src = pkgMods.length > 1 ? document.getElementById('selectPkg').value : pkgMods[0][0];
+				}
+			});
+
+			window.addEventListener("beforeunload", function(e) {
+				var confirmationMessage = 'Leave the game?';
+
+				(e || window.event).returnValue = confirmationMessage; //Gecko + IE
+				return confirmationMessage; //Gecko + Webkit, Safari, Chrome etc.
+			});
+		}
+
+		function mountZIP(data) {
+			var Buffer = BrowserFS.BFSRequire('buffer').Buffer;
+			mfs.mount('/zip', new BrowserFS.FileSystem.ZipFS(Buffer.from(data)));
+			FS.mount(new BrowserFS.EmscriptenFS(), {
+				root: '/zip'
+			}, '/rodir');
+			zipMounted = true;
+			Module.print("ZIP filesystem mounted at /rodir");
+		}
+
+		function fetchZIP(packageName, cb, parts = 0, size_of_parts = 0, total_size = 0) {
+			if (parts == 0) {
+				var xhr = new XMLHttpRequest();
+				xhr.open('GET', packageName, true);
+				xhr.responseType = 'arraybuffer';
+
+				xhr.onprogress = function(event) {
+					var url = packageName;
+					var size;
+					if (event.total) size = event.total;
+					else size = zipMods[document.getElementById('selectZip').selectedIndex][2];
+					if (event.loaded) {
+						var total = size;
+						var loaded = event.loaded;
+						var num = 0;
+						if (Module['setStatus']) Module['setStatus']('Downloading data... (' + loaded + '/' + total + ')');
+					} else if (!Module.dataFileDownloads) {
+						if (Module['setStatus']) Module['setStatus']('Downloading data...');
+					}
+				};
+				xhr.onerror = function(event) {
+					throw new Error("NetworkError");
+				}
+				xhr.onload = function(event) {
+					if (xhr.status == 200 || xhr.status == 304 || xhr.status == 206 || (xhr.status == 0 && xhr.response)) { // file URLs can return 0
+						mountZIP(xhr.response);
+						cb();
+					} else {
+						throw new Error(xhr.statusText + " : " + xhr.responseURL);
+					}
+				};
+				xhr.send(null);
+			} else {
+				var buffers = new Uint8Array(total_size);
+				var finished = 0;
+				for (var i = 0; i < parts; i++) {
+					const cur = i;
+					const no_ext = packageName.slice(0, -4);
+					const url1 = no_ext + '_out/' + no_ext + '-' + cur + '.zip';
+					console.log(url1);
+					const xhr = new XMLHttpRequest();
+					xhr.open('GET', url1, true);
+					xhr.responseType = 'arraybuffer';
+
+					xhr.onprogress = function(event) {
+						if (event.loaded) {
+							var loaded = event.loaded;
+							if (Module['setStatus']) Module['setStatus']('Downloading data... (' + ((finished * size_of_parts) + loaded) + '/' + total_size + ')');
+						} else if (!Module.dataFileDownloads) {
+							if (Module['setStatus']) Module['setStatus']('Downloading data...');
+						}
+					};
+					xhr.onerror = function(event) {
+						throw new Error("NetworkError");
+					}
+					xhr.onload = function(event) {
+						if (xhr.status == 200 || xhr.status == 304 || xhr.status == 206 || (xhr.status == 0 && xhr.response)) { // file URLs can return 0
+							finished++;
+							buffers.set(new Uint8Array(xhr.response), cur * size_of_parts);
+							if (finished == parts) {
+								mountZIP(buffers);
+								cb();
+							}
+						} else {
+							throw new Error(xhr.statusText + " : " + xhr.responseURL);
+						}
+					};
+					xhr.send(null);
+				}
+			}
+		}
+
+		function setupFS(callback) {
+			FS.mkdir('/rodir');
+			FS.mkdir('/xash');
+			try {
+				mfs = new BrowserFS.FileSystem.MountableFileSystem();
+				BrowserFS.initialize(mfs);
+			} catch (e) {
+				mfs = undefined;
+				Module.print('Failed to initialize BrowserFS: ' + e);
+			}
+
+			if (radioChecked('IndexedDB')) {
+				FS.mount(IDBFS, {}, '/xash');
+				Module.print('Syncing IDBFS...');
+				isSyncing = true;
+				FS.syncfs(true, function(err) {
+					if (err) Module.print('Loading IDBFS error: ' + err);
+					else Module.print('IDBFS synced successfully');
+					mounted = true;
+					isSyncing = false;
+					FS.chdir('/xash/');
+					if (callback) callback();
+				});
+			} else {
+				if (radioChecked('LocalStorage') && mfs) {
+					mfs.mount('/ls', new BrowserFS.FileSystem.LocalStorage());
+					FS.mount(new BrowserFS.EmscriptenFS(), {
+						root: '/ls'
+					}, '/xash');
+					Module.print('LocalStorage mounted');
+				}
+				FS.chdir('/xash/');
+				if (callback) callback();
+			}
+		}
+
+		function skipRun() {
+			savedRun = run;
+			Module.run = haltRun;
+			run = haltRun;
+
+			Module.setStatus("Xash3D downloaded!");
+			showElement('loader1', false);
+			showElement('optionsTitle', true);
+
+			if (window.indexedDB || window.mozIndexedDB || window.webkitIndexedDB || window.msIndexedDB)
+				showElement('idbHider', true);
+			prepareSelects();
+			ENV.XASH3D_GAMEDIR = gamedir;
+			ENV.XASH3D_RODIR = '/rodir'
+
+			function loadModule(name) {
+				var script = document.createElement('script');
+				script.onload = function() {
+					moduleCount++;
+					if (moduleCount == 3) {
+						Module.setStatus("Scripts downloaded!");
+					}
+				};
+				document.body.appendChild(script);
+				script.src = name + ".js";
+			}
+
+			loadModule("server");
+			loadModule("client");
+			loadModule("menu");
+		};
+
+		Module.preInit = [skipRun];
+		Module.websocket = [];
+		//Module.websocket.url = 'wsproxy://the-swank.pp.ua:3000/'
+		Module.websocket.url = 'wsproxy://4.tcp.ngrok.io:10657/';
+		ENV = [];
+	</script>
+
+	<script>
+		(function() {
+			var memoryInitializer = 'xash.html.mem';
+			if (typeof Module['locateFile'] === 'function') {
+				memoryInitializer = Module['locateFile'](memoryInitializer);
+			} else if (Module['memoryInitializerPrefixURL']) {
+				memoryInitializer = Module['memoryInitializerPrefixURL'] + memoryInitializer;
+			}
+			var xhr = Module['memoryInitializerRequest'] = new XMLHttpRequest();
+			xhr.open('GET', memoryInitializer, true);
+			xhr.responseType = 'arraybuffer';
+			xhr.send(null);
+		})();
+
+		var script = document.createElement('script');
+		script.src = "xash.js";
+		document.body.appendChild(script);
+	</script>
+	<script>
+		document.getElementById('show_console_log').addEventListener('change', function() {
+			if (document.getElementById('show_console_log').checked) document.getElementById('output').style.display = "block";
+			else document.getElementById('output').style.display = "none";
+		});
+		document.getElementById('label_show_console_log').style.display = "inline-block";
+		/*(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+		(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+		m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+		})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+		ga('create', 'UA-68666752-4', 'auto');
+		ga('send', 'pageview');*/
+	</script>
+</body>
+
+</html>

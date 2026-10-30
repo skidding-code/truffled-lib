@@ -1,0 +1,494 @@
+<!doctype html>
+<html lang="en"><head><base href="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-20@main/games/HorseyGameWeb/"><script>(function (C) {
+  var G = typeof self !== 'undefined' ? self : this;
+  if (G.__tz) return;
+  var IS_DOC = typeof document !== 'undefined' && typeof Element !== 'undefined';
+  var CDN = C.c;
+  var SKIP = /^(data:|blob:|javascript:|about:|mailto:|tel:|ws:|wss:|#)/i;
+  var units = Object.keys(C.u || {}).sort(function (a, b) { return b.length - a.length; });
+  var exts = Object.keys(C.x || {}).sort(function (a, b) { return b.length - a.length; });
+  var split = C.s || {};
+  var hostDir = (function () {
+    try {
+      var h = String(G.location.href);
+      if (/^(https?|file):/i.test(h)) return h.slice(0, h.lastIndexOf('/') + 1);
+    } catch (e) {}
+    return null;
+  })();
+
+  function base() {
+    if (C.w) return C.w;
+    try { return document.baseURI; } catch (e) { return C.b; }
+  }
+
+  function rootFor(p, strict) {
+    for (var i = 0; i < units.length; i++) if (p.indexOf(units[i]) === 0) return C.u[units[i]];
+    return strict ? null : C.r;
+  }
+
+  function map(u) {
+    try {
+      if (u == null) return u;
+      if (typeof u !== 'string') {
+        if (typeof URL !== 'undefined' && u instanceof URL) u = u.href;
+        else if (u && typeof u.toString === 'function') u = u.toString();
+        else return u;
+      }
+      var t = u.trim();
+      if (C.w && /^blob:/i.test(t) && /\/[^\/?#]*\.[A-Za-z0-9]{1,8}([?#].*)?$/.test(t)) {
+        return map(new URL(t.slice(t.lastIndexOf('/') + 1), C.w).href);
+      }
+      if (!t || SKIP.test(t)) return u;
+      var abs;
+      try { abs = new URL(t, base()); } catch (e) { return u; }
+      var href = abs.href;
+      if (hostDir && href.indexOf(hostDir) === 0 && !(C.b.indexOf(hostDir) === 0)) {
+        return map(new URL(href.slice(hostDir.length), C.b).href);
+      }
+      if (abs.protocol !== 'http:' && abs.protocol !== 'https:') return u;
+      if (abs.origin === CDN && C.o && abs.pathname.indexOf('/gh/' + C.o + '/') === 0) {
+        var mm = /^\/gh\/[^/]+\/[^/@]+@[^/]+\//.exec(abs.pathname);
+        if (mm) {
+          var rest = abs.pathname.slice(mm[0].length), dp = rest;
+          try { dp = decodeURIComponent(rest); } catch (e) {}
+          var want = rootFor('/' + dp, true);
+          if (want && want !== CDN + mm[0]) return want + rest + abs.search + abs.hash;
+        }
+        return href;
+      }
+      if ((abs.origin === CDN && !/^\/(gh|npm|combine|wp)\//.test(abs.pathname)) || /^(www\.)?truffled\.lol$/i.test(abs.hostname)) {
+        var dpp = abs.pathname;
+        try { dpp = decodeURIComponent(dpp); } catch (e) {}
+        return rootFor(dpp) + abs.pathname.slice(1) + abs.search + abs.hash;
+      }
+      var hp = abs.host + abs.pathname;
+      for (var i = 0; i < exts.length; i++) {
+        if (hp.indexOf(exts[i]) === 0) return C.x[exts[i]] + hp.slice(exts[i].length);
+      }
+      return href;
+    } catch (e) { return u; }
+  }
+
+  function bare(u) { return String(u).replace(/[?#].*$/, ''); }
+  function splitKey(u) {
+    var b = bare(u);
+    if (split[b]) return b;
+    try { var n = new URL(b).href; if (split[n]) return n; } catch (e) {}
+    try { var d = encodeURI(decodeURI(b)); if (split[d]) return d; } catch (e) {}
+    return null;
+  }
+  function splitInfo(u) { var k = splitKey(u); return k ? split[k] : null; }
+
+  var PART = C.p || 19000000;
+  function partUrl(key, i) {
+    var info = split[key], segs = info[3];
+    if (segs) {
+      for (var j = segs.length - 1; j >= 0; j--) if (i >= segs[j][0]) return segs[j][1] + '.part' + i;
+    }
+    return key + '.part' + i;
+  }
+  function getPart(key, i, range) {
+    var u = partUrl(key, i), tries = 0;
+    function go() {
+      return origFetch(u, range ? { headers: { Range: range } } : undefined).then(function (r) {
+        if (!r.ok) throw new Error('part ' + u + ' ' + r.status);
+        return r.arrayBuffer().then(function (ab) { return [ab, r.status]; });
+      }).catch(function (e) {
+        if (++tries < 4) return new Promise(function (ok) { setTimeout(ok, 800 * tries); }).then(go);
+        throw e;
+      });
+    }
+    return go();
+  }
+  var merged = {};
+  function mergeBuf(u) {
+    var key = splitKey(u) || bare(u);
+    if (merged[key]) return merged[key];
+    var n = split[key][0], type = split[key][1] || 'application/octet-stream';
+    var blobs = new Array(n), next = 1;
+    merged[key] = new Promise(function (ok, bad) {
+      var active = 0, done = 0, failed = false;
+      function pump() {
+        while (!failed && active < 4 && next <= n) {
+          (function (i) {
+            active++;
+            getPart(key, i).then(function (r) {
+              blobs[i - 1] = new Blob([r[0]]);
+              active--;
+              if (++done === n) ok(new Blob(blobs, { type: type }));
+              else pump();
+            }, function (e) { failed = true; bad(e); });
+          })(next++);
+        }
+      }
+      pump();
+    });
+    return merged[key];
+  }
+  var blobUrls = {};
+  function mergeUrl(u) {
+    var key = splitKey(u) || bare(u);
+    if (!blobUrls[key]) blobUrls[key] = mergeBuf(key).then(function (b) { return URL.createObjectURL(b); });
+    return blobUrls[key];
+  }
+  function sizeOf(key) { return split[key][2] || 0; }
+  function parseRange(h, size) {
+    var m = /bytes=(\d*)-(\d*)/.exec(h || '');
+    if (!m) return null;
+    var a, b;
+    if (m[1] === '') { a = Math.max(0, size - Number(m[2])); b = size - 1; }
+    else { a = Number(m[1]); b = m[2] === '' ? size - 1 : Math.min(Number(m[2]), size - 1); }
+    if (a > b || a >= size) return null;
+    return [a, b];
+  }
+  function rangeBlob(key, a, b) {
+    var i0 = Math.floor(a / PART), i1 = Math.floor(b / PART), jobs = [];
+    for (var i = i0; i <= i1; i++) {
+      (function (i) {
+        var s = Math.max(a, i * PART) - i * PART, e = Math.min(b, (i + 1) * PART - 1) - i * PART;
+        jobs.push(getPart(key, i + 1, 'bytes=' + s + '-' + e).then(function (r) {
+          return r[1] === 206 ? r[0] : r[0].slice(s, e + 1);
+        }));
+      })(i);
+    }
+    return Promise.all(jobs).then(function (bufs) { return new Blob(bufs, { type: split[key][1] || 'application/octet-stream' }); });
+  }
+  function streamResponse(key) {
+    var n = split[key][0], next = 1, ahead = [];
+    var hdr = { 'Content-Type': split[key][1] || 'application/octet-stream', 'Accept-Ranges': 'bytes' };
+    if (sizeOf(key)) hdr['Content-Length'] = String(sizeOf(key));
+    function fill() { while (ahead.length < 3 && next <= n) ahead.push(getPart(key, next++)); }
+    var rs = new ReadableStream({
+      pull: function (ctrl) {
+        fill();
+        if (!ahead.length) { ctrl.close(); return; }
+        return ahead.shift().then(function (r) { ctrl.enqueue(new Uint8Array(r[0])); fill(); });
+      },
+      cancel: function () { ahead = []; next = n + 1; }
+    });
+    return new Response(rs, { status: 200, statusText: 'OK', headers: hdr });
+  }
+  function splitFetch(key, input, init) {
+    var method = String((init && init.method) || (input && input.method) || 'GET').toUpperCase();
+    var range = null;
+    try { range = new Headers((init && init.headers) || (input && typeof input === 'object' && input.headers) || undefined).get('range'); } catch (e) {}
+    var size = sizeOf(key), type = split[key][1] || 'application/octet-stream';
+    if (method === 'HEAD') {
+      return Promise.resolve(new Response(null, { status: 200, headers: { 'Content-Length': String(size), 'Content-Type': type, 'Accept-Ranges': 'bytes' } }));
+    }
+    var rg = range && size ? parseRange(range, size) : null;
+    if (rg) {
+      return rangeBlob(key, rg[0], rg[1]).then(function (b) {
+        return new Response(b, { status: 206, statusText: 'Partial Content', headers: { 'Content-Type': type, 'Content-Length': String(b.size), 'Content-Range': 'bytes ' + rg[0] + '-' + rg[1] + '/' + size, 'Accept-Ranges': 'bytes' } });
+      });
+    }
+    if (merged[key]) return merged[key].then(function (b) { return new Response(b, { status: 200, headers: { 'Content-Type': type, 'Content-Length': String(b.size) } }); });
+    return Promise.resolve(streamResponse(key));
+  }
+
+  var origFetch = G.fetch ? G.fetch.bind(G) : null;
+  G.__tz = { map: map, cfg: C };
+
+  if (origFetch) {
+    G.fetch = function (input, init) {
+      try {
+        var url = typeof input === 'string' || (typeof URL !== 'undefined' && input instanceof URL) ? String(input) : input && input.url;
+        if (url) {
+          var m = map(url);
+          if (splitInfo(m)) return splitFetch(splitKey(m), input, init);
+          if (m !== url) {
+            if (typeof input === 'string' || input instanceof URL) input = m;
+            else input = new Request(m, input);
+          }
+        }
+      } catch (e) {}
+      return origFetch(input, init);
+    };
+  }
+
+  if (G.XMLHttpRequest) {
+    var XP = G.XMLHttpRequest.prototype;
+    var oOpen = XP.open, oSend = XP.send, oSRH = XP.setRequestHeader;
+    XP.open = function (method, url) {
+      var a = Array.prototype.slice.call(arguments);
+      var m = map(url);
+      if (splitInfo(m) && a[2] !== false) {
+        this.__tzs = { a: a, m: m, h: [] };
+        return;
+      }
+      this.__tzs = null;
+      a[1] = m;
+      return oOpen.apply(this, a);
+    };
+    XP.setRequestHeader = function (k, v) {
+      if (this.__tzs) { this.__tzs.h.push([k, v]); return; }
+      return oSRH.call(this, k, v);
+    };
+    XP.send = function (body) {
+      var s = this.__tzs, x = this;
+      if (!s) return oSend.call(this, body);
+      var key = splitKey(s.m), rh = null;
+      s.h.forEach(function (h) { if (String(h[0]).toLowerCase() === 'range') rh = h[1]; });
+      var rg = rh && sizeOf(key) ? parseRange(rh, sizeOf(key)) : null;
+      var src = rg ? rangeBlob(key, rg[0], rg[1]).then(function (b) { return URL.createObjectURL(b); }) : mergeUrl(s.m);
+      s.h = s.h.filter(function (h) { return String(h[0]).toLowerCase() !== 'range'; });
+      src.then(function (bu) {
+        var a = s.a.slice();
+        a[1] = bu;
+        x.__tzs = null;
+        oOpen.apply(x, a);
+        s.h.forEach(function (h) { try { oSRH.call(x, h[0], h[1]); } catch (e) {} });
+        oSend.call(x, body);
+      }, function () {
+        x.__tzs = null;
+        var a = s.a.slice();
+        a[1] = s.m;
+        oOpen.apply(x, a);
+        oSend.call(x, body);
+      });
+    };
+  }
+
+  var shimSrc = null;
+  function workerBlob(url, opts) {
+    var m = map(url);
+    var abs = new URL(m, base()).href;
+    var cfg = JSON.parse(JSON.stringify(C));
+    cfg.w = abs;
+    var pre = shimSrc ? '(' + shimSrc + ')(' + JSON.stringify(cfg) + ');' : '';
+    var body = opts && opts.type === 'module'
+      ? pre + 'import ' + JSON.stringify(abs) + ';'
+      : pre + 'importScripts(' + JSON.stringify(abs) + ');';
+    return URL.createObjectURL(new Blob([body], { type: 'text/javascript' }));
+  }
+  function needsWrap(u) {
+    try {
+      var abs = new URL(map(u), base());
+      return abs.origin !== G.location.origin && abs.protocol !== 'blob:' && abs.protocol !== 'data:';
+    } catch (e) { return false; }
+  }
+  ['Worker', 'SharedWorker'].forEach(function (k) {
+    var W = G[k];
+    if (!W) return;
+    var Wrapped = function (url, opts) {
+      var u = typeof url === 'string' || url instanceof URL ? String(url) : url;
+      if (typeof u === 'string' && needsWrap(u)) u = workerBlob(u, opts);
+      return opts === undefined ? new W(u) : new W(u, opts);
+    };
+    Wrapped.prototype = W.prototype;
+    try { Object.defineProperty(Wrapped, 'name', { value: k }); } catch (e) {}
+    G[k] = Wrapped;
+  });
+
+  if (!IS_DOC && typeof G.importScripts === 'function') {
+    var oIS = G.importScripts;
+    G.importScripts = function () {
+      var a = Array.prototype.slice.call(arguments).map(function (u) { return map(u); });
+      return oIS.apply(G, a);
+    };
+  }
+
+  if (!IS_DOC) return;
+
+  try { shimSrc = String(document.currentScript && document.currentScript.textContent || ''); } catch (e) {}
+  if (shimSrc) {
+    var mm = /^\s*\(function \(C\)[\s\S]*\}\)\(/.exec(shimSrc);
+    shimSrc = mm ? mm[0].replace(/\)\($/, '').replace(/^\s*\(/, '') : null;
+  }
+
+  function loadHtmlFrame(frame, url) {
+    origFetch(url).then(function (r) { return r.text(); }).then(function (html) {
+      var w = frame.contentWindow;
+      if (!w) return;
+      var d = w.document;
+      html = prepHtml(html, url);
+      d.open();
+      d.write(html);
+      d.close();
+    });
+  }
+  function prepHtml(html, url) {
+    var dir = url.slice(0, url.lastIndexOf('/') + 1);
+    var tag = '<base href="' + dir + '">';
+    var cfg = JSON.parse(JSON.stringify(C));
+    delete cfg.w;
+    var sh = shimSrc ? '<script>(' + shimSrc + ')(' + JSON.stringify(cfg).replace(/<\//g, '<\\/') + ');<\/script>' : '';
+    if (/<base\b[^>]*>/i.test(html)) {
+      var mb = /<base\b[^>]*\bhref\s*=\s*["']?([^"'\s>]+)/i.exec(html);
+      if (mb) tag = '<base href="' + new URL(mb[1], dir).href + '">';
+      html = html.replace(/<base\b[^>]*>/i, '');
+    }
+    if (/<head[^>]*>/i.test(html)) return html.replace(/<head[^>]*>/i, function (m) { return m + tag + sh; });
+    if (/<html[^>]*>/i.test(html)) return html.replace(/<html[^>]*>/i, function (m) { return m + tag + sh; });
+    return tag + sh + html;
+  }
+  function isHtml(u) {
+    try {
+      var p = new URL(u).pathname;
+      return /\.html?$/i.test(p) || /\/$/.test(p);
+    } catch (e) { return false; }
+  }
+  function cdnLike(u) {
+    try { return new URL(u).origin === CDN; } catch (e) { return false; }
+  }
+
+  function hookProp(proto, prop, special) {
+    if (!proto) return;
+    var d = Object.getOwnPropertyDescriptor(proto, prop);
+    if (!d || !d.set || !d.configurable) return;
+    Object.defineProperty(proto, prop, {
+      configurable: true,
+      enumerable: d.enumerable,
+      get: d.get,
+      set: function (v) {
+        var el = this;
+        if (prop === 'srcset') return d.set.call(el, mapSrcset(v));
+        var m = map(v);
+        if (typeof m === 'string' && splitInfo(m)) {
+          mergeUrl(m).then(function (bu) { d.set.call(el, bu); });
+          return;
+        }
+        if (special && special(el, m, function (x) { d.set.call(el, x); })) return;
+        return d.set.call(el, m);
+      },
+    });
+  }
+  function mapSrcset(v) {
+    if (typeof v !== 'string') return v;
+    return v.split(',').map(function (p) {
+      var t = p.trim();
+      if (!t) return t;
+      var sp = t.split(/\s+/);
+      sp[0] = map(sp[0]);
+      return sp.join(' ');
+    }).join(', ');
+  }
+  function iframeSpecial(el, m, set) {
+    if (typeof m === 'string' && cdnLike(m) && isHtml(m)) {
+      set('about:blank');
+      var go = function () { loadHtmlFrame(el, m); };
+      if (el.isConnected) setTimeout(go, 0);
+      else el.__tzPending = go;
+      return true;
+    }
+    return false;
+  }
+  hookProp(G.HTMLScriptElement && HTMLScriptElement.prototype, 'src');
+  hookProp(G.HTMLImageElement && HTMLImageElement.prototype, 'src');
+  hookProp(G.HTMLImageElement && HTMLImageElement.prototype, 'srcset');
+  hookProp(G.HTMLMediaElement && HTMLMediaElement.prototype, 'src');
+  hookProp(G.HTMLSourceElement && HTMLSourceElement.prototype, 'src');
+  hookProp(G.HTMLSourceElement && HTMLSourceElement.prototype, 'srcset');
+  hookProp(G.HTMLLinkElement && HTMLLinkElement.prototype, 'href');
+  hookProp(G.HTMLEmbedElement && HTMLEmbedElement.prototype, 'src');
+  hookProp(G.HTMLObjectElement && HTMLObjectElement.prototype, 'data');
+  hookProp(G.HTMLInputElement && HTMLInputElement.prototype, 'src');
+  hookProp(G.HTMLIFrameElement && HTMLIFrameElement.prototype, 'src', iframeSpecial);
+  try {
+    var svgHref = Object.getOwnPropertyDescriptor(SVGImageElement.prototype, 'href');
+    void svgHref;
+  } catch (e) {}
+
+  var oSetAttr = Element.prototype.setAttribute;
+  var ATTRS = { src: 1, href: 1, data: 1, poster: 1, srcset: 1, 'xlink:href': 1 };
+  Element.prototype.setAttribute = function (name, value) {
+    var n = String(name).toLowerCase();
+    if (ATTRS[n] && typeof value === 'string') {
+      var tag = this.tagName;
+      if (n === 'href' && (tag === 'A' || tag === 'BASE' || tag === 'AREA')) return oSetAttr.call(this, name, value);
+      if (n === 'srcset') return oSetAttr.call(this, name, mapSrcset(value));
+      var m = map(value);
+      if (splitInfo(m)) {
+        var el = this;
+        mergeUrl(m).then(function (bu) { oSetAttr.call(el, name, bu); });
+        return;
+      }
+      if (tag === 'IFRAME' && n === 'src' && iframeSpecial(this, m, function (x) { oSetAttr.call(this, name, x); }.bind(this))) return;
+      return oSetAttr.call(this, name, m);
+    }
+    return oSetAttr.call(this, name, value);
+  };
+
+  var oAppend = Node.prototype.appendChild, oInsert = Node.prototype.insertBefore;
+  function flushPending(n) {
+    if (n && n.__tzPending) {
+      var go = n.__tzPending;
+      n.__tzPending = null;
+      setTimeout(go, 0);
+    }
+  }
+  Node.prototype.appendChild = function (n) {
+    var r = oAppend.call(this, n);
+    flushPending(n);
+    return r;
+  };
+  Node.prototype.insertBefore = function (n, ref) {
+    var r = oInsert.call(this, n, ref);
+    flushPending(n);
+    return r;
+  };
+
+  if (G.Audio) {
+    var OA = G.Audio;
+    var NA = function Audio(src) {
+      var a = new OA();
+      if (src !== undefined) a.src = src;
+      return a;
+    };
+    NA.prototype = OA.prototype;
+    G.Audio = NA;
+  }
+
+  var oOpenWin = G.open;
+  if (oOpenWin) {
+    G.open = function (u) {
+      var a = Array.prototype.slice.call(arguments);
+      if (typeof u === 'string' && u) a[0] = map(u);
+      return oOpenWin.apply(G, a);
+    };
+  }
+
+  function fixStatic(root) {
+    var list = root.querySelectorAll ? root.querySelectorAll('iframe[data-tz-src]') : [];
+    for (var i = 0; i < list.length; i++) {
+      var f = list[i];
+      var s = f.getAttribute('data-tz-src');
+      f.removeAttribute('data-tz-src');
+      var m = map(s);
+      if (cdnLike(m) && isHtml(m)) loadHtmlFrame(f, m);
+      else oSetAttr.call(f, 'src', m);
+    }
+  }
+  if (G.MutationObserver) {
+    new MutationObserver(function (recs) {
+      for (var i = 0; i < recs.length; i++) {
+        var a = recs[i].addedNodes;
+        for (var j = 0; j < a.length; j++) {
+          var n = a[j];
+          if (n.nodeType !== 1) continue;
+          if (n.tagName === 'IFRAME' && n.hasAttribute('data-tz-src')) fixStatic(n.parentNode || document);
+          else if (n.querySelector && n.querySelector('iframe[data-tz-src]')) fixStatic(n);
+        }
+      }
+    }).observe(document, { childList: true, subtree: true });
+  }
+})({"c":"https://cdn.jsdelivr.net","o":"skidding-code","p":19000000,"b":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-20@main/games/HorseyGameWeb/","r":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-20@main/","u":{"/games/HorseyGameWeb/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-20@main/","/games/newesthk/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-20@main/"},"x":{},"s":{"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-20@main/games/newesthk/Build/Glitches%20HK.data.part18":[2,"application/octet-stream",19922944]}});</script><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>HorseyGame</title>
+<style>
+html,body{margin:0;height:100%;background:#000;overflow:hidden}
+canvas{display:block;width:100vw;height:100vh;outline:none;image-rendering:auto;cursor:none}
+body{cursor:none}
+#st{position:fixed;top:8px;left:10px;color:#fff;opacity:.7;font:12px/1.4 system-ui,sans-serif;pointer-events:none}
+#st.hidden{display:none}
+</style></head>
+<body>
+<canvas id="canvas" width="1280" height="720" tabindex="0"></canvas>
+<div id="st"></div>
+<script>
+document.write('<scr'+'ipt src="horseygame'+(new URLSearchParams(location.search).has('mt')?'_mt':'')+'.js"></scr'+'ipt>');
+</script>
+<script>
+(()=>{const $=id=>document.getElementById(id),canvas=$('canvas'),statusEl=$('st'),status=s=>{statusEl.textContent=s};if(!('Suspending' in WebAssembly)){status('Use Chrome or Edge 137+.');return}const K={};'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('').forEach((ch,i)=>{K['Key'+ch]=[65+i,[0x1E,0x30,0x2E,0x20,0x12,0x21,0x22,0x23,0x17,0x24,0x25,0x26,0x32,0x31,0x18,0x19,0x10,0x13,0x1F,0x14,0x16,0x2F,0x11,0x2D,0x15,0x2C][i],0]});for(let d=0;d<=9;d++)K['Digit'+d]=[48+d,d===0?0x0B:d+1,0];Object.assign(K,{Escape:[0x1B,0x01,0],Minus:[0xBD,0x0C,0],Equal:[0xBB,0x0D,0],Backspace:[0x08,0x0E,0],Tab:[0x09,0x0F,0],BracketLeft:[0xDB,0x1A,0],BracketRight:[0xDD,0x1B,0],Enter:[0x0D,0x1C,0],ControlLeft:[0x11,0x1D,0],Semicolon:[0xBA,0x27,0],Quote:[0xDE,0x28,0],Backquote:[0xC0,0x29,0],ShiftLeft:[0x10,0x2A,0],Backslash:[0xDC,0x2B,0],Comma:[0xBC,0x33,0],Period:[0xBE,0x34,0],Slash:[0xBF,0x35,0],ShiftRight:[0x10,0x36,0],NumpadMultiply:[0x6A,0x37,0],AltLeft:[0x12,0x38,0],Space:[0x20,0x39,0],CapsLock:[0x14,0x3A,0],F1:[0x70,0x3B,0],F2:[0x71,0x3C,0],F3:[0x72,0x3D,0],F4:[0x73,0x3E,0],F5:[0x74,0x3F,0],F6:[0x75,0x40,0],F7:[0x76,0x41,0],F10:[0x79,0x44,0],F12:[0x7B,0x58,0],Numpad7:[0x67,0x47,0],Numpad8:[0x68,0x48,0],Numpad9:[0x69,0x49,0],NumpadSubtract:[0x6D,0x4A,0],Numpad4:[0x64,0x4B,0],Numpad5:[0x65,0x4C,0],Numpad6:[0x66,0x4D,0],NumpadAdd:[0x6B,0x4E,0],Numpad1:[0x61,0x4F,0],Numpad2:[0x62,0x50,0],Numpad3:[0x63,0x51,0],Numpad0:[0x60,0x52,0],NumpadDecimal:[0x6E,0x53,0],NumpadEnter:[0x0D,0x1C,1],ControlRight:[0x11,0x1D,1],AltRight:[0x12,0x38,1],ArrowUp:[0x26,0x48,1],ArrowLeft:[0x25,0x4B,1],ArrowRight:[0x27,0x4D,1],ArrowDown:[0x28,0x50,1],Insert:[0x2D,0x52,1],Delete:[0x2E,0x53,1],Home:[0x24,0x47,1],End:[0x23,0x4F,1],PageUp:[0x21,0x49,1],PageDown:[0x22,0x51,1]});let M=null,started=false;const q=new URLSearchParams(location.search),args=q.has('args')?q.get('args'):'';const ev=(name,...a)=>{if(M&&M['_'+name])M['_'+name](...a)};const pos=e=>{const r=canvas.getBoundingClientRect(),cw=(M&&M.canvasW)||canvas.width,ch=(M&&M.canvasH)||canvas.height;return[Math.round((e.clientX-r.left)*cw/r.width),Math.round((e.clientY-r.top)*ch/r.height)]};addEventListener('keydown',e=>{if(!started)return;const k=K[e.code];if(!k)return;ev('rxc_ev_key',1,k[0],k[1],(e.repeat?1:0)|(k[2]?2:0));if(e.key.length===1&&!e.ctrlKey&&!e.altKey)ev('rxc_ev_char',e.key.charCodeAt(0));else if(e.code==='Enter'||e.code==='Backspace'||e.code==='Tab'||e.code==='Escape')ev('rxc_ev_char',k[0]);e.preventDefault()});addEventListener('keyup',e=>{if(!started)return;const k=K[e.code];if(!k)return;ev('rxc_ev_key',0,k[0],k[1],k[2]?2:0);e.preventDefault()});canvas.addEventListener('mousemove',e=>{const[x,y]=pos(e);ev('rxc_ev_mouse',0,x,y,0,0)});canvas.addEventListener('mousedown',e=>{canvas.focus();const[x,y]=pos(e);ev('rxc_ev_mouse',1,x,y,e.button,0);e.preventDefault()});addEventListener('mouseup',e=>{if(!started)return;const[x,y]=pos(e);ev('rxc_ev_mouse',2,x,y,e.button,0)});canvas.addEventListener('wheel',e=>{ev('rxc_ev_mouse',3,-1,-1,0,-Math.sign(e.deltaY)*120);e.preventDefault()},{passive:false});canvas.addEventListener('contextmenu',e=>e.preventDefault());addEventListener('focus',()=>ev('rxc_ev_focus',1));addEventListener('blur',()=>ev('rxc_ev_focus',0));canvas.addEventListener('webglcontextlost',e=>{status('Graphics context lost. Reload to continue.')});const WORKLET=`class H extends AudioWorkletProcessor{constructor(){super();this.q=[];this.off=0;this.queued=0;this.play=false;this.gain=1;this.l=0;this.r=0;this.tail=new Float32Array(4096);this.tw=0;this.tn=0;this.loop=0;this.gaps=0;this.gapMax=0;this.port.onmessage=e=>{if(e.data&&e.data.get){this.port.postMessage({queued:this.queued,gaps:this.gaps,gapMax:this.gapMax,loop:this.loop});return}this.q.push(e.data);this.queued+=e.data.length/2;if(this.queued>sampleRate*0.5){while(this.queued>sampleRate*0.2&&this.q.length>1){const b=this.q.shift(),f=b.length/2-this.off;this.queued-=f;this.off=0}this.gain=0}}}process(i,o){const L=o[0][0],R=o[0][1]||o[0][0],n=L.length;let k=0;if(!this.play&&this.queued>=sampleRate*0.1){this.play=true;this.gain=0}if(this.play){while(k<n&&this.q.length){const b=this.q[0],f=b.length/2,t=Math.min(n-k,f-this.off);for(let j=0;j<t;j++){const g=this.gain;L[k+j]=b[(this.off+j)*2]*g;R[k+j]=b[(this.off+j)*2+1]*g;this.tail[this.tw*2]=L[k+j];this.tail[this.tw*2+1]=R[k+j];this.tw=(this.tw+1)%2048;if(this.tn<2048)this.tn++;if(g<1)this.gain=Math.min(1,g+1/128)}k+=t;this.off+=t;this.queued-=t;if(this.off>=f){this.q.shift();this.off=0}}if(k){this.l=L[k-1];this.r=R[k-1]}else if(this.tn>512&&this.loop<sampleRate*0.5){this.gaps++;let rp=(this.tw-Math.min(n-k,this.tn)+4096)%2048,g=0;while(k<n){L[k]=this.tail[rp*2];R[k]=this.tail[rp*2+1];rp=(rp+1)%2048;k++;g++}this.loop+=g;if(g>this.gapMax)this.gapMax=g;this.l=L[k-1];this.r=R[k-1]}else this.play=false}for(;k<n;k++){this.l*=0.9;this.r*=0.9;L[k]=this.l;R[k]=this.r}return true}}registerProcessor('hg-out',H);`;async function startAudio(M){try{const ctx=new AudioContext({sampleRate:44100,latencyHint:'interactive'});await ctx.audioWorklet.addModule(URL.createObjectURL(new Blob([WORKLET],{type:'application/javascript'})));const node=new AudioWorkletNode(ctx,'hg-out',{numberOfInputs:0,outputChannelCount:[2]});node.connect(ctx.destination);M.audioContext=ctx;M.audioNode=node;M.soundOn=true;const wake=()=>{if(ctx.state!=='running')ctx.resume().catch(()=>{})};addEventListener('pointerdown',wake);addEventListener('keydown',wake)}catch(e){console.warn(e)}}(async()=>{started=true;status('Loading…');M={canvas,arguments:[args],gameBase:q.get('base')||'',preRun:[m=>{m.ENV.REXCOMP_MT=q.get('mt')||'0';m.ENV.SDL_RENDER_DRIVER=q.get('sdlrender')||'direct3d11';for(const[k,v]of q)if(k.startsWith('REXCOMP_')||k.startsWith('SDL_'))m.ENV[k]=v}],print:s=>console.log(s),printErr:s=>console.error(s),onStatus:s=>status(s),sleepHop:true,persistSave:true,onFirstFrame:()=>{canvas.focus();setInterval(()=>{const s=globalThis.__rxcStats;if(s)status(s.fps.toFixed(0)+' fps')},500)}};window.horseygame=M;if(q.get('gfxworker')!=='0'&&!!canvas.transferControlToOffscreen){try{const off=canvas.transferControlToOffscreen(),w=new Worker('gfx_worker.js');M.__gfxEarly=[];w.onmessage=e=>{M.__gfxmsg?M.__gfxmsg(e.data):M.__gfxEarly.push(e.data)};w.onerror=e=>status('Graphics worker failed: '+(e.message||e));w.postMessage({init:true,canvas:off},[off]);M.gfxWorker=w}catch(e){console.warn(e)}}await startAudio(M);Horseygame(M).catch(e=>{status('Failed to start: '+e);console.error(e)});canvas.focus()})()})();
+</script>
+</body></html>

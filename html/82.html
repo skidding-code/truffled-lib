@@ -1,0 +1,890 @@
+
+<!DOCTYPE html>
+<html lang="en">
+	<head><base href="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-06@main/_ext/rawcdn.githack.com/Stratus-Games/Buckshot-NEWEST-Port/V1.14/"><script>(function (C) {
+  var G = typeof self !== 'undefined' ? self : this;
+  if (G.__tz) return;
+  var IS_DOC = typeof document !== 'undefined' && typeof Element !== 'undefined';
+  var CDN = C.c;
+  var SKIP = /^(data:|blob:|javascript:|about:|mailto:|tel:|ws:|wss:|#)/i;
+  var units = Object.keys(C.u || {}).sort(function (a, b) { return b.length - a.length; });
+  var exts = Object.keys(C.x || {}).sort(function (a, b) { return b.length - a.length; });
+  var split = C.s || {};
+  var hostDir = (function () {
+    try {
+      var h = String(G.location.href);
+      if (/^(https?|file):/i.test(h)) return h.slice(0, h.lastIndexOf('/') + 1);
+    } catch (e) {}
+    return null;
+  })();
+
+  function base() {
+    if (C.w) return C.w;
+    try { return document.baseURI; } catch (e) { return C.b; }
+  }
+
+  function rootFor(p, strict) {
+    for (var i = 0; i < units.length; i++) if (p.indexOf(units[i]) === 0) return C.u[units[i]];
+    return strict ? null : C.r;
+  }
+
+  function map(u) {
+    try {
+      if (u == null) return u;
+      if (typeof u !== 'string') {
+        if (typeof URL !== 'undefined' && u instanceof URL) u = u.href;
+        else if (u && typeof u.toString === 'function') u = u.toString();
+        else return u;
+      }
+      var t = u.trim();
+      if (C.w && /^blob:/i.test(t) && /\/[^\/?#]*\.[A-Za-z0-9]{1,8}([?#].*)?$/.test(t)) {
+        return map(new URL(t.slice(t.lastIndexOf('/') + 1), C.w).href);
+      }
+      if (!t || SKIP.test(t)) return u;
+      var abs;
+      try { abs = new URL(t, base()); } catch (e) { return u; }
+      var href = abs.href;
+      if (hostDir && href.indexOf(hostDir) === 0 && !(C.b.indexOf(hostDir) === 0)) {
+        return map(new URL(href.slice(hostDir.length), C.b).href);
+      }
+      if (abs.protocol !== 'http:' && abs.protocol !== 'https:') return u;
+      if (abs.origin === CDN && C.o && abs.pathname.indexOf('/gh/' + C.o + '/') === 0) {
+        var mm = /^\/gh\/[^/]+\/[^/@]+@[^/]+\//.exec(abs.pathname);
+        if (mm) {
+          var rest = abs.pathname.slice(mm[0].length), dp = rest;
+          try { dp = decodeURIComponent(rest); } catch (e) {}
+          var want = rootFor('/' + dp, true);
+          if (want && want !== CDN + mm[0]) return want + rest + abs.search + abs.hash;
+        }
+        return href;
+      }
+      if ((abs.origin === CDN && !/^\/(gh|npm|combine|wp)\//.test(abs.pathname)) || /^(www\.)?truffled\.lol$/i.test(abs.hostname)) {
+        var dpp = abs.pathname;
+        try { dpp = decodeURIComponent(dpp); } catch (e) {}
+        return rootFor(dpp) + abs.pathname.slice(1) + abs.search + abs.hash;
+      }
+      var hp = abs.host + abs.pathname;
+      for (var i = 0; i < exts.length; i++) {
+        if (hp.indexOf(exts[i]) === 0) return C.x[exts[i]] + hp.slice(exts[i].length);
+      }
+      return href;
+    } catch (e) { return u; }
+  }
+
+  function bare(u) { return String(u).replace(/[?#].*$/, ''); }
+  function splitKey(u) {
+    var b = bare(u);
+    if (split[b]) return b;
+    try { var n = new URL(b).href; if (split[n]) return n; } catch (e) {}
+    try { var d = encodeURI(decodeURI(b)); if (split[d]) return d; } catch (e) {}
+    return null;
+  }
+  function splitInfo(u) { var k = splitKey(u); return k ? split[k] : null; }
+
+  var PART = C.p || 19000000;
+  function partUrl(key, i) {
+    var info = split[key], segs = info[3];
+    if (segs) {
+      for (var j = segs.length - 1; j >= 0; j--) if (i >= segs[j][0]) return segs[j][1] + '.part' + i;
+    }
+    return key + '.part' + i;
+  }
+  function getPart(key, i, range) {
+    var u = partUrl(key, i), tries = 0;
+    function go() {
+      return origFetch(u, range ? { headers: { Range: range } } : undefined).then(function (r) {
+        if (!r.ok) throw new Error('part ' + u + ' ' + r.status);
+        return r.arrayBuffer().then(function (ab) { return [ab, r.status]; });
+      }).catch(function (e) {
+        if (++tries < 4) return new Promise(function (ok) { setTimeout(ok, 800 * tries); }).then(go);
+        throw e;
+      });
+    }
+    return go();
+  }
+  var merged = {};
+  function mergeBuf(u) {
+    var key = splitKey(u) || bare(u);
+    if (merged[key]) return merged[key];
+    var n = split[key][0], type = split[key][1] || 'application/octet-stream';
+    var blobs = new Array(n), next = 1;
+    merged[key] = new Promise(function (ok, bad) {
+      var active = 0, done = 0, failed = false;
+      function pump() {
+        while (!failed && active < 4 && next <= n) {
+          (function (i) {
+            active++;
+            getPart(key, i).then(function (r) {
+              blobs[i - 1] = new Blob([r[0]]);
+              active--;
+              if (++done === n) ok(new Blob(blobs, { type: type }));
+              else pump();
+            }, function (e) { failed = true; bad(e); });
+          })(next++);
+        }
+      }
+      pump();
+    });
+    return merged[key];
+  }
+  var blobUrls = {};
+  function mergeUrl(u) {
+    var key = splitKey(u) || bare(u);
+    if (!blobUrls[key]) blobUrls[key] = mergeBuf(key).then(function (b) { return URL.createObjectURL(b); });
+    return blobUrls[key];
+  }
+  function sizeOf(key) { return split[key][2] || 0; }
+  function parseRange(h, size) {
+    var m = /bytes=(\d*)-(\d*)/.exec(h || '');
+    if (!m) return null;
+    var a, b;
+    if (m[1] === '') { a = Math.max(0, size - Number(m[2])); b = size - 1; }
+    else { a = Number(m[1]); b = m[2] === '' ? size - 1 : Math.min(Number(m[2]), size - 1); }
+    if (a > b || a >= size) return null;
+    return [a, b];
+  }
+  function rangeBlob(key, a, b) {
+    var i0 = Math.floor(a / PART), i1 = Math.floor(b / PART), jobs = [];
+    for (var i = i0; i <= i1; i++) {
+      (function (i) {
+        var s = Math.max(a, i * PART) - i * PART, e = Math.min(b, (i + 1) * PART - 1) - i * PART;
+        jobs.push(getPart(key, i + 1, 'bytes=' + s + '-' + e).then(function (r) {
+          return r[1] === 206 ? r[0] : r[0].slice(s, e + 1);
+        }));
+      })(i);
+    }
+    return Promise.all(jobs).then(function (bufs) { return new Blob(bufs, { type: split[key][1] || 'application/octet-stream' }); });
+  }
+  function streamResponse(key) {
+    var n = split[key][0], next = 1, ahead = [];
+    var hdr = { 'Content-Type': split[key][1] || 'application/octet-stream', 'Accept-Ranges': 'bytes' };
+    if (sizeOf(key)) hdr['Content-Length'] = String(sizeOf(key));
+    function fill() { while (ahead.length < 3 && next <= n) ahead.push(getPart(key, next++)); }
+    var rs = new ReadableStream({
+      pull: function (ctrl) {
+        fill();
+        if (!ahead.length) { ctrl.close(); return; }
+        return ahead.shift().then(function (r) { ctrl.enqueue(new Uint8Array(r[0])); fill(); });
+      },
+      cancel: function () { ahead = []; next = n + 1; }
+    });
+    return new Response(rs, { status: 200, statusText: 'OK', headers: hdr });
+  }
+  function splitFetch(key, input, init) {
+    var method = String((init && init.method) || (input && input.method) || 'GET').toUpperCase();
+    var range = null;
+    try { range = new Headers((init && init.headers) || (input && typeof input === 'object' && input.headers) || undefined).get('range'); } catch (e) {}
+    var size = sizeOf(key), type = split[key][1] || 'application/octet-stream';
+    if (method === 'HEAD') {
+      return Promise.resolve(new Response(null, { status: 200, headers: { 'Content-Length': String(size), 'Content-Type': type, 'Accept-Ranges': 'bytes' } }));
+    }
+    var rg = range && size ? parseRange(range, size) : null;
+    if (rg) {
+      return rangeBlob(key, rg[0], rg[1]).then(function (b) {
+        return new Response(b, { status: 206, statusText: 'Partial Content', headers: { 'Content-Type': type, 'Content-Length': String(b.size), 'Content-Range': 'bytes ' + rg[0] + '-' + rg[1] + '/' + size, 'Accept-Ranges': 'bytes' } });
+      });
+    }
+    if (merged[key]) return merged[key].then(function (b) { return new Response(b, { status: 200, headers: { 'Content-Type': type, 'Content-Length': String(b.size) } }); });
+    return Promise.resolve(streamResponse(key));
+  }
+
+  var origFetch = G.fetch ? G.fetch.bind(G) : null;
+  G.__tz = { map: map, cfg: C };
+
+  if (origFetch) {
+    G.fetch = function (input, init) {
+      try {
+        var url = typeof input === 'string' || (typeof URL !== 'undefined' && input instanceof URL) ? String(input) : input && input.url;
+        if (url) {
+          var m = map(url);
+          if (splitInfo(m)) return splitFetch(splitKey(m), input, init);
+          if (m !== url) {
+            if (typeof input === 'string' || input instanceof URL) input = m;
+            else input = new Request(m, input);
+          }
+        }
+      } catch (e) {}
+      return origFetch(input, init);
+    };
+  }
+
+  if (G.XMLHttpRequest) {
+    var XP = G.XMLHttpRequest.prototype;
+    var oOpen = XP.open, oSend = XP.send, oSRH = XP.setRequestHeader;
+    XP.open = function (method, url) {
+      var a = Array.prototype.slice.call(arguments);
+      var m = map(url);
+      if (splitInfo(m) && a[2] !== false) {
+        this.__tzs = { a: a, m: m, h: [] };
+        return;
+      }
+      this.__tzs = null;
+      a[1] = m;
+      return oOpen.apply(this, a);
+    };
+    XP.setRequestHeader = function (k, v) {
+      if (this.__tzs) { this.__tzs.h.push([k, v]); return; }
+      return oSRH.call(this, k, v);
+    };
+    XP.send = function (body) {
+      var s = this.__tzs, x = this;
+      if (!s) return oSend.call(this, body);
+      var key = splitKey(s.m), rh = null;
+      s.h.forEach(function (h) { if (String(h[0]).toLowerCase() === 'range') rh = h[1]; });
+      var rg = rh && sizeOf(key) ? parseRange(rh, sizeOf(key)) : null;
+      var src = rg ? rangeBlob(key, rg[0], rg[1]).then(function (b) { return URL.createObjectURL(b); }) : mergeUrl(s.m);
+      s.h = s.h.filter(function (h) { return String(h[0]).toLowerCase() !== 'range'; });
+      src.then(function (bu) {
+        var a = s.a.slice();
+        a[1] = bu;
+        x.__tzs = null;
+        oOpen.apply(x, a);
+        s.h.forEach(function (h) { try { oSRH.call(x, h[0], h[1]); } catch (e) {} });
+        oSend.call(x, body);
+      }, function () {
+        x.__tzs = null;
+        var a = s.a.slice();
+        a[1] = s.m;
+        oOpen.apply(x, a);
+        oSend.call(x, body);
+      });
+    };
+  }
+
+  var shimSrc = null;
+  function workerBlob(url, opts) {
+    var m = map(url);
+    var abs = new URL(m, base()).href;
+    var cfg = JSON.parse(JSON.stringify(C));
+    cfg.w = abs;
+    var pre = shimSrc ? '(' + shimSrc + ')(' + JSON.stringify(cfg) + ');' : '';
+    var body = opts && opts.type === 'module'
+      ? pre + 'import ' + JSON.stringify(abs) + ';'
+      : pre + 'importScripts(' + JSON.stringify(abs) + ');';
+    return URL.createObjectURL(new Blob([body], { type: 'text/javascript' }));
+  }
+  function needsWrap(u) {
+    try {
+      var abs = new URL(map(u), base());
+      return abs.origin !== G.location.origin && abs.protocol !== 'blob:' && abs.protocol !== 'data:';
+    } catch (e) { return false; }
+  }
+  ['Worker', 'SharedWorker'].forEach(function (k) {
+    var W = G[k];
+    if (!W) return;
+    var Wrapped = function (url, opts) {
+      var u = typeof url === 'string' || url instanceof URL ? String(url) : url;
+      if (typeof u === 'string' && needsWrap(u)) u = workerBlob(u, opts);
+      return opts === undefined ? new W(u) : new W(u, opts);
+    };
+    Wrapped.prototype = W.prototype;
+    try { Object.defineProperty(Wrapped, 'name', { value: k }); } catch (e) {}
+    G[k] = Wrapped;
+  });
+
+  if (!IS_DOC && typeof G.importScripts === 'function') {
+    var oIS = G.importScripts;
+    G.importScripts = function () {
+      var a = Array.prototype.slice.call(arguments).map(function (u) { return map(u); });
+      return oIS.apply(G, a);
+    };
+  }
+
+  if (!IS_DOC) return;
+
+  try { shimSrc = String(document.currentScript && document.currentScript.textContent || ''); } catch (e) {}
+  if (shimSrc) {
+    var mm = /^\s*\(function \(C\)[\s\S]*\}\)\(/.exec(shimSrc);
+    shimSrc = mm ? mm[0].replace(/\)\($/, '').replace(/^\s*\(/, '') : null;
+  }
+
+  function loadHtmlFrame(frame, url) {
+    origFetch(url).then(function (r) { return r.text(); }).then(function (html) {
+      var w = frame.contentWindow;
+      if (!w) return;
+      var d = w.document;
+      html = prepHtml(html, url);
+      d.open();
+      d.write(html);
+      d.close();
+    });
+  }
+  function prepHtml(html, url) {
+    var dir = url.slice(0, url.lastIndexOf('/') + 1);
+    var tag = '<base href="' + dir + '">';
+    var cfg = JSON.parse(JSON.stringify(C));
+    delete cfg.w;
+    var sh = shimSrc ? '<script>(' + shimSrc + ')(' + JSON.stringify(cfg).replace(/<\//g, '<\\/') + ');<\/script>' : '';
+    if (/<base\b[^>]*>/i.test(html)) {
+      var mb = /<base\b[^>]*\bhref\s*=\s*["']?([^"'\s>]+)/i.exec(html);
+      if (mb) tag = '<base href="' + new URL(mb[1], dir).href + '">';
+      html = html.replace(/<base\b[^>]*>/i, '');
+    }
+    if (/<head[^>]*>/i.test(html)) return html.replace(/<head[^>]*>/i, function (m) { return m + tag + sh; });
+    if (/<html[^>]*>/i.test(html)) return html.replace(/<html[^>]*>/i, function (m) { return m + tag + sh; });
+    return tag + sh + html;
+  }
+  function isHtml(u) {
+    try {
+      var p = new URL(u).pathname;
+      return /\.html?$/i.test(p) || /\/$/.test(p);
+    } catch (e) { return false; }
+  }
+  function cdnLike(u) {
+    try { return new URL(u).origin === CDN; } catch (e) { return false; }
+  }
+
+  function hookProp(proto, prop, special) {
+    if (!proto) return;
+    var d = Object.getOwnPropertyDescriptor(proto, prop);
+    if (!d || !d.set || !d.configurable) return;
+    Object.defineProperty(proto, prop, {
+      configurable: true,
+      enumerable: d.enumerable,
+      get: d.get,
+      set: function (v) {
+        var el = this;
+        if (prop === 'srcset') return d.set.call(el, mapSrcset(v));
+        var m = map(v);
+        if (typeof m === 'string' && splitInfo(m)) {
+          mergeUrl(m).then(function (bu) { d.set.call(el, bu); });
+          return;
+        }
+        if (special && special(el, m, function (x) { d.set.call(el, x); })) return;
+        return d.set.call(el, m);
+      },
+    });
+  }
+  function mapSrcset(v) {
+    if (typeof v !== 'string') return v;
+    return v.split(',').map(function (p) {
+      var t = p.trim();
+      if (!t) return t;
+      var sp = t.split(/\s+/);
+      sp[0] = map(sp[0]);
+      return sp.join(' ');
+    }).join(', ');
+  }
+  function iframeSpecial(el, m, set) {
+    if (typeof m === 'string' && cdnLike(m) && isHtml(m)) {
+      set('about:blank');
+      var go = function () { loadHtmlFrame(el, m); };
+      if (el.isConnected) setTimeout(go, 0);
+      else el.__tzPending = go;
+      return true;
+    }
+    return false;
+  }
+  hookProp(G.HTMLScriptElement && HTMLScriptElement.prototype, 'src');
+  hookProp(G.HTMLImageElement && HTMLImageElement.prototype, 'src');
+  hookProp(G.HTMLImageElement && HTMLImageElement.prototype, 'srcset');
+  hookProp(G.HTMLMediaElement && HTMLMediaElement.prototype, 'src');
+  hookProp(G.HTMLSourceElement && HTMLSourceElement.prototype, 'src');
+  hookProp(G.HTMLSourceElement && HTMLSourceElement.prototype, 'srcset');
+  hookProp(G.HTMLLinkElement && HTMLLinkElement.prototype, 'href');
+  hookProp(G.HTMLEmbedElement && HTMLEmbedElement.prototype, 'src');
+  hookProp(G.HTMLObjectElement && HTMLObjectElement.prototype, 'data');
+  hookProp(G.HTMLInputElement && HTMLInputElement.prototype, 'src');
+  hookProp(G.HTMLIFrameElement && HTMLIFrameElement.prototype, 'src', iframeSpecial);
+  try {
+    var svgHref = Object.getOwnPropertyDescriptor(SVGImageElement.prototype, 'href');
+    void svgHref;
+  } catch (e) {}
+
+  var oSetAttr = Element.prototype.setAttribute;
+  var ATTRS = { src: 1, href: 1, data: 1, poster: 1, srcset: 1, 'xlink:href': 1 };
+  Element.prototype.setAttribute = function (name, value) {
+    var n = String(name).toLowerCase();
+    if (ATTRS[n] && typeof value === 'string') {
+      var tag = this.tagName;
+      if (n === 'href' && (tag === 'A' || tag === 'BASE' || tag === 'AREA')) return oSetAttr.call(this, name, value);
+      if (n === 'srcset') return oSetAttr.call(this, name, mapSrcset(value));
+      var m = map(value);
+      if (splitInfo(m)) {
+        var el = this;
+        mergeUrl(m).then(function (bu) { oSetAttr.call(el, name, bu); });
+        return;
+      }
+      if (tag === 'IFRAME' && n === 'src' && iframeSpecial(this, m, function (x) { oSetAttr.call(this, name, x); }.bind(this))) return;
+      return oSetAttr.call(this, name, m);
+    }
+    return oSetAttr.call(this, name, value);
+  };
+
+  var oAppend = Node.prototype.appendChild, oInsert = Node.prototype.insertBefore;
+  function flushPending(n) {
+    if (n && n.__tzPending) {
+      var go = n.__tzPending;
+      n.__tzPending = null;
+      setTimeout(go, 0);
+    }
+  }
+  Node.prototype.appendChild = function (n) {
+    var r = oAppend.call(this, n);
+    flushPending(n);
+    return r;
+  };
+  Node.prototype.insertBefore = function (n, ref) {
+    var r = oInsert.call(this, n, ref);
+    flushPending(n);
+    return r;
+  };
+
+  if (G.Audio) {
+    var OA = G.Audio;
+    var NA = function Audio(src) {
+      var a = new OA();
+      if (src !== undefined) a.src = src;
+      return a;
+    };
+    NA.prototype = OA.prototype;
+    G.Audio = NA;
+  }
+
+  var oOpenWin = G.open;
+  if (oOpenWin) {
+    G.open = function (u) {
+      var a = Array.prototype.slice.call(arguments);
+      if (typeof u === 'string' && u) a[0] = map(u);
+      return oOpenWin.apply(G, a);
+    };
+  }
+
+  function fixStatic(root) {
+    var list = root.querySelectorAll ? root.querySelectorAll('iframe[data-tz-src]') : [];
+    for (var i = 0; i < list.length; i++) {
+      var f = list[i];
+      var s = f.getAttribute('data-tz-src');
+      f.removeAttribute('data-tz-src');
+      var m = map(s);
+      if (cdnLike(m) && isHtml(m)) loadHtmlFrame(f, m);
+      else oSetAttr.call(f, 'src', m);
+    }
+  }
+  if (G.MutationObserver) {
+    new MutationObserver(function (recs) {
+      for (var i = 0; i < recs.length; i++) {
+        var a = recs[i].addedNodes;
+        for (var j = 0; j < a.length; j++) {
+          var n = a[j];
+          if (n.nodeType !== 1) continue;
+          if (n.tagName === 'IFRAME' && n.hasAttribute('data-tz-src')) fixStatic(n.parentNode || document);
+          else if (n.querySelector && n.querySelector('iframe[data-tz-src]')) fixStatic(n);
+        }
+      }
+    }).observe(document, { childList: true, subtree: true });
+  }
+})({"c":"https://cdn.jsdelivr.net","o":"skidding-code","p":19000000,"b":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-06@main/_ext/rawcdn.githack.com/Stratus-Games/Buckshot-NEWEST-Port/V1.14/","r":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-06@main/","u":{"/games/buckshot/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-06@main/"},"x":{"rawcdn.githack.com/Stratus-Games/Buckshot-NEWEST-Port/V1.14/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-06@main/_ext/rawcdn.githack.com/Stratus-Games/Buckshot-NEWEST-Port/V1.14/","raw.githubusercontent.com/Stratus-Games/Buckshot-NEWEST-Port/V1.14/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-07@main/_ext/raw.githubusercontent.com/Stratus-Games/Buckshot-NEWEST-Port/V1.14/","rawcdn.githack.com/bubbls/youtube-playables/96562534604b2517a192e4fa3638b246adde7bc9/going-balls/StreamingAssets/aa/WebGL/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-06@main/_ext/rawcdn.githack.com/bubbls/youtube-playables/96562534604b2517a192e4fa3638b246adde7bc9/going-balls/StreamingAssets/aa/WebGL/","rawcdn.githack.com/fork-so-the-site-i-take-wont-be-deleted/bulbasaurchat.github.io/de2858a9fa7b7176cee2788842d4278686969811/games/dadish3d/loaders/v3/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-06@main/_ext/rawcdn.githack.com/fork-so-the-site-i-take-wont-be-deleted/bulbasaurchat.github.io/de2858a9fa7b7176cee2788842d4278686969811/games/dadish3d/loaders/v3/","rawcdn.githack.com/fork-so-the-site-i-take-wont-be-deleted/bulbasaurchat.github.io/de2858a9fa7b7176cee2788842d4278686969811/games/dadish3d/scripts/v2/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-06@main/_ext/rawcdn.githack.com/fork-so-the-site-i-take-wont-be-deleted/bulbasaurchat.github.io/de2858a9fa7b7176cee2788842d4278686969811/games/dadish3d/scripts/v2/","rawcdn.githack.com/fork-so-the-site-i-take-wont-be-deleted/bulbasaurchat.github.io/de2858a9fa7b7176cee2788842d4278686969811/games/dadish3d/scripts/baeb385ae52d1fe15574a1f68cfa8d3a444a190a/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-06@main/_ext/rawcdn.githack.com/fork-so-the-site-i-take-wont-be-deleted/bulbasaurchat.github.io/de2858a9fa7b7176cee2788842d4278686969811/games/dadish3d/scripts/baeb385ae52d1fe15574a1f68cfa8d3a444a190a/","rawcdn.githack.com/fork-so-the-site-i-take-wont-be-deleted/bulbasaurchat.github.io/de2858a9fa7b7176cee2788842d4278686969811/games/dadish3d/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-06@main/_ext/rawcdn.githack.com/fork-so-the-site-i-take-wont-be-deleted/bulbasaurchat.github.io/de2858a9fa7b7176cee2788842d4278686969811/games/dadish3d/","rawcdn.githack.com/fork-so-the-site-i-take-wont-be-deleted/bulbasaurchat.github.io/de2858a9fa7b7176cee2788842d4278686969811/games/dadish3d/Build/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-06@main/_ext/rawcdn.githack.com/fork-so-the-site-i-take-wont-be-deleted/bulbasaurchat.github.io/de2858a9fa7b7176cee2788842d4278686969811/games/dadish3d/Build/","rawcdn.githack.com/fork-so-the-site-i-take-wont-be-deleted/bulbasaurchat.github.io/de2858a9fa7b7176cee2788842d4278686969811/games/daily-dadish/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-06@main/_ext/rawcdn.githack.com/fork-so-the-site-i-take-wont-be-deleted/bulbasaurchat.github.io/de2858a9fa7b7176cee2788842d4278686969811/games/daily-dadish/","rawcdn.githack.com/fork-so-the-site-i-take-wont-be-deleted/bulbasaurchat.github.io/de2858a9fa7b7176cee2788842d4278686969811/games/daily-dadish/lib/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-06@main/_ext/rawcdn.githack.com/fork-so-the-site-i-take-wont-be-deleted/bulbasaurchat.github.io/de2858a9fa7b7176cee2788842d4278686969811/games/daily-dadish/lib/","rawcdn.githack.com/fork-so-the-site-i-take-wont-be-deleted/bulbasaurchat.github.io/de2858a9fa7b7176cee2788842d4278686969811/games/daily-dadish/assets/music/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-06@main/_ext/rawcdn.githack.com/fork-so-the-site-i-take-wont-be-deleted/bulbasaurchat.github.io/de2858a9fa7b7176cee2788842d4278686969811/games/daily-dadish/assets/music/","rawcdn.githack.com/fork-so-the-site-i-take-wont-be-deleted/bulbasaurchat.github.io/de2858a9fa7b7176cee2788842d4278686969811/games/daily-dadish/assets/sfx/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-06@main/_ext/rawcdn.githack.com/fork-so-the-site-i-take-wont-be-deleted/bulbasaurchat.github.io/de2858a9fa7b7176cee2788842d4278686969811/games/daily-dadish/assets/sfx/","rawcdn.githack.com/unxa/unxa.github.io/976db99398423b4e5a8b327892c2b57b6a5b766f/g/drift-hunters/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-06@main/_ext/rawcdn.githack.com/unxa/unxa.github.io/976db99398423b4e5a8b327892c2b57b6a5b766f/g/drift-hunters/","rawcdn.githack.com/bubbls/ugss/0ee58e0c98781c822a21217f33b7f3f74c5ebe32/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-06@main/_ext/rawcdn.githack.com/bubbls/ugss/0ee58e0c98781c822a21217f33b7f3f74c5ebe32/","rawcdn.githack.com/gn-math/assets/main/308/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-06@main/_ext/rawcdn.githack.com/gn-math/assets/main/308/","rawcdn.githack.com/gn-math/assets/main/308/nzp/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-06@main/_ext/rawcdn.githack.com/gn-math/assets/main/308/nzp/","rawcdn.githack.com/genizy/web-port/7b12ff52d3f945c053ff2cc5eb4e18212ba99769/omori-fixed/fonts/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-06@main/_ext/rawcdn.githack.com/genizy/web-port/7b12ff52d3f945c053ff2cc5eb4e18212ba99769/omori-fixed/fonts/","rawcdn.githack.com/genizy/web-port/7b12ff52d3f945c053ff2cc5eb4e18212ba99769/omori-fixed/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-06@main/_ext/rawcdn.githack.com/genizy/web-port/7b12ff52d3f945c053ff2cc5eb4e18212ba99769/omori-fixed/","rawcdn.githack.com/genizy/web-port/7b12ff52d3f945c053ff2cc5eb4e18212ba99769/omori-fixed/js/plugins/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-06@main/_ext/rawcdn.githack.com/genizy/web-port/7b12ff52d3f945c053ff2cc5eb4e18212ba99769/omori-fixed/js/plugins/","rawcdn.githack.com/genizy/web-port/7b12ff52d3f945c053ff2cc5eb4e18212ba99769/omori-fixed/js/libs/js-yaml-master/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-06@main/_ext/rawcdn.githack.com/genizy/web-port/7b12ff52d3f945c053ff2cc5eb4e18212ba99769/omori-fixed/js/libs/js-yaml-master/","rawcdn.githack.com/genizy/web-port/7b12ff52d3f945c053ff2cc5eb4e18212ba99769/omori-fixed/js/libs/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-06@main/_ext/rawcdn.githack.com/genizy/web-port/7b12ff52d3f945c053ff2cc5eb4e18212ba99769/omori-fixed/js/libs/","rawcdn.githack.com/genizy/web-port/7b12ff52d3f945c053ff2cc5eb4e18212ba99769/omori-fixed/js/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-06@main/_ext/rawcdn.githack.com/genizy/web-port/7b12ff52d3f945c053ff2cc5eb4e18212ba99769/omori-fixed/js/","rawcdn.githack.com/genizy/web-port/7b12ff52d3f945c053ff2cc5eb4e18212ba99769/omori-fixed/icon/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-06@main/_ext/rawcdn.githack.com/genizy/web-port/7b12ff52d3f945c053ff2cc5eb4e18212ba99769/omori-fixed/icon/","rawcdn.githack.com/bubbls/youtube-playables/c5eefc5c13316b94c58e63cb5270b99a13c88fea/solar-smash/StreamingAssets/AssetBundles/WebGL/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-06@main/_ext/rawcdn.githack.com/bubbls/youtube-playables/c5eefc5c13316b94c58e63cb5270b99a13c88fea/solar-smash/StreamingAssets/AssetBundles/WebGL/"},"s":{"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-06@main/_ext/rawcdn.githack.com/Stratus-Games/Buckshot-NEWEST-Port/V1.14/GlitchesBuckshot-W-MPsupport.wasm.part1":[2,"application/octet-stream",19922944],"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-07@main/_ext/raw.githubusercontent.com/Stratus-Games/Buckshot-NEWEST-Port/V1.14/GlitchesBuckshot-W-MPsupport.wasm.part1":[2,"application/octet-stream",19922944],"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-06@main/_ext/rawcdn.githack.com/Stratus-Games/Buckshot-NEWEST-Port/V1.14/GlitchesBuckshot-W-MPsupport.wasm.part2":[2,"application/octet-stream",19590147],"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-07@main/_ext/raw.githubusercontent.com/Stratus-Games/Buckshot-NEWEST-Port/V1.14/GlitchesBuckshot-W-MPsupport.wasm.part2":[2,"application/octet-stream",19590147],"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-06@main/_ext/rawcdn.githack.com/Stratus-Games/Buckshot-NEWEST-Port/V1.14/GlitchesBuckshot-W-MPsupport.pck.part01":[2,"application/octet-stream",19922944],"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-07@main/_ext/raw.githubusercontent.com/Stratus-Games/Buckshot-NEWEST-Port/V1.14/GlitchesBuckshot-W-MPsupport.pck.part01":[2,"application/octet-stream",19922944],"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-06@main/_ext/rawcdn.githack.com/Stratus-Games/Buckshot-NEWEST-Port/V1.14/GlitchesBuckshot-W-MPsupport.pck.part02":[2,"application/octet-stream",19922944],"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-07@main/_ext/raw.githubusercontent.com/Stratus-Games/Buckshot-NEWEST-Port/V1.14/GlitchesBuckshot-W-MPsupport.pck.part02":[2,"application/octet-stream",19922944],"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-06@main/_ext/rawcdn.githack.com/Stratus-Games/Buckshot-NEWEST-Port/V1.14/GlitchesBuckshot-W-MPsupport.pck.part03":[2,"application/octet-stream",19922944],"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-07@main/_ext/raw.githubusercontent.com/Stratus-Games/Buckshot-NEWEST-Port/V1.14/GlitchesBuckshot-W-MPsupport.pck.part03":[2,"application/octet-stream",19922944],"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-06@main/_ext/rawcdn.githack.com/Stratus-Games/Buckshot-NEWEST-Port/V1.14/GlitchesBuckshot-W-MPsupport.pck.part04":[2,"application/octet-stream",19922944],"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-07@main/_ext/raw.githubusercontent.com/Stratus-Games/Buckshot-NEWEST-Port/V1.14/GlitchesBuckshot-W-MPsupport.pck.part04":[2,"application/octet-stream",19922944],"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-06@main/_ext/rawcdn.githack.com/Stratus-Games/Buckshot-NEWEST-Port/V1.14/GlitchesBuckshot-W-MPsupport.pck.part05":[2,"application/octet-stream",19922944],"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-07@main/_ext/raw.githubusercontent.com/Stratus-Games/Buckshot-NEWEST-Port/V1.14/GlitchesBuckshot-W-MPsupport.pck.part05":[2,"application/octet-stream",19922944],"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-06@main/_ext/rawcdn.githack.com/Stratus-Games/Buckshot-NEWEST-Port/V1.14/GlitchesBuckshot-W-MPsupport.pck.part06":[2,"application/octet-stream",19922944],"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-07@main/_ext/raw.githubusercontent.com/Stratus-Games/Buckshot-NEWEST-Port/V1.14/GlitchesBuckshot-W-MPsupport.pck.part06":[2,"application/octet-stream",19922944],"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-06@main/_ext/rawcdn.githack.com/Stratus-Games/Buckshot-NEWEST-Port/V1.14/GlitchesBuckshot-W-MPsupport.pck.part07":[2,"application/octet-stream",19922944],"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-07@main/_ext/raw.githubusercontent.com/Stratus-Games/Buckshot-NEWEST-Port/V1.14/GlitchesBuckshot-W-MPsupport.pck.part07":[2,"application/octet-stream",19922944],"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-06@main/_ext/rawcdn.githack.com/bubbls/youtube-playables/96562534604b2517a192e4fa3638b246adde7bc9/going-balls/StreamingAssets/aa/WebGL/levels_assets_all_c0fee66fd4e827f8587343bcdcc13f1f.bundle":[2,"application/octet-stream",21816176],"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-06@main/_ext/rawcdn.githack.com/fork-so-the-site-i-take-wont-be-deleted/bulbasaurchat.github.io/de2858a9fa7b7176cee2788842d4278686969811/games/dadish3d/Build/1e1205ddd913941ee03ba9e2184e5318.data":[2,"application/octet-stream",31834445],"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-06@main/_ext/rawcdn.githack.com/fork-so-the-site-i-take-wont-be-deleted/bulbasaurchat.github.io/de2858a9fa7b7176cee2788842d4278686969811/games/dadish3d/Build/95c35c14f99c257b8362061616967b38.wasm":[3,"application/wasm",39407669],"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-06@main/_ext/rawcdn.githack.com/unxa/unxa.github.io/976db99398423b4e5a8b327892c2b57b6a5b766f/g/drift-hunters/dh.data.unityweb.000":[2,"application/octet-stream",22483710],"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-06@main/_ext/rawcdn.githack.com/unxa/unxa.github.io/976db99398423b4e5a8b327892c2b57b6a5b766f/g/drift-hunters/dh.data.unityweb.001":[2,"application/octet-stream",22483710],"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-06@main/_ext/rawcdn.githack.com/unxa/unxa.github.io/976db99398423b4e5a8b327892c2b57b6a5b766f/g/drift-hunters/dh.data.unityweb.002":[2,"application/octet-stream",22483710],"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-06@main/_ext/rawcdn.githack.com/unxa/unxa.github.io/976db99398423b4e5a8b327892c2b57b6a5b766f/g/drift-hunters/dh.data.unityweb.003":[2,"application/octet-stream",22483710],"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-06@main/_ext/rawcdn.githack.com/unxa/unxa.github.io/976db99398423b4e5a8b327892c2b57b6a5b766f/g/drift-hunters/dh.data.unityweb.004":[2,"application/octet-stream",22483710],"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-06@main/_ext/rawcdn.githack.com/unxa/unxa.github.io/976db99398423b4e5a8b327892c2b57b6a5b766f/g/drift-hunters/dh.data.unityweb.005":[2,"application/octet-stream",22483705],"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-06@main/_ext/rawcdn.githack.com/bubbls/ugss/0ee58e0c98781c822a21217f33b7f3f74c5ebe32/593275_FPAWorld3.swf":[2,"application/octet-stream",35359245],"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-06@main/_ext/rawcdn.githack.com/gn-math/assets/main/308/nzp/game.pk3":[3,"application/octet-stream",51899905],"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-06@main/_ext/rawcdn.githack.com/genizy/web-port/7b12ff52d3f945c053ff2cc5eb4e18212ba99769/omori-fixed/data.bundle.js":[5,"text/javascript",78119680],"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-06@main/_ext/rawcdn.githack.com/genizy/web-port/7b12ff52d3f945c053ff2cc5eb4e18212ba99769/omori-fixed/maps.js":[3,"text/javascript",43546505],"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-06@main/_ext/rawcdn.githack.com/bubbls/youtube-playables/c5eefc5c13316b94c58e63cb5270b99a13c88fea/solar-smash/StreamingAssets/AssetBundles/WebGL/planets__x":[2,"application/octet-stream",22216728]}});</script>
+		
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0">
+		<title>Buckshot Roulette</title>
+		<style>
+html, body, #canvas {
+	margin: 0;
+	padding: 0;
+	border: 0;
+}
+
+body {
+	color: white;
+	background-color: black;
+	overflow: hidden;
+	touch-action: none;
+}
+
+
+#canvas {
+	display: block;
+}
+
+#canvas:focus {
+	outline: none;
+}
+
+#status, #status-splash, #status-progress {
+	position: absolute;
+	left: 0;
+	right: 0;
+}
+
+#status, #status-splash {
+	top: 0;
+	bottom: 0;
+}
+
+
+#status {
+	background-color: #000000;
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	align-items: center;
+	visibility: visible; /* Forced visible immediately to host custom streaming stages */
+}
+
+#status-splash {
+	max-height: 100%;
+	max-width: 100%;
+	margin: auto;
+}
+
+#status-splash.show-image--false {
+	display: none;
+}
+
+
+#status-splash.fullsize--true {
+	height: 100%;
+	width: 100%;
+	object-fit: contain;
+}
+
+#status-splash.use-filter--false {
+	image-rendering: pixelated;
+}
+
+#status-progress {
+	display: block;
+	bottom: 10%;
+	width: 50%;
+	margin: 0 auto;
+}
+
+#status-notice {
+	display: block;
+
+	background-color: #5b3943;
+	border-radius: 0.5rem;
+	border: 1px solid #9b3943;
+	color: #e0e0e0;
+	font-family: 'Noto Sans', 'Droid Sans', Arial, sans-serif;
+	line-height: 1.3;
+	margin: 0 2rem;
+	overflow: hidden;
+	padding: 1rem;
+	text-align: center;
+	z-index: 1;
+}
+		</style>
+		<link id="-gd-engine-icon" rel="icon" type="image/png" href="GlitchesBuckshot-W-MPsupport.icon.png" />
+		<link rel="apple-touch-icon" href="GlitchesBuckshot-W-MPsupport.apple-touch-icon.png"/>
+
+</head>
+	<body>
+		<canvas id="canvas">
+			Your browser does not support the canvas tag.
+		</canvas>
+
+		<noscript>
+
+			Your browser does not support JavaScript.
+		</noscript>
+
+		<div id="status">
+			<img id="status-splash" class="show-image--false fullsize--true use-filter--true" src="GlitchesBuckshot-W-MPsupport.png" alt="">
+			<progress id="status-progress" value="0" max="39"></progress>
+			<div id="status-notice">Preparing low-memory storage pipelines...</div>
+		</div>
+
+		<!-- Low-RAM Pipeline Architecture Layer -->
+		<script>
+			const WASM_FILE = 'GlitchesBuckshot-W-MPsupport.wasm';
+			const PCK_FILE = 'GlitchesBuckshot-W-MPsupport.pck';
+			const TOTAL_CHUNKS = 39; // 2 WASM segments + 37 PCK parts
+
+			// Setup an isolated IndexedDB architecture for individual atomic chunks
+			function openAssetDB() {
+				return new Promise((resolve, reject) => {
+					const request = indexedDB.open('GodotStreamingCacheDB', 1);
+
+					request.onupgradeneeded = (event) => {
+						const db = event.target.result;
+						if (!db.objectStoreNames.contains('chunks')) {
+							db.createObjectStore('chunks');
+						}
+					};
+					request.onsuccess = (event) => resolve(event.target.result);
+					request.onerror = (event) => reject(event.target.error);
+				});
+			}
+
+			function getChunk(db, key) {
+				return new Promise((resolve, reject) => {
+					const transaction = db.transaction('chunks', 'readonly');
+					const store = transaction.objectStore('chunks');
+					const request = store.get(key);
+					request.onsuccess = () => resolve(request.result || null);
+					request.onerror = (event) => reject(event.target.error);
+				});
+			}
+
+
+			function saveChunk(db, key, data) {
+				return new Promise((resolve, reject) => {
+					const transaction = db.transaction('chunks', 'readwrite');
+					const store = transaction.objectStore('chunks');
+					const request = store.put(data, key);
+					request.onsuccess = () => resolve();
+					request.onerror = (event) => reject(event.target.error);
+				});
+			}
+
+			function hasChunk(db, key) {
+				return new Promise((resolve, reject) => {
+					const transaction = db.transaction('chunks', 'readonly');
+					const store = transaction.objectStore('chunks');
+					const request = store.getKey(key);
+					request.onsuccess = () => resolve(request.result !== undefined);
+					request.onerror = (event) => reject(event.target.error);
+				});
+			}
+
+
+			// Sequential atomic downloader loop (clears chunk references instantly to limit RAM load)
+			async function downloadAndCacheAssets(db, progressBar, statusNotice) {
+				let chunksProcessed = 0;
+
+				// Process WASM Segments (.part1 to .part2)
+				for (let i = 1; i <= 2; i++) {
+					const key = `wasm_part_${i}`;
+					const exists = await hasChunk(db, key);
+					if (!exists) {
+						statusNotice.textContent = `Downloading Core Binaries: Part ${i}/2...`;
+						const res = await fetch(`${WASM_FILE}.part${i}`);
+						if (!res.ok) throw new Error(`Network block failure fetching ${WASM_FILE}.part${i}`);
+						const buffer = await res.arrayBuffer();
+						await saveChunk(db, key, buffer);
+					}
+					chunksProcessed++;
+					progressBar.value = chunksProcessed;
+				}
+
+
+				// Process Data Chunks (.part01 to .part37)
+				for (let i = 1; i <= 37; i++) {
+					const pad = String(i).padStart(2, '0');
+					const key = `pck_part_${pad}`;
+					const exists = await hasChunk(db, key);
+					if (!exists) {
+						statusNotice.textContent = `Downloading Package Data: Chunk ${pad}/37...`;
+						const res = await fetch(`${PCK_FILE}.part${pad}`);
+						if (!res.ok) throw new Error(`Network block failure fetching ${PCK_FILE}.part${pad}`);
+						const buffer = await res.arrayBuffer();
+						await saveChunk(db, key, buffer);
+					}
+					chunksProcessed++;
+					progressBar.value = chunksProcessed;
+				}
+			}
+
+			// Backpressure-driven sequential readable stream constructor
+			function makeStreamingResponse(db, totalParts, prefix, contentType) {
+
+				let currentPart = 1;
+				
+				const stream = new ReadableStream({
+					async pull(controller) {
+						if (currentPart > totalParts) {
+							controller.close();
+							return;
+						}
+						try {
+							const suffix = prefix === 'pck_part_' ? String(currentPart).padStart(2, '0') : currentPart;
+							const key = `${prefix}${suffix}`;
+							const buffer = await getChunk(db, key);
+							
+							if (!buffer) {
+								throw new Error(`Data pipeline corruption: part ${key} not verified inside storage cache.`);
+							}
+
+							// Stream data block directly to runtime engine assembly context
+							controller.enqueue(new Uint8Array(buffer));
+							currentPart++;
+
+						} catch (err) {
+							controller.error(err);
+						}
+					}
+				});
+
+				return new Response(stream, {
+					status: 200,
+					statusText: 'OK',
+					headers: { 'Content-Type': contentType }
+				});
+			}
+
+			// Hook Network Controller directly to storage-level chunk streaming pipelines
+			function setupStreamingFetchInterceptor(db) {
+				const originalFetch = window.fetch;
+				window.fetch = async function (input, init) {
+					let url = typeof input === 'string' ? input : (input instanceof Request ? input.url : '');
+					
+
+					if (url) {
+						if (url.endsWith(WASM_FILE)) {
+							console.log('[Streaming Cache] Launching backpressure stream pipeline for WASM execution contexts.');
+							return makeStreamingResponse(db, 2, 'wasm_part_', 'application/wasm');
+						}
+						if (url.endsWith(PCK_FILE)) {
+							console.log('[Streaming Cache] Launching backpressure stream pipeline for virtual game filesystem.');
+							return makeStreamingResponse(db, 37, 'pck_part_', 'application/octet-stream');
+						}
+					}
+					return originalFetch(input, init);
+				};
+			}
+
+			// Script loading manager
+			function injectEngineRuntimeScript(url) {
+				return new Promise((resolve, reject) => {
+					const script = document.createElement('script');
+					script.src = url;
+
+					script.onload = () => resolve();
+					script.onerror = () => reject(new Error(`Failed to compile engine controller element: ${url}`));
+					document.body.appendChild(script);
+				});
+			}
+
+			// Primary Lifecycle Setup Coordinator
+			window.addEventListener('DOMContentLoaded', async () => {
+				const progressBar = document.getElementById('status-progress');
+				const statusNotice = document.getElementById('status-notice');
+
+				try {
+					statusNotice.textContent = 'Synchronizing low-overhead file system storage indices...';
+					const db = await openAssetDB();
+
+					// Execute the low-memory, chunk-by-chunk download coordinator loop
+					await downloadAndCacheAssets(db, progressBar, statusNotice);
+
+					statusNotice.textContent = 'Verification successful. Initializing real-time stream routing structures...';
+					
+
+					// Mount backpressure stream interceptors onto network sockets
+					setupStreamingFetchInterceptor(db);
+
+					// Load engine framework definitions now that the network sandbox is fully ready
+					await injectEngineRuntimeScript('GlitchesBuckshot-W-MPsupport.js');
+
+					// Pass program parameters over to original engine bootstrap context
+					launchGodotEngine();
+
+				} catch (err) {
+					console.error('[Bootstrapper Panic Engine Stopped]', err);
+					statusNotice.textContent = `Crash initializing chunked array resources:\n${err.message}`;
+				}
+			});
+
+			// Isolated loader implementation encapsulating original Godot execution structures
+			function launchGodotEngine() {
+				const GODOT_CONFIG = {"args":[],"canvasResizePolicy":2,"emscriptenPoolSize":8,"ensureCrossOriginIsolationHeaders":true,"executable":"GlitchesBuckshot-W-MPsupport","experimentalVK":false,"fileSizes":{"GlitchesBuckshot-W-MPsupport.pck":722243872,"GlitchesBuckshot-W-MPsupport.wasm":39513091},"focusCanvas":true,"gdextensionLibs":[],"godotPoolSize":4};
+				const GODOT_THREADS_ENABLED = false;
+
+				const engine = new Engine(GODOT_CONFIG);
+
+				const statusOverlay = document.getElementById('status');
+				const statusProgress = document.getElementById('status-progress');
+				const statusNotice = document.getElementById('status-notice');
+
+				let initializing = true;
+				let statusMode = '';
+
+				function setStatusMode(mode) {
+					if (statusMode === mode || !initializing) {
+						return;
+					}
+					if (mode === 'hidden') {
+						statusOverlay.remove();
+						initializing = false;
+						return;
+					}
+					statusOverlay.style.visibility = 'visible';
+
+					statusProgress.style.display = mode === 'progress' ? 'block' : 'none';
+					statusNotice.style.display = mode === 'notice' ? 'block' : 'none';
+					statusMode = mode;
+				}
+
+				function setStatusNotice(text) {
+					while (statusNotice.lastChild) {
+						statusNotice.removeChild(statusNotice.lastChild);
+					}
+					const lines = text.split('\n');
+					lines.forEach((line) => {
+						statusNotice.appendChild(document.createTextNode(line));
+						statusNotice.appendChild(document.createElement('br'));
+					});
+				}
+
+				function displayFailureNotice(err) {
+					console.error(err);
+					if (err instanceof Error) {
+						setStatusNotice(err.message);
+
+					} else if (typeof err === 'string') {
+						setStatusNotice(err);
+					} else {
+						setStatusNotice('An unknown error occurred.');
+					}
+					setStatusMode('notice');
+					initializing = false;
+				}
+
+				const missing = Engine.getMissingFeatures({
+					threads: GODOT_THREADS_ENABLED,
+				});
+
+				if (missing.length !== 0) {
+					if (GODOT_CONFIG['serviceWorker'] && GODOT_CONFIG['ensureCrossOriginIsolationHeaders'] && 'serviceWorker' in navigator) {
+						let serviceWorkerRegistrationPromise;
+						try {
+							serviceWorkerRegistrationPromise = navigator.serviceWorker.getRegistration();
+						} catch (err) {
+
+							serviceWorkerRegistrationPromise = Promise.reject(new Error('Service worker registration failed.'));
+						}
+						Promise.race([
+							serviceWorkerRegistrationPromise.then((registration) => {
+								if (registration != null) {
+									return Promise.reject(new Error('Service worker already exists.'));
+								}
+								return registration;
+							}).then(() => engine.installServiceWorker()),
+							new Promise((resolve) => {
+								setTimeout(() => resolve(), 2000);
+							}),
+						]).then(() => {
+							window.location.reload();
+						}).catch((err) => {
+							console.error('Error while registering service worker:', err);
+						});
+					} else {
+						const missingMsg = 'Error\nThe following features required to run Godot projects on the Web are missing:\n';
+
+						displayFailureNotice(missingMsg + missing.join('\n'));
+					}
+				} else {
+					setStatusMode('progress');
+					engine.startGame({
+						'onProgress': function (current, total) {
+							if (current > 0 && total > 0) {
+								statusProgress.value = current;
+								statusProgress.max = total;
+							} else {
+								statusProgress.removeAttribute('value');
+								statusProgress.removeAttribute('max');
+							}
+						},
+					}).then(() => {
+						setStatusMode('hidden');
+					}, displayFailureNotice);
+				}
+			}
+		</script>
+	</body>
+</html>
+
+

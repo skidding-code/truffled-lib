@@ -1,0 +1,1002 @@
+<html xmlns="http://www.w3.org/1999/xhtml">
+	<head><base href="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-34@main/_ext/cdn.jsdelivr.net/gh/genizy/slither@main/"><script>(function (C) {
+  var G = typeof self !== 'undefined' ? self : this;
+  if (G.__tz) return;
+  var IS_DOC = typeof document !== 'undefined' && typeof Element !== 'undefined';
+  var CDN = C.c;
+  var SKIP = /^(data:|blob:|javascript:|about:|mailto:|tel:|ws:|wss:|#)/i;
+  var units = Object.keys(C.u || {}).sort(function (a, b) { return b.length - a.length; });
+  var exts = Object.keys(C.x || {}).sort(function (a, b) { return b.length - a.length; });
+  var split = C.s || {};
+  var hostDir = (function () {
+    try {
+      var h = String(G.location.href);
+      if (/^(https?|file):/i.test(h)) return h.slice(0, h.lastIndexOf('/') + 1);
+    } catch (e) {}
+    return null;
+  })();
+
+  function base() {
+    if (C.w) return C.w;
+    try { return document.baseURI; } catch (e) { return C.b; }
+  }
+
+  function rootFor(p, strict) {
+    for (var i = 0; i < units.length; i++) if (p.indexOf(units[i]) === 0) return C.u[units[i]];
+    return strict ? null : C.r;
+  }
+
+  function map(u) {
+    try {
+      if (u == null) return u;
+      if (typeof u !== 'string') {
+        if (typeof URL !== 'undefined' && u instanceof URL) u = u.href;
+        else if (u && typeof u.toString === 'function') u = u.toString();
+        else return u;
+      }
+      var t = u.trim();
+      if (C.w && /^blob:/i.test(t) && /\/[^\/?#]*\.[A-Za-z0-9]{1,8}([?#].*)?$/.test(t)) {
+        return map(new URL(t.slice(t.lastIndexOf('/') + 1), C.w).href);
+      }
+      if (!t || SKIP.test(t)) return u;
+      var abs;
+      try { abs = new URL(t, base()); } catch (e) { return u; }
+      var href = abs.href;
+      if (hostDir && href.indexOf(hostDir) === 0 && !(C.b.indexOf(hostDir) === 0)) {
+        return map(new URL(href.slice(hostDir.length), C.b).href);
+      }
+      if (abs.protocol !== 'http:' && abs.protocol !== 'https:') return u;
+      if (abs.origin === CDN && C.o && abs.pathname.indexOf('/gh/' + C.o + '/') === 0) {
+        var mm = /^\/gh\/[^/]+\/[^/@]+@[^/]+\//.exec(abs.pathname);
+        if (mm) {
+          var rest = abs.pathname.slice(mm[0].length), dp = rest;
+          try { dp = decodeURIComponent(rest); } catch (e) {}
+          var want = rootFor('/' + dp, true);
+          if (want && want !== CDN + mm[0]) return want + rest + abs.search + abs.hash;
+        }
+        return href;
+      }
+      if ((abs.origin === CDN && !/^\/(gh|npm|combine|wp)\//.test(abs.pathname)) || /^(www\.)?truffled\.lol$/i.test(abs.hostname)) {
+        var dpp = abs.pathname;
+        try { dpp = decodeURIComponent(dpp); } catch (e) {}
+        return rootFor(dpp) + abs.pathname.slice(1) + abs.search + abs.hash;
+      }
+      var hp = abs.host + abs.pathname;
+      for (var i = 0; i < exts.length; i++) {
+        if (hp.indexOf(exts[i]) === 0) return C.x[exts[i]] + hp.slice(exts[i].length);
+      }
+      return href;
+    } catch (e) { return u; }
+  }
+
+  function bare(u) { return String(u).replace(/[?#].*$/, ''); }
+  function splitKey(u) {
+    var b = bare(u);
+    if (split[b]) return b;
+    try { var n = new URL(b).href; if (split[n]) return n; } catch (e) {}
+    try { var d = encodeURI(decodeURI(b)); if (split[d]) return d; } catch (e) {}
+    return null;
+  }
+  function splitInfo(u) { var k = splitKey(u); return k ? split[k] : null; }
+
+  var PART = C.p || 19000000;
+  function partUrl(key, i) {
+    var info = split[key], segs = info[3];
+    if (segs) {
+      for (var j = segs.length - 1; j >= 0; j--) if (i >= segs[j][0]) return segs[j][1] + '.part' + i;
+    }
+    return key + '.part' + i;
+  }
+  function getPart(key, i, range) {
+    var u = partUrl(key, i), tries = 0;
+    function go() {
+      return origFetch(u, range ? { headers: { Range: range } } : undefined).then(function (r) {
+        if (!r.ok) throw new Error('part ' + u + ' ' + r.status);
+        return r.arrayBuffer().then(function (ab) { return [ab, r.status]; });
+      }).catch(function (e) {
+        if (++tries < 4) return new Promise(function (ok) { setTimeout(ok, 800 * tries); }).then(go);
+        throw e;
+      });
+    }
+    return go();
+  }
+  var merged = {};
+  function mergeBuf(u) {
+    var key = splitKey(u) || bare(u);
+    if (merged[key]) return merged[key];
+    var n = split[key][0], type = split[key][1] || 'application/octet-stream';
+    var blobs = new Array(n), next = 1;
+    merged[key] = new Promise(function (ok, bad) {
+      var active = 0, done = 0, failed = false;
+      function pump() {
+        while (!failed && active < 4 && next <= n) {
+          (function (i) {
+            active++;
+            getPart(key, i).then(function (r) {
+              blobs[i - 1] = new Blob([r[0]]);
+              active--;
+              if (++done === n) ok(new Blob(blobs, { type: type }));
+              else pump();
+            }, function (e) { failed = true; bad(e); });
+          })(next++);
+        }
+      }
+      pump();
+    });
+    return merged[key];
+  }
+  var blobUrls = {};
+  function mergeUrl(u) {
+    var key = splitKey(u) || bare(u);
+    if (!blobUrls[key]) blobUrls[key] = mergeBuf(key).then(function (b) { return URL.createObjectURL(b); });
+    return blobUrls[key];
+  }
+  function sizeOf(key) { return split[key][2] || 0; }
+  function parseRange(h, size) {
+    var m = /bytes=(\d*)-(\d*)/.exec(h || '');
+    if (!m) return null;
+    var a, b;
+    if (m[1] === '') { a = Math.max(0, size - Number(m[2])); b = size - 1; }
+    else { a = Number(m[1]); b = m[2] === '' ? size - 1 : Math.min(Number(m[2]), size - 1); }
+    if (a > b || a >= size) return null;
+    return [a, b];
+  }
+  function rangeBlob(key, a, b) {
+    var i0 = Math.floor(a / PART), i1 = Math.floor(b / PART), jobs = [];
+    for (var i = i0; i <= i1; i++) {
+      (function (i) {
+        var s = Math.max(a, i * PART) - i * PART, e = Math.min(b, (i + 1) * PART - 1) - i * PART;
+        jobs.push(getPart(key, i + 1, 'bytes=' + s + '-' + e).then(function (r) {
+          return r[1] === 206 ? r[0] : r[0].slice(s, e + 1);
+        }));
+      })(i);
+    }
+    return Promise.all(jobs).then(function (bufs) { return new Blob(bufs, { type: split[key][1] || 'application/octet-stream' }); });
+  }
+  function streamResponse(key) {
+    var n = split[key][0], next = 1, ahead = [];
+    var hdr = { 'Content-Type': split[key][1] || 'application/octet-stream', 'Accept-Ranges': 'bytes' };
+    if (sizeOf(key)) hdr['Content-Length'] = String(sizeOf(key));
+    function fill() { while (ahead.length < 3 && next <= n) ahead.push(getPart(key, next++)); }
+    var rs = new ReadableStream({
+      pull: function (ctrl) {
+        fill();
+        if (!ahead.length) { ctrl.close(); return; }
+        return ahead.shift().then(function (r) { ctrl.enqueue(new Uint8Array(r[0])); fill(); });
+      },
+      cancel: function () { ahead = []; next = n + 1; }
+    });
+    return new Response(rs, { status: 200, statusText: 'OK', headers: hdr });
+  }
+  function splitFetch(key, input, init) {
+    var method = String((init && init.method) || (input && input.method) || 'GET').toUpperCase();
+    var range = null;
+    try { range = new Headers((init && init.headers) || (input && typeof input === 'object' && input.headers) || undefined).get('range'); } catch (e) {}
+    var size = sizeOf(key), type = split[key][1] || 'application/octet-stream';
+    if (method === 'HEAD') {
+      return Promise.resolve(new Response(null, { status: 200, headers: { 'Content-Length': String(size), 'Content-Type': type, 'Accept-Ranges': 'bytes' } }));
+    }
+    var rg = range && size ? parseRange(range, size) : null;
+    if (rg) {
+      return rangeBlob(key, rg[0], rg[1]).then(function (b) {
+        return new Response(b, { status: 206, statusText: 'Partial Content', headers: { 'Content-Type': type, 'Content-Length': String(b.size), 'Content-Range': 'bytes ' + rg[0] + '-' + rg[1] + '/' + size, 'Accept-Ranges': 'bytes' } });
+      });
+    }
+    if (merged[key]) return merged[key].then(function (b) { return new Response(b, { status: 200, headers: { 'Content-Type': type, 'Content-Length': String(b.size) } }); });
+    return Promise.resolve(streamResponse(key));
+  }
+
+  var origFetch = G.fetch ? G.fetch.bind(G) : null;
+  G.__tz = { map: map, cfg: C };
+
+  if (origFetch) {
+    G.fetch = function (input, init) {
+      try {
+        var url = typeof input === 'string' || (typeof URL !== 'undefined' && input instanceof URL) ? String(input) : input && input.url;
+        if (url) {
+          var m = map(url);
+          if (splitInfo(m)) return splitFetch(splitKey(m), input, init);
+          if (m !== url) {
+            if (typeof input === 'string' || input instanceof URL) input = m;
+            else input = new Request(m, input);
+          }
+        }
+      } catch (e) {}
+      return origFetch(input, init);
+    };
+  }
+
+  if (G.XMLHttpRequest) {
+    var XP = G.XMLHttpRequest.prototype;
+    var oOpen = XP.open, oSend = XP.send, oSRH = XP.setRequestHeader;
+    XP.open = function (method, url) {
+      var a = Array.prototype.slice.call(arguments);
+      var m = map(url);
+      if (splitInfo(m) && a[2] !== false) {
+        this.__tzs = { a: a, m: m, h: [] };
+        return;
+      }
+      this.__tzs = null;
+      a[1] = m;
+      return oOpen.apply(this, a);
+    };
+    XP.setRequestHeader = function (k, v) {
+      if (this.__tzs) { this.__tzs.h.push([k, v]); return; }
+      return oSRH.call(this, k, v);
+    };
+    XP.send = function (body) {
+      var s = this.__tzs, x = this;
+      if (!s) return oSend.call(this, body);
+      var key = splitKey(s.m), rh = null;
+      s.h.forEach(function (h) { if (String(h[0]).toLowerCase() === 'range') rh = h[1]; });
+      var rg = rh && sizeOf(key) ? parseRange(rh, sizeOf(key)) : null;
+      var src = rg ? rangeBlob(key, rg[0], rg[1]).then(function (b) { return URL.createObjectURL(b); }) : mergeUrl(s.m);
+      s.h = s.h.filter(function (h) { return String(h[0]).toLowerCase() !== 'range'; });
+      src.then(function (bu) {
+        var a = s.a.slice();
+        a[1] = bu;
+        x.__tzs = null;
+        oOpen.apply(x, a);
+        s.h.forEach(function (h) { try { oSRH.call(x, h[0], h[1]); } catch (e) {} });
+        oSend.call(x, body);
+      }, function () {
+        x.__tzs = null;
+        var a = s.a.slice();
+        a[1] = s.m;
+        oOpen.apply(x, a);
+        oSend.call(x, body);
+      });
+    };
+  }
+
+  var shimSrc = null;
+  function workerBlob(url, opts) {
+    var m = map(url);
+    var abs = new URL(m, base()).href;
+    var cfg = JSON.parse(JSON.stringify(C));
+    cfg.w = abs;
+    var pre = shimSrc ? '(' + shimSrc + ')(' + JSON.stringify(cfg) + ');' : '';
+    var body = opts && opts.type === 'module'
+      ? pre + 'import ' + JSON.stringify(abs) + ';'
+      : pre + 'importScripts(' + JSON.stringify(abs) + ');';
+    return URL.createObjectURL(new Blob([body], { type: 'text/javascript' }));
+  }
+  function needsWrap(u) {
+    try {
+      var abs = new URL(map(u), base());
+      return abs.origin !== G.location.origin && abs.protocol !== 'blob:' && abs.protocol !== 'data:';
+    } catch (e) { return false; }
+  }
+  ['Worker', 'SharedWorker'].forEach(function (k) {
+    var W = G[k];
+    if (!W) return;
+    var Wrapped = function (url, opts) {
+      var u = typeof url === 'string' || url instanceof URL ? String(url) : url;
+      if (typeof u === 'string' && needsWrap(u)) u = workerBlob(u, opts);
+      return opts === undefined ? new W(u) : new W(u, opts);
+    };
+    Wrapped.prototype = W.prototype;
+    try { Object.defineProperty(Wrapped, 'name', { value: k }); } catch (e) {}
+    G[k] = Wrapped;
+  });
+
+  if (!IS_DOC && typeof G.importScripts === 'function') {
+    var oIS = G.importScripts;
+    G.importScripts = function () {
+      var a = Array.prototype.slice.call(arguments).map(function (u) { return map(u); });
+      return oIS.apply(G, a);
+    };
+  }
+
+  if (!IS_DOC) return;
+
+  try { shimSrc = String(document.currentScript && document.currentScript.textContent || ''); } catch (e) {}
+  if (shimSrc) {
+    var mm = /^\s*\(function \(C\)[\s\S]*\}\)\(/.exec(shimSrc);
+    shimSrc = mm ? mm[0].replace(/\)\($/, '').replace(/^\s*\(/, '') : null;
+  }
+
+  function loadHtmlFrame(frame, url) {
+    origFetch(url).then(function (r) { return r.text(); }).then(function (html) {
+      var w = frame.contentWindow;
+      if (!w) return;
+      var d = w.document;
+      html = prepHtml(html, url);
+      d.open();
+      d.write(html);
+      d.close();
+    });
+  }
+  function prepHtml(html, url) {
+    var dir = url.slice(0, url.lastIndexOf('/') + 1);
+    var tag = '<base href="' + dir + '">';
+    var cfg = JSON.parse(JSON.stringify(C));
+    delete cfg.w;
+    var sh = shimSrc ? '<script>(' + shimSrc + ')(' + JSON.stringify(cfg).replace(/<\//g, '<\\/') + ');<\/script>' : '';
+    if (/<base\b[^>]*>/i.test(html)) {
+      var mb = /<base\b[^>]*\bhref\s*=\s*["']?([^"'\s>]+)/i.exec(html);
+      if (mb) tag = '<base href="' + new URL(mb[1], dir).href + '">';
+      html = html.replace(/<base\b[^>]*>/i, '');
+    }
+    if (/<head[^>]*>/i.test(html)) return html.replace(/<head[^>]*>/i, function (m) { return m + tag + sh; });
+    if (/<html[^>]*>/i.test(html)) return html.replace(/<html[^>]*>/i, function (m) { return m + tag + sh; });
+    return tag + sh + html;
+  }
+  function isHtml(u) {
+    try {
+      var p = new URL(u).pathname;
+      return /\.html?$/i.test(p) || /\/$/.test(p);
+    } catch (e) { return false; }
+  }
+  function cdnLike(u) {
+    try { return new URL(u).origin === CDN; } catch (e) { return false; }
+  }
+
+  function hookProp(proto, prop, special) {
+    if (!proto) return;
+    var d = Object.getOwnPropertyDescriptor(proto, prop);
+    if (!d || !d.set || !d.configurable) return;
+    Object.defineProperty(proto, prop, {
+      configurable: true,
+      enumerable: d.enumerable,
+      get: d.get,
+      set: function (v) {
+        var el = this;
+        if (prop === 'srcset') return d.set.call(el, mapSrcset(v));
+        var m = map(v);
+        if (typeof m === 'string' && splitInfo(m)) {
+          mergeUrl(m).then(function (bu) { d.set.call(el, bu); });
+          return;
+        }
+        if (special && special(el, m, function (x) { d.set.call(el, x); })) return;
+        return d.set.call(el, m);
+      },
+    });
+  }
+  function mapSrcset(v) {
+    if (typeof v !== 'string') return v;
+    return v.split(',').map(function (p) {
+      var t = p.trim();
+      if (!t) return t;
+      var sp = t.split(/\s+/);
+      sp[0] = map(sp[0]);
+      return sp.join(' ');
+    }).join(', ');
+  }
+  function iframeSpecial(el, m, set) {
+    if (typeof m === 'string' && cdnLike(m) && isHtml(m)) {
+      set('about:blank');
+      var go = function () { loadHtmlFrame(el, m); };
+      if (el.isConnected) setTimeout(go, 0);
+      else el.__tzPending = go;
+      return true;
+    }
+    return false;
+  }
+  hookProp(G.HTMLScriptElement && HTMLScriptElement.prototype, 'src');
+  hookProp(G.HTMLImageElement && HTMLImageElement.prototype, 'src');
+  hookProp(G.HTMLImageElement && HTMLImageElement.prototype, 'srcset');
+  hookProp(G.HTMLMediaElement && HTMLMediaElement.prototype, 'src');
+  hookProp(G.HTMLSourceElement && HTMLSourceElement.prototype, 'src');
+  hookProp(G.HTMLSourceElement && HTMLSourceElement.prototype, 'srcset');
+  hookProp(G.HTMLLinkElement && HTMLLinkElement.prototype, 'href');
+  hookProp(G.HTMLEmbedElement && HTMLEmbedElement.prototype, 'src');
+  hookProp(G.HTMLObjectElement && HTMLObjectElement.prototype, 'data');
+  hookProp(G.HTMLInputElement && HTMLInputElement.prototype, 'src');
+  hookProp(G.HTMLIFrameElement && HTMLIFrameElement.prototype, 'src', iframeSpecial);
+  try {
+    var svgHref = Object.getOwnPropertyDescriptor(SVGImageElement.prototype, 'href');
+    void svgHref;
+  } catch (e) {}
+
+  var oSetAttr = Element.prototype.setAttribute;
+  var ATTRS = { src: 1, href: 1, data: 1, poster: 1, srcset: 1, 'xlink:href': 1 };
+  Element.prototype.setAttribute = function (name, value) {
+    var n = String(name).toLowerCase();
+    if (ATTRS[n] && typeof value === 'string') {
+      var tag = this.tagName;
+      if (n === 'href' && (tag === 'A' || tag === 'BASE' || tag === 'AREA')) return oSetAttr.call(this, name, value);
+      if (n === 'srcset') return oSetAttr.call(this, name, mapSrcset(value));
+      var m = map(value);
+      if (splitInfo(m)) {
+        var el = this;
+        mergeUrl(m).then(function (bu) { oSetAttr.call(el, name, bu); });
+        return;
+      }
+      if (tag === 'IFRAME' && n === 'src' && iframeSpecial(this, m, function (x) { oSetAttr.call(this, name, x); }.bind(this))) return;
+      return oSetAttr.call(this, name, m);
+    }
+    return oSetAttr.call(this, name, value);
+  };
+
+  var oAppend = Node.prototype.appendChild, oInsert = Node.prototype.insertBefore;
+  function flushPending(n) {
+    if (n && n.__tzPending) {
+      var go = n.__tzPending;
+      n.__tzPending = null;
+      setTimeout(go, 0);
+    }
+  }
+  Node.prototype.appendChild = function (n) {
+    var r = oAppend.call(this, n);
+    flushPending(n);
+    return r;
+  };
+  Node.prototype.insertBefore = function (n, ref) {
+    var r = oInsert.call(this, n, ref);
+    flushPending(n);
+    return r;
+  };
+
+  if (G.Audio) {
+    var OA = G.Audio;
+    var NA = function Audio(src) {
+      var a = new OA();
+      if (src !== undefined) a.src = src;
+      return a;
+    };
+    NA.prototype = OA.prototype;
+    G.Audio = NA;
+  }
+
+  var oOpenWin = G.open;
+  if (oOpenWin) {
+    G.open = function (u) {
+      var a = Array.prototype.slice.call(arguments);
+      if (typeof u === 'string' && u) a[0] = map(u);
+      return oOpenWin.apply(G, a);
+    };
+  }
+
+  function fixStatic(root) {
+    var list = root.querySelectorAll ? root.querySelectorAll('iframe[data-tz-src]') : [];
+    for (var i = 0; i < list.length; i++) {
+      var f = list[i];
+      var s = f.getAttribute('data-tz-src');
+      f.removeAttribute('data-tz-src');
+      var m = map(s);
+      if (cdnLike(m) && isHtml(m)) loadHtmlFrame(f, m);
+      else oSetAttr.call(f, 'src', m);
+    }
+  }
+  if (G.MutationObserver) {
+    new MutationObserver(function (recs) {
+      for (var i = 0; i < recs.length; i++) {
+        var a = recs[i].addedNodes;
+        for (var j = 0; j < a.length; j++) {
+          var n = a[j];
+          if (n.nodeType !== 1) continue;
+          if (n.tagName === 'IFRAME' && n.hasAttribute('data-tz-src')) fixStatic(n.parentNode || document);
+          else if (n.querySelector && n.querySelector('iframe[data-tz-src]')) fixStatic(n);
+        }
+      }
+    }).observe(document, { childList: true, subtree: true });
+  }
+})({"c":"https://cdn.jsdelivr.net","o":"skidding-code","p":19000000,"b":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-34@main/_ext/cdn.jsdelivr.net/gh/genizy/slither@main/","r":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-01@main/","u":{"/gamefile/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-01@main/"},"x":{"cdn.jsdelivr.net/gh/genizy/slither@main/s/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-34@main/_ext/cdn.jsdelivr.net/gh/genizy/slither@main/s/"},"s":{}});</script>
+
+        
+  <title>slither.io</title>
+  <meta name="viewport" content="minimal-ui, user-scalable=no, initial-scale=0.7, maximum-scale=0.7, width=device-width" />
+ 	<meta name="description" content="The smash-hit game! Play with millions of players around the world and try to become the longest of the day!" />
+ 	<meta property="og:description" content="The smash-hit game! Play with millions of players around the world and try to become the longest of the day!" />
+  <meta name="keywords" content="slitherio, slither, io, snake, snakes, worm, worms, game, games, web game, html5, fun, flash, slithario">
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="slither.io" />
+  <meta property="og:url" content="http://slither.io/" />
+  <meta property="og:site_name" content="slither.io" />
+  <meta property="og:image" content="s/fbthumb5.jpg" />
+  <link rel="image_src" href="s/fbthumb5.jpg" />
+  <link rel='icon' type='image/png' href='s/favicon.png' />
+
+  <style type='text/css'>
+  
+  input.sumsginp:focus {
+   outline: none;
+   background: none !important;
+  }
+  
+  .sumsginp {
+   font-family: 'Lucida Sans Unicode', 'Lucida Grande', sans-serif;
+   font-size: 15px;
+   word-wrap: break-word;
+   color: #e0e0ff;
+   background: none;
+   resize: none;
+   border: 0px;
+   height: 23px;
+   opacity: 1;
+   position: absolute;
+   left: 12px;
+   top: 10px;
+   vertical-align: middle;
+   display: inline-block;
+  }
+  
+  .taho {
+   position: relative;
+   height: 43px;
+   border-radius: 29px;
+   border: 2px solid rgba(0, 0, 0, 1);
+   overflow: hidden;
+   display: inline-block;
+  }
+  
+  input[id="nick"]::-webkit-input-placeholder {
+    color: #7070B0;
+    opacity:  1;
+  }
+  input[id="nick"]:-moz-placeholder {
+    color: #7070B0;
+    opacity:  1;
+  }
+  input[id="nick"]::-moz-placeholder {
+    color: #7070B0;
+    opacity:  1;
+  }
+  input[id="nick"]:-ms-input-placeholder {
+    color: #7070B0;
+    opacity:  1;
+  }
+
+  
+  input[id="victory"]::-webkit-input-placeholder {
+    color: #80C8FF;
+    opacity:  1;
+  }
+  input[id="victory"]:-moz-placeholder {
+    color: #80C8FF;
+    opacity:  1;
+  }
+  input[id="victory"]::-moz-placeholder {
+    color: #80C8FF;
+    opacity:  1;
+  }
+  input[id="victory"]:-ms-input-placeholder {
+    color: #80C8FF;
+    opacity:  1;
+  }
+  
+  .nsi {
+   -webkit-user-select: none;
+   -khtml-user-select: none;
+   -moz-user-select: none;
+   -o-user-select: none;
+   user-select: none;
+  }
+  
+  .btnt {
+   outline:none;
+  }
+  
+  .shbtn { background: #e9b032; text-decoration: none; } .shbtn:link { background: #e9b032; text-decoration: none; } .shbtn:visited { background: #e9b032; text-decoration: none; } .shbtn:hover { background: #ffce63; text-decoration: none; } .shbtn:active { background: #c48700; text-decoration: none; }
+  
+  
+  .btn:link {
+   opacity: .7;
+   text-decoration: none;
+  }
+  .btn:visited {
+   opacity: .7;
+   text-decoration: none;
+  }
+  .btn:hover {
+   opacity: 1;
+   text-decoration: none;
+  }
+  .btn:active {
+   opacity: .5;
+   text-decoration: none;
+  }
+  
+
+  
+  
+  .btn_disabled:link {
+   opacity: .7;
+   text-decoration: none;
+   cursor: default;
+  }
+  .btn_disabled:visited {
+   opacity: .7;
+   text-decoration: none;
+   cursor: default;
+  }
+  .btn_disabled:hover {
+   opacity: .7;
+   text-decoration: none;
+   cursor: default;
+  }
+  .btn_disabled:active {
+   opacity: .7;
+   text-decoration: none;
+   cursor: default;
+  }
+  
+  
+  
+  
+  .svi {
+   opacity: .75;
+   text-decoration: none;
+   cursor: pointer;
+  }
+  .svi:hover {
+   opacity: 1;
+   text-decoration: none;
+   cursor: pointer;
+  }
+  .svi:active {
+   opacity: .5;
+   text-decoration: none;
+   cursor: pointer;
+  }
+  
+  
+  
+  
+  
+  .lq:link {
+   opacity: .8;
+   color: #80FF80;
+  }
+  .lq:visited {
+   opacity: .8;
+   color: #80FF80;
+  }
+  .lq:hover {
+   opacity: 1;
+   color: #80FF80;
+  }
+  .lq:active {
+   opacity: .5;
+   color: #80FF80;
+  }
+  
+  
+  .lq2:link {
+   opacity: .8;
+   color: #8058D0;
+   text-decoration: none;
+  }
+  .lq2:visited {
+   opacity: .8;
+   color: #8058D0;
+   text-decoration: none;
+  }
+  .lq2:hover {
+   opacity: 1;
+   color: #8058D0;
+   text-decoration: underline;
+  }
+  .lq2:active {
+   opacity: .5;
+   color: #8058D0;
+   text-decoration: underline;
+  }
+  
+  
+  </style>
+
+</head>
+
+
+<!-- Google tag (gtag.js) -->
+ME0XFCWNJ0"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-ME0XFCWNJ0');
+</script>
+
+
+
+ <body style='background: #161c22;'>
+
+
+
+<div id='nbg' style='position: fixed; left: 0px; top: 0px;'>
+</div>
+
+
+<div id='login' style='position: fixed; left: 0px; top: 0px; width: 100%; height: 100%; z-index: 20; margin-top: 64px;'>
+  <div id='logo' style='margin-left: auto; margin-right: auto; text-align: center; width: 450px; height: 115px; margin-top: 50px;'>
+   <div style='position: absolute; z-index: 999999;' id='logoih'>
+    
+   </div>
+  </div>
+  
+  <div id='lastscore' style="margin-left: auto; margin-right: auto; text-align: center; margin-top: 44px; font-family: 'Lucida Sans Unicode', 'Lucida Grande', sans-serif; font-size: 15px; color: #FFFFFF;">
+   &nbsp;
+  </div>
+  
+  <div id='tips' class='nsi' style="margin-left: auto; margin-right: auto; width: 360px; height: 30px; color: #8068C0; text-align: center; font-size: 14px; font-family: 'Lucida Sans Unicode', 'Lucida Grande', sans-serif; opacity: 0;">
+   &nbsp;
+  </div>
+  
+  <div style='margin-left: auto; margin-right: auto; text-align: center;'>
+   <div class='taho' id='nick_holder' style='width: 244px; margin-top: 34px; background: #4C447c; box-shadow: 0px 6px 50px rgba(0,0,0,1); opacity: 0;'>
+    <input class='sumsginp' id='nick' style='width: 220px; height: 24px;' placeholder="Nickname" maxlength=24></input>
+   </div>
+   <div id='victory_holder' style='display: none; font-family: "Lucida Sans Unicode", "Lucida Grande", sans-serif; font-size: 18px; color: #FFFFFF; margin-top: 22px;'>
+    <div style='font-size: 24px; margin-top: 12px;'><b>You are the new champion!</b></div>
+    <div style='opacity: .6; margin-top: 12px;'>Enter a victory message that you would like all other players to see!</div>
+    <div class='taho' id='victory_bg' style='width: 444px; margin-top: 50px; background: #00A4CF; box-shadow: 0px 0px 50px rgba(64,64,255,1);'>
+     <input class='sumsginp' id='victory' style='width: 420px; height: 24px; color:#FFFFFF;' placeholder="Your message" maxlength=140></input>
+    </div>
+   </div>
+  </div>
+  
+  <div id='playh' style='margin-left: auto; margin-right: auto; text-align: center;'></div>
+  <div id='saveh' style='margin-left: auto; margin-right: auto; text-align: center; display: none;'></div>
+  
+</div>
+
+
+
+<div id='smh' style='opacity: 0; position: fixed; left: 0px; top: 0px; z-index: 21;'>
+ 
+ 
+ <img id='cstx' style='display: none;'>
+ 
+ 
+ <div id='fbh' style='display: none;'>
+  <a id='fb' style='display: none;'>
+   &nbsp;
+  </a>
+ </div>
+ 
+ 
+ <div id='twth' style='display: none;'>
+  <a id='twt' style='display: none;'>
+   &nbsp;
+  </a>
+ </div>
+ 
+ 
+ 
+ <div id='cskh' style='position: fixed; left: 20px; bottom: 16px; z-index: 50; display: none;'>
+  <a class='btn btnt' draggable="false" id='csk' style='width:95px; height:89px;' href='#'>
+   <img class='nsi' border=0 draggable=false width=95 height=89 src='s/changeskin2.png'>
+  </a>
+ </div>
+ 
+ 
+ 
+ 
+ <div id='csrvh' style='position: fixed; right: 20px; bottom: 16px; z-index: 50; display: none;'>
+  <a class='btn btnt' draggable="false" id='csrv' style='width:107px; height:89px;' href='#'>
+   <img class='nsi' border=0 draggable=false width=107 height=89 src='s/chooseserver.png'>
+  </a>
+ </div>
+ 
+ 
+ <!--
+ <div id='trumpbtnh' style='position: fixed; z-index: 50; display: none;'>
+  <a class='btn btnt' draggable="false" id='trumpbtn' style='width:202px; height:218px;' href='#'>
+   <img class='nsi' border=0 draggable=false width=202 height=218 src='s/trumpbtn.png'>
+  </a>
+ </div>
+ 
+ 
+ 
+ <div id='votetxth' style='position: fixed; z-index: 50; display: none;'>
+  <img class='nsi' border=0 draggable=false width=290 height=84 src='s/votetxt2.png'>
+ </div>
+ 
+ 
+ 
+ <div id='kamalabtnh' style='position: fixed; z-index: 50; display: none;'>
+  <a class='btn btnt' draggable="false" id='kamalabtn' style='width:202px; height:218px;' href='#'>
+   <img class='nsi' border=0 draggable=false width=202 height=218 src='s/kamalabtn.png'>
+  </a>
+ </div>
+ -->
+ 
+ 
+ <div id='etcoh' style='position: fixed; right: 20px; top: 16px; z-index: 50; display: none;'>
+  <a class='btn btnt' draggable="false" id='etco' style='width:87px; height:77px;' href='#'>
+   <img class='nsi' border=0 draggable=false width=87 height=77 src='s/entercode4.png'>
+  </a>
+ </div>
+ 
+ 
+ <div id='bskh' style='position: fixed; right: 20px; bottom: 16px; z-index: 50; display: none;'>
+  <a class='btn btnt' draggable="false" id='bsk' style='width:102px; height:89px;' href='#'>
+   <img class='nsi' border=0 draggable=false width=102 height=89 src='s/buildskin.png'>
+  </a>
+ </div>
+ 
+ <div id='scosh' style='position: fixed; right: 14px; bottom: 144px; z-index: 50; display: none;'>
+  <a class='btn btnt' draggable="false" id='scos' style='width:119px; height:87px;' href='#'>
+   <img class='nsi' border=0 draggable=false width=119 height=87 src='s/selectcosmetic2.png'>
+  </a>
+ </div>
+
+ 
+ <div id='grqh' style='position: fixed; right: 20px; top: 16px; z-index: 50;'>
+  <a class='btn btnt' draggable="false" id='grq' style='width:90px; height:87px;' href='#'>
+   <img id='grqi' class='nsi' border=0 draggable=false width=90 height=87 src='s/highquality.png'>
+  </a>
+ </div>
+
+
+ <div id='plq' style='position: fixed; font-family: "Lucida Sans Unicode", "Lucida Grande", sans-serif; font-size: 13px; color: #408040; right: 10px; top: 10px; width: 260px; height: 400px; text-align: right; display: none;'>
+  <a class='lq' href='http://poal.me/klpijd' target='_blank'></a>
+ </div>
+
+
+ <div id='clq' style='position: fixed; font-family: "Lucida Sans Unicode", "Lucida Grande", sans-serif; font-size: 12px; left: 10px; bottom: 10px; width: 260px; height: 20px; text-align: center; color: #404880;'>
+  <a class='lq2' href='privacy/' target='_blank'>privacy</a> - <a class='lq2' href='contact/' target='_blank'>contact</a>
+ </div>
+
+</div>
+
+
+<div id='pskh' style='display: none; opacity: 0; position: fixed; z-index: 52;'>
+ <a class='btn btnt' draggable="false" id='psk' style='width:87px; height:88px;' href='#'>
+  <img class='nsi' border=0 draggable=false width=87 height=88 src='s/prev3.png'>
+ </a>
+</div>
+
+<div id='nskh' style='display: none; opacity: 0; position: fixed; z-index: 52;'>
+ <a class='btn btnt' draggable="false" id='nsk' style='width:87px; height:88px;' href='#'>
+  <img class='nsi' border=0 draggable=false width=87 height=88 src='s/next3.png'>
+ </a>
+</div>
+
+<div id='etcod' style='position: fixed; left: 0px; top: 0px; background: rgba(32, 40, 48, 1); z-index: 53; display: none; opacity: 0;'>
+</div>
+
+<script type='text/javascript'>
+if (!window.console) window.console = {};
+if (!window.console.log) window.console.log = function (a) { };
+
+
+var ua = (navigator.userAgent+'').toLowerCase();
+var uua = (navigator.userAgent+'');
+var is_android = (ua.indexOf("android") >= 0);
+var is_ios = (uua.indexOf("iPad") >= 0) || (uua.indexOf("iPhone") >= 0) || (uua.indexOf("iPod") >= 0);
+
+/*
+if ((window.location.href+'').indexOf('666') >= 0) {
+ alert(is_android);
+}
+*/
+
+/*
+if (is_android) {
+ window.location = 'https://play.google.com/store/apps/details?id=air.com.hypah.io.slither';
+} else if (is_ios) {
+ window.location = 'https://itunes.apple.com/us/app/slither.io/id1091944550';
+} else if (((window.location.href+'').toLowerCase()).indexOf('https:') == 0) {
+ if ((window.location.href+'').indexOf('/?6') == -1) {
+  window.location = 'http:'+window.location.href.substr(6);
+ }
+}
+*/
+
+var country = 'US'; // no!
+
+/*
+
+window.onerror = function(message, url, lineNumber) {  
+  var ii = document.createElement('img');
+  ii.src = 'http://slither.io/error.jpg?m='+encodeURIComponent(message)+'&u='+encodeURIComponent(url)+'&ln='+encodeURIComponent(lineNumber);
+  return false;
+};
+*/
+
+function forceServer (a, b) {
+ sos = [];
+ forcing = true;
+ bso = {};
+ bso.ip = a;
+ bso.po = b;
+ bso.ac = 999;
+ sos.push(bso);
+}
+
+var rmsos = [];
+// rmsos.push( {a:[76,84,79, 445]} );
+
+var wsu = 0;
+</script>
+
+
+
+
+<script type='text/javascript'>
+
+var xhrqs = [];
+
+
+function getDataHandler (xmlhttp) {
+ var o = null;
+ var cur_tm = Date.now();
+ for (var i = xhrqs.length-1; i>=0; i--) {
+  if (xhrqs[i].xmlhttp == xmlhttp) {
+   o = xhrqs[i];
+  } else if ((cur_tm - xhrqs[i].creation_tm) > 60000) { // clean up failed/hanged requests
+   xhrqs.splice(i, 1);
+  }
+ }
+ return o;
+}
+
+
+function removeDataHandler (xmlhttp) {
+ var cur_tm = Date.now();
+ for (var i = xhrqs.length-1; i>=0; i--) {
+  if (xhrqs[i].xmlhttp == xmlhttp) {
+   xhrqs.splice(i, 1); // remove the target handler
+  } else if ((cur_tm - xhrqs[i].creation_tm) > 60000) {
+   xhrqs.splice(i, 1); // clean up failed/hanged requests/handlers too, as long as we're here.
+  }
+ }
+}
+
+
+function getData (u, o) {
+ var xmlhttp;
+ 
+ if (window.XMLHttpRequest) {
+  xmlhttp = new XMLHttpRequest();
+ } else {
+  xmlhttp = new ActiveXObject('Microsoft.XMLHTTP');
+ };
+
+ o.xmlhttp = xmlhttp;
+ o.done = false;
+ o.creation_tm = Date.now();
+ xhrqs.push(o);
+ 
+ xmlhttp.onreadystatechange = function () {
+  var o = getDataHandler(this);
+  if (o != null) {
+   if (this.readyState == 4 ) {
+    if (!o.done) {
+     o.done = true;
+     if (this.status == 200) {
+      o.f(this.responseText, 'success', o);
+     } else {
+      o.f('', 'error', o);
+     };
+     removeDataHandler(this);
+    };
+   };
+  };
+ };
+ 
+ xmlhttp.open('GET', u, true);
+ xmlhttp.send();
+};
+
+
+</script>
+
+
+
+
+
+
+
+
+
+<!--<script src="https://slither.io/s/pixi.min.js"></script>-->
+
+<script type='text/javascript' src='s/game1107241958.js'></script>
+
+
+
+
+
+
+
+
+
+
+
+ </body>
+</html>

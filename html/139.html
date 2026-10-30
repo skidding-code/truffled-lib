@@ -1,0 +1,1472 @@
+<!DOCTYPE html>
+<!--[if lt IE 7]>      <html  lang="en" class="no-js lt-ie9 lt-ie8 lt-ie7"> <![endif]-->
+<!--[if IE 7]>         <html  lang="en" class="no-js lt-ie9 lt-ie8"> <![endif]-->
+<!--[if IE 8]>         <html  lang="en" class="no-js lt-ie9"> <![endif]-->
+<!--[if gt IE 8]><!-->
+<html lang="en" class="no-js">
+<!--<![endif]-->
+
+<head><base href="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-01@main/gamefile/"><script>(function (C) {
+  var G = typeof self !== 'undefined' ? self : this;
+  if (G.__tz) return;
+  var IS_DOC = typeof document !== 'undefined' && typeof Element !== 'undefined';
+  var CDN = C.c;
+  var SKIP = /^(data:|blob:|javascript:|about:|mailto:|tel:|ws:|wss:|#)/i;
+  var units = Object.keys(C.u || {}).sort(function (a, b) { return b.length - a.length; });
+  var exts = Object.keys(C.x || {}).sort(function (a, b) { return b.length - a.length; });
+  var split = C.s || {};
+  var hostDir = (function () {
+    try {
+      var h = String(G.location.href);
+      if (/^(https?|file):/i.test(h)) return h.slice(0, h.lastIndexOf('/') + 1);
+    } catch (e) {}
+    return null;
+  })();
+
+  function base() {
+    if (C.w) return C.w;
+    try { return document.baseURI; } catch (e) { return C.b; }
+  }
+
+  function rootFor(p, strict) {
+    for (var i = 0; i < units.length; i++) if (p.indexOf(units[i]) === 0) return C.u[units[i]];
+    return strict ? null : C.r;
+  }
+
+  function map(u) {
+    try {
+      if (u == null) return u;
+      if (typeof u !== 'string') {
+        if (typeof URL !== 'undefined' && u instanceof URL) u = u.href;
+        else if (u && typeof u.toString === 'function') u = u.toString();
+        else return u;
+      }
+      var t = u.trim();
+      if (C.w && /^blob:/i.test(t) && /\/[^\/?#]*\.[A-Za-z0-9]{1,8}([?#].*)?$/.test(t)) {
+        return map(new URL(t.slice(t.lastIndexOf('/') + 1), C.w).href);
+      }
+      if (!t || SKIP.test(t)) return u;
+      var abs;
+      try { abs = new URL(t, base()); } catch (e) { return u; }
+      var href = abs.href;
+      if (hostDir && href.indexOf(hostDir) === 0 && !(C.b.indexOf(hostDir) === 0)) {
+        return map(new URL(href.slice(hostDir.length), C.b).href);
+      }
+      if (abs.protocol !== 'http:' && abs.protocol !== 'https:') return u;
+      if (abs.origin === CDN && C.o && abs.pathname.indexOf('/gh/' + C.o + '/') === 0) {
+        var mm = /^\/gh\/[^/]+\/[^/@]+@[^/]+\//.exec(abs.pathname);
+        if (mm) {
+          var rest = abs.pathname.slice(mm[0].length), dp = rest;
+          try { dp = decodeURIComponent(rest); } catch (e) {}
+          var want = rootFor('/' + dp, true);
+          if (want && want !== CDN + mm[0]) return want + rest + abs.search + abs.hash;
+        }
+        return href;
+      }
+      if ((abs.origin === CDN && !/^\/(gh|npm|combine|wp)\//.test(abs.pathname)) || /^(www\.)?truffled\.lol$/i.test(abs.hostname)) {
+        var dpp = abs.pathname;
+        try { dpp = decodeURIComponent(dpp); } catch (e) {}
+        return rootFor(dpp) + abs.pathname.slice(1) + abs.search + abs.hash;
+      }
+      var hp = abs.host + abs.pathname;
+      for (var i = 0; i < exts.length; i++) {
+        if (hp.indexOf(exts[i]) === 0) return C.x[exts[i]] + hp.slice(exts[i].length);
+      }
+      return href;
+    } catch (e) { return u; }
+  }
+
+  function bare(u) { return String(u).replace(/[?#].*$/, ''); }
+  function splitKey(u) {
+    var b = bare(u);
+    if (split[b]) return b;
+    try { var n = new URL(b).href; if (split[n]) return n; } catch (e) {}
+    try { var d = encodeURI(decodeURI(b)); if (split[d]) return d; } catch (e) {}
+    return null;
+  }
+  function splitInfo(u) { var k = splitKey(u); return k ? split[k] : null; }
+
+  var PART = C.p || 19000000;
+  function partUrl(key, i) {
+    var info = split[key], segs = info[3];
+    if (segs) {
+      for (var j = segs.length - 1; j >= 0; j--) if (i >= segs[j][0]) return segs[j][1] + '.part' + i;
+    }
+    return key + '.part' + i;
+  }
+  function getPart(key, i, range) {
+    var u = partUrl(key, i), tries = 0;
+    function go() {
+      return origFetch(u, range ? { headers: { Range: range } } : undefined).then(function (r) {
+        if (!r.ok) throw new Error('part ' + u + ' ' + r.status);
+        return r.arrayBuffer().then(function (ab) { return [ab, r.status]; });
+      }).catch(function (e) {
+        if (++tries < 4) return new Promise(function (ok) { setTimeout(ok, 800 * tries); }).then(go);
+        throw e;
+      });
+    }
+    return go();
+  }
+  var merged = {};
+  function mergeBuf(u) {
+    var key = splitKey(u) || bare(u);
+    if (merged[key]) return merged[key];
+    var n = split[key][0], type = split[key][1] || 'application/octet-stream';
+    var blobs = new Array(n), next = 1;
+    merged[key] = new Promise(function (ok, bad) {
+      var active = 0, done = 0, failed = false;
+      function pump() {
+        while (!failed && active < 4 && next <= n) {
+          (function (i) {
+            active++;
+            getPart(key, i).then(function (r) {
+              blobs[i - 1] = new Blob([r[0]]);
+              active--;
+              if (++done === n) ok(new Blob(blobs, { type: type }));
+              else pump();
+            }, function (e) { failed = true; bad(e); });
+          })(next++);
+        }
+      }
+      pump();
+    });
+    return merged[key];
+  }
+  var blobUrls = {};
+  function mergeUrl(u) {
+    var key = splitKey(u) || bare(u);
+    if (!blobUrls[key]) blobUrls[key] = mergeBuf(key).then(function (b) { return URL.createObjectURL(b); });
+    return blobUrls[key];
+  }
+  function sizeOf(key) { return split[key][2] || 0; }
+  function parseRange(h, size) {
+    var m = /bytes=(\d*)-(\d*)/.exec(h || '');
+    if (!m) return null;
+    var a, b;
+    if (m[1] === '') { a = Math.max(0, size - Number(m[2])); b = size - 1; }
+    else { a = Number(m[1]); b = m[2] === '' ? size - 1 : Math.min(Number(m[2]), size - 1); }
+    if (a > b || a >= size) return null;
+    return [a, b];
+  }
+  function rangeBlob(key, a, b) {
+    var i0 = Math.floor(a / PART), i1 = Math.floor(b / PART), jobs = [];
+    for (var i = i0; i <= i1; i++) {
+      (function (i) {
+        var s = Math.max(a, i * PART) - i * PART, e = Math.min(b, (i + 1) * PART - 1) - i * PART;
+        jobs.push(getPart(key, i + 1, 'bytes=' + s + '-' + e).then(function (r) {
+          return r[1] === 206 ? r[0] : r[0].slice(s, e + 1);
+        }));
+      })(i);
+    }
+    return Promise.all(jobs).then(function (bufs) { return new Blob(bufs, { type: split[key][1] || 'application/octet-stream' }); });
+  }
+  function streamResponse(key) {
+    var n = split[key][0], next = 1, ahead = [];
+    var hdr = { 'Content-Type': split[key][1] || 'application/octet-stream', 'Accept-Ranges': 'bytes' };
+    if (sizeOf(key)) hdr['Content-Length'] = String(sizeOf(key));
+    function fill() { while (ahead.length < 3 && next <= n) ahead.push(getPart(key, next++)); }
+    var rs = new ReadableStream({
+      pull: function (ctrl) {
+        fill();
+        if (!ahead.length) { ctrl.close(); return; }
+        return ahead.shift().then(function (r) { ctrl.enqueue(new Uint8Array(r[0])); fill(); });
+      },
+      cancel: function () { ahead = []; next = n + 1; }
+    });
+    return new Response(rs, { status: 200, statusText: 'OK', headers: hdr });
+  }
+  function splitFetch(key, input, init) {
+    var method = String((init && init.method) || (input && input.method) || 'GET').toUpperCase();
+    var range = null;
+    try { range = new Headers((init && init.headers) || (input && typeof input === 'object' && input.headers) || undefined).get('range'); } catch (e) {}
+    var size = sizeOf(key), type = split[key][1] || 'application/octet-stream';
+    if (method === 'HEAD') {
+      return Promise.resolve(new Response(null, { status: 200, headers: { 'Content-Length': String(size), 'Content-Type': type, 'Accept-Ranges': 'bytes' } }));
+    }
+    var rg = range && size ? parseRange(range, size) : null;
+    if (rg) {
+      return rangeBlob(key, rg[0], rg[1]).then(function (b) {
+        return new Response(b, { status: 206, statusText: 'Partial Content', headers: { 'Content-Type': type, 'Content-Length': String(b.size), 'Content-Range': 'bytes ' + rg[0] + '-' + rg[1] + '/' + size, 'Accept-Ranges': 'bytes' } });
+      });
+    }
+    if (merged[key]) return merged[key].then(function (b) { return new Response(b, { status: 200, headers: { 'Content-Type': type, 'Content-Length': String(b.size) } }); });
+    return Promise.resolve(streamResponse(key));
+  }
+
+  var origFetch = G.fetch ? G.fetch.bind(G) : null;
+  G.__tz = { map: map, cfg: C };
+
+  if (origFetch) {
+    G.fetch = function (input, init) {
+      try {
+        var url = typeof input === 'string' || (typeof URL !== 'undefined' && input instanceof URL) ? String(input) : input && input.url;
+        if (url) {
+          var m = map(url);
+          if (splitInfo(m)) return splitFetch(splitKey(m), input, init);
+          if (m !== url) {
+            if (typeof input === 'string' || input instanceof URL) input = m;
+            else input = new Request(m, input);
+          }
+        }
+      } catch (e) {}
+      return origFetch(input, init);
+    };
+  }
+
+  if (G.XMLHttpRequest) {
+    var XP = G.XMLHttpRequest.prototype;
+    var oOpen = XP.open, oSend = XP.send, oSRH = XP.setRequestHeader;
+    XP.open = function (method, url) {
+      var a = Array.prototype.slice.call(arguments);
+      var m = map(url);
+      if (splitInfo(m) && a[2] !== false) {
+        this.__tzs = { a: a, m: m, h: [] };
+        return;
+      }
+      this.__tzs = null;
+      a[1] = m;
+      return oOpen.apply(this, a);
+    };
+    XP.setRequestHeader = function (k, v) {
+      if (this.__tzs) { this.__tzs.h.push([k, v]); return; }
+      return oSRH.call(this, k, v);
+    };
+    XP.send = function (body) {
+      var s = this.__tzs, x = this;
+      if (!s) return oSend.call(this, body);
+      var key = splitKey(s.m), rh = null;
+      s.h.forEach(function (h) { if (String(h[0]).toLowerCase() === 'range') rh = h[1]; });
+      var rg = rh && sizeOf(key) ? parseRange(rh, sizeOf(key)) : null;
+      var src = rg ? rangeBlob(key, rg[0], rg[1]).then(function (b) { return URL.createObjectURL(b); }) : mergeUrl(s.m);
+      s.h = s.h.filter(function (h) { return String(h[0]).toLowerCase() !== 'range'; });
+      src.then(function (bu) {
+        var a = s.a.slice();
+        a[1] = bu;
+        x.__tzs = null;
+        oOpen.apply(x, a);
+        s.h.forEach(function (h) { try { oSRH.call(x, h[0], h[1]); } catch (e) {} });
+        oSend.call(x, body);
+      }, function () {
+        x.__tzs = null;
+        var a = s.a.slice();
+        a[1] = s.m;
+        oOpen.apply(x, a);
+        oSend.call(x, body);
+      });
+    };
+  }
+
+  var shimSrc = null;
+  function workerBlob(url, opts) {
+    var m = map(url);
+    var abs = new URL(m, base()).href;
+    var cfg = JSON.parse(JSON.stringify(C));
+    cfg.w = abs;
+    var pre = shimSrc ? '(' + shimSrc + ')(' + JSON.stringify(cfg) + ');' : '';
+    var body = opts && opts.type === 'module'
+      ? pre + 'import ' + JSON.stringify(abs) + ';'
+      : pre + 'importScripts(' + JSON.stringify(abs) + ');';
+    return URL.createObjectURL(new Blob([body], { type: 'text/javascript' }));
+  }
+  function needsWrap(u) {
+    try {
+      var abs = new URL(map(u), base());
+      return abs.origin !== G.location.origin && abs.protocol !== 'blob:' && abs.protocol !== 'data:';
+    } catch (e) { return false; }
+  }
+  ['Worker', 'SharedWorker'].forEach(function (k) {
+    var W = G[k];
+    if (!W) return;
+    var Wrapped = function (url, opts) {
+      var u = typeof url === 'string' || url instanceof URL ? String(url) : url;
+      if (typeof u === 'string' && needsWrap(u)) u = workerBlob(u, opts);
+      return opts === undefined ? new W(u) : new W(u, opts);
+    };
+    Wrapped.prototype = W.prototype;
+    try { Object.defineProperty(Wrapped, 'name', { value: k }); } catch (e) {}
+    G[k] = Wrapped;
+  });
+
+  if (!IS_DOC && typeof G.importScripts === 'function') {
+    var oIS = G.importScripts;
+    G.importScripts = function () {
+      var a = Array.prototype.slice.call(arguments).map(function (u) { return map(u); });
+      return oIS.apply(G, a);
+    };
+  }
+
+  if (!IS_DOC) return;
+
+  try { shimSrc = String(document.currentScript && document.currentScript.textContent || ''); } catch (e) {}
+  if (shimSrc) {
+    var mm = /^\s*\(function \(C\)[\s\S]*\}\)\(/.exec(shimSrc);
+    shimSrc = mm ? mm[0].replace(/\)\($/, '').replace(/^\s*\(/, '') : null;
+  }
+
+  function loadHtmlFrame(frame, url) {
+    origFetch(url).then(function (r) { return r.text(); }).then(function (html) {
+      var w = frame.contentWindow;
+      if (!w) return;
+      var d = w.document;
+      html = prepHtml(html, url);
+      d.open();
+      d.write(html);
+      d.close();
+    });
+  }
+  function prepHtml(html, url) {
+    var dir = url.slice(0, url.lastIndexOf('/') + 1);
+    var tag = '<base href="' + dir + '">';
+    var cfg = JSON.parse(JSON.stringify(C));
+    delete cfg.w;
+    var sh = shimSrc ? '<script>(' + shimSrc + ')(' + JSON.stringify(cfg).replace(/<\//g, '<\\/') + ');<\/script>' : '';
+    if (/<base\b[^>]*>/i.test(html)) {
+      var mb = /<base\b[^>]*\bhref\s*=\s*["']?([^"'\s>]+)/i.exec(html);
+      if (mb) tag = '<base href="' + new URL(mb[1], dir).href + '">';
+      html = html.replace(/<base\b[^>]*>/i, '');
+    }
+    if (/<head[^>]*>/i.test(html)) return html.replace(/<head[^>]*>/i, function (m) { return m + tag + sh; });
+    if (/<html[^>]*>/i.test(html)) return html.replace(/<html[^>]*>/i, function (m) { return m + tag + sh; });
+    return tag + sh + html;
+  }
+  function isHtml(u) {
+    try {
+      var p = new URL(u).pathname;
+      return /\.html?$/i.test(p) || /\/$/.test(p);
+    } catch (e) { return false; }
+  }
+  function cdnLike(u) {
+    try { return new URL(u).origin === CDN; } catch (e) { return false; }
+  }
+
+  function hookProp(proto, prop, special) {
+    if (!proto) return;
+    var d = Object.getOwnPropertyDescriptor(proto, prop);
+    if (!d || !d.set || !d.configurable) return;
+    Object.defineProperty(proto, prop, {
+      configurable: true,
+      enumerable: d.enumerable,
+      get: d.get,
+      set: function (v) {
+        var el = this;
+        if (prop === 'srcset') return d.set.call(el, mapSrcset(v));
+        var m = map(v);
+        if (typeof m === 'string' && splitInfo(m)) {
+          mergeUrl(m).then(function (bu) { d.set.call(el, bu); });
+          return;
+        }
+        if (special && special(el, m, function (x) { d.set.call(el, x); })) return;
+        return d.set.call(el, m);
+      },
+    });
+  }
+  function mapSrcset(v) {
+    if (typeof v !== 'string') return v;
+    return v.split(',').map(function (p) {
+      var t = p.trim();
+      if (!t) return t;
+      var sp = t.split(/\s+/);
+      sp[0] = map(sp[0]);
+      return sp.join(' ');
+    }).join(', ');
+  }
+  function iframeSpecial(el, m, set) {
+    if (typeof m === 'string' && cdnLike(m) && isHtml(m)) {
+      set('about:blank');
+      var go = function () { loadHtmlFrame(el, m); };
+      if (el.isConnected) setTimeout(go, 0);
+      else el.__tzPending = go;
+      return true;
+    }
+    return false;
+  }
+  hookProp(G.HTMLScriptElement && HTMLScriptElement.prototype, 'src');
+  hookProp(G.HTMLImageElement && HTMLImageElement.prototype, 'src');
+  hookProp(G.HTMLImageElement && HTMLImageElement.prototype, 'srcset');
+  hookProp(G.HTMLMediaElement && HTMLMediaElement.prototype, 'src');
+  hookProp(G.HTMLSourceElement && HTMLSourceElement.prototype, 'src');
+  hookProp(G.HTMLSourceElement && HTMLSourceElement.prototype, 'srcset');
+  hookProp(G.HTMLLinkElement && HTMLLinkElement.prototype, 'href');
+  hookProp(G.HTMLEmbedElement && HTMLEmbedElement.prototype, 'src');
+  hookProp(G.HTMLObjectElement && HTMLObjectElement.prototype, 'data');
+  hookProp(G.HTMLInputElement && HTMLInputElement.prototype, 'src');
+  hookProp(G.HTMLIFrameElement && HTMLIFrameElement.prototype, 'src', iframeSpecial);
+  try {
+    var svgHref = Object.getOwnPropertyDescriptor(SVGImageElement.prototype, 'href');
+    void svgHref;
+  } catch (e) {}
+
+  var oSetAttr = Element.prototype.setAttribute;
+  var ATTRS = { src: 1, href: 1, data: 1, poster: 1, srcset: 1, 'xlink:href': 1 };
+  Element.prototype.setAttribute = function (name, value) {
+    var n = String(name).toLowerCase();
+    if (ATTRS[n] && typeof value === 'string') {
+      var tag = this.tagName;
+      if (n === 'href' && (tag === 'A' || tag === 'BASE' || tag === 'AREA')) return oSetAttr.call(this, name, value);
+      if (n === 'srcset') return oSetAttr.call(this, name, mapSrcset(value));
+      var m = map(value);
+      if (splitInfo(m)) {
+        var el = this;
+        mergeUrl(m).then(function (bu) { oSetAttr.call(el, name, bu); });
+        return;
+      }
+      if (tag === 'IFRAME' && n === 'src' && iframeSpecial(this, m, function (x) { oSetAttr.call(this, name, x); }.bind(this))) return;
+      return oSetAttr.call(this, name, m);
+    }
+    return oSetAttr.call(this, name, value);
+  };
+
+  var oAppend = Node.prototype.appendChild, oInsert = Node.prototype.insertBefore;
+  function flushPending(n) {
+    if (n && n.__tzPending) {
+      var go = n.__tzPending;
+      n.__tzPending = null;
+      setTimeout(go, 0);
+    }
+  }
+  Node.prototype.appendChild = function (n) {
+    var r = oAppend.call(this, n);
+    flushPending(n);
+    return r;
+  };
+  Node.prototype.insertBefore = function (n, ref) {
+    var r = oInsert.call(this, n, ref);
+    flushPending(n);
+    return r;
+  };
+
+  if (G.Audio) {
+    var OA = G.Audio;
+    var NA = function Audio(src) {
+      var a = new OA();
+      if (src !== undefined) a.src = src;
+      return a;
+    };
+    NA.prototype = OA.prototype;
+    G.Audio = NA;
+  }
+
+  var oOpenWin = G.open;
+  if (oOpenWin) {
+    G.open = function (u) {
+      var a = Array.prototype.slice.call(arguments);
+      if (typeof u === 'string' && u) a[0] = map(u);
+      return oOpenWin.apply(G, a);
+    };
+  }
+
+  function fixStatic(root) {
+    var list = root.querySelectorAll ? root.querySelectorAll('iframe[data-tz-src]') : [];
+    for (var i = 0; i < list.length; i++) {
+      var f = list[i];
+      var s = f.getAttribute('data-tz-src');
+      f.removeAttribute('data-tz-src');
+      var m = map(s);
+      if (cdnLike(m) && isHtml(m)) loadHtmlFrame(f, m);
+      else oSetAttr.call(f, 'src', m);
+    }
+  }
+  if (G.MutationObserver) {
+    new MutationObserver(function (recs) {
+      for (var i = 0; i < recs.length; i++) {
+        var a = recs[i].addedNodes;
+        for (var j = 0; j < a.length; j++) {
+          var n = a[j];
+          if (n.nodeType !== 1) continue;
+          if (n.tagName === 'IFRAME' && n.hasAttribute('data-tz-src')) fixStatic(n.parentNode || document);
+          else if (n.querySelector && n.querySelector('iframe[data-tz-src]')) fixStatic(n);
+        }
+      }
+    }).observe(document, { childList: true, subtree: true });
+  }
+})({"c":"https://cdn.jsdelivr.net","o":"skidding-code","p":19000000,"b":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-01@main/gamefile/","r":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-01@main/","u":{"/gamefile/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-01@main/"},"x":{"cdn.jsdelivr.net/gh/Nailington/3kh0-assets@aeb371b7e88542fd5e61eeed9e967a446d84fe1b/DogeMiner/css/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-12@main/_ext/cdn.jsdelivr.net/gh/Nailington/3kh0-assets@aeb371b7e88542fd5e61eeed9e967a446d84fe1b/DogeMiner/css/","cdn.jsdelivr.net/gh/Nailington/3kh0-assets@aeb371b7e88542fd5e61eeed9e967a446d84fe1b/DogeMiner/css/sunny/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-12@main/_ext/cdn.jsdelivr.net/gh/Nailington/3kh0-assets@aeb371b7e88542fd5e61eeed9e967a446d84fe1b/DogeMiner/css/sunny/","cdn.jsdelivr.net/gh/Nailington/3kh0-assets@aeb371b7e88542fd5e61eeed9e967a446d84fe1b/js/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-12@main/_ext/cdn.jsdelivr.net/gh/Nailington/3kh0-assets@aeb371b7e88542fd5e61eeed9e967a446d84fe1b/js/","cdn.jsdelivr.net/gh/Nailington/3kh0-assets@aeb371b7e88542fd5e61eeed9e967a446d84fe1b/DogeMiner/img/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-12@main/_ext/cdn.jsdelivr.net/gh/Nailington/3kh0-assets@aeb371b7e88542fd5e61eeed9e967a446d84fe1b/DogeMiner/img/","cdn.jsdelivr.net/gh/Nailington/3kh0-assets@aeb371b7e88542fd5e61eeed9e967a446d84fe1b/DogeMiner/js/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-12@main/_ext/cdn.jsdelivr.net/gh/Nailington/3kh0-assets@aeb371b7e88542fd5e61eeed9e967a446d84fe1b/DogeMiner/js/","cdn.jsdelivr.net/gh/Nailington/3kh0-assets@aeb371b7e88542fd5e61eeed9e967a446d84fe1b/DogeMiner/img/bg/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-12@main/_ext/cdn.jsdelivr.net/gh/Nailington/3kh0-assets@aeb371b7e88542fd5e61eeed9e967a446d84fe1b/DogeMiner/img/bg/","cdn.jsdelivr.net/gh/Nailington/3kh0-assets@aeb371b7e88542fd5e61eeed9e967a446d84fe1b/DogeMiner/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-12@main/_ext/cdn.jsdelivr.net/gh/Nailington/3kh0-assets@aeb371b7e88542fd5e61eeed9e967a446d84fe1b/DogeMiner/"},"s":{}});</script>
+	<meta charset="utf-8" />
+	<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+	<title>Dogeminer</title>
+	<meta name="description"
+		content="How to mine dogecoins? Find out in Dogeminer: The Dogecoin Mining Simulator. Very wow. To the moon!" />
+	<meta name="keywords"
+		content="dogeminer,doge miner,dogecoin,dogecoins,dogeminer game,wow,doge game,dogecoin game,dogecoins game,mining game,bitcoin,bitcoin game,funny game,amaze game,doge game,doge clicker, dodge miner, dodgecoin, to the moon,to the moon game,mining game,doge mining game, doge clicking game,clicking game,incremental, incremental game,idle game,cookie clicker, free to play, free to play game, free to play doge, f2p game, free web game, no install game" />
+	<meta name="viewport"
+		content="width=device-width, minimum-scale=1, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui, shrink-to-fit=no, height=device-height" />
+	<meta property="og:title" content="Dogeminer: The Dogecoin Mining Simulator" />
+	<meta property="og:site_name" content="Dogeminer: The Dogecoin Mining Simulator" />
+	<meta property="og:type" content="website" />
+	<meta property="og:url" content="" />
+	<meta property="og:image" content="" />
+	<meta property="og:image:secure_url" content="" />
+	<meta property="og:image:width" content="300" />
+	<meta property="og:image:height" content="300" />
+	<meta property="og:description"
+		content="How to mine dogecoins? Find out in Dogeminer: The Dogecoin Mining Simulator. Very wow. To the moon!" />
+	<meta name="apple-mobile-web-app-capable" content="yes" />
+	<link rel="canonical" href="" />
+	<link rel="icon"
+		href="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-12@main/_ext/cdn.jsdelivr.net/gh/Nailington/3kh0-assets@aeb371b7e88542fd5e61eeed9e967a446d84fe1b/DogeMiner/favicon.ico"
+		type="image/x-icon" />
+	<link rel="image_src"
+		href="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-12@main/_ext/cdn.jsdelivr.net/gh/Nailington/3kh0-assets@aeb371b7e88542fd5e61eeed9e967a446d84fe1b/DogeMiner/img/dogeminer_300x300.png" />
+	<link rel="stylesheet"
+		href="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-12@main/_ext/cdn.jsdelivr.net/gh/Nailington/3kh0-assets@aeb371b7e88542fd5e61eeed9e967a446d84fe1b/DogeMiner/css/main-v1-0-2-bs.css" />
+
+	<link id="stylesheet"
+		href="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-12@main/_ext/cdn.jsdelivr.net/gh/Nailington/3kh0-assets@aeb371b7e88542fd5e61eeed9e967a446d84fe1b/DogeMiner/css/sunny/jquery-ui-1.10.4.custom.min.css"
+		rel="stylesheet" />
+
+	<script>
+		var loadtimer = setTimeout(function () {
+                //If onload hasn't been triggered for 10 seconds, force it. Most likely a straggling ad or social button that is sleeping... this behaviour will change for update
+                console.log("Forcing window.onload");
+                window.dispatchEvent(new Event("load"));
+            }, 10000);
+	</script>
+	<script
+		src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-12@main/_ext/cdn.jsdelivr.net/gh/Nailington/3kh0-assets@aeb371b7e88542fd5e61eeed9e967a446d84fe1b/js/main.js">
+	</script>
+
+</head>
+
+<body style="background-color: #222222;">
+	<div id="fb-root"></div>
+	<div id="BG" class="gpurender animated fadeIn duration-30"></div>
+	<div id="BG2" class="gpurender animated fadeIn duration-30"></div>
+
+	<div class="introcontainer">
+		<div id="intro-mm" class="below-intro animated fadeIn delay-12 duration-15">
+			<div class="da-container"></div>
+		</div>
+	</div>
+	<div id="introscreen" class="animated fadeInDown ui-widget ui-widget-content ui-corner-all tenpadding noselect">
+		<div class="first-part">
+			<div style="visibility: hidden;" class="md-modal md-effect-1" id="modal-cookies">
+				<div class="md-content">
+					<div class="cookies-long">
+						<h3>Cookies and HTML local storage use</h3>
+						<h4>Short version</h4>
+						<ul>
+							<li>
+								The game saves your progress to the browsers HTML local storage.
+								<a href="https://www.w3schools.com/html/html5_webstorage.asp"
+									title="W3 Schools definition of local storage" target="_blank" rel="nofollow">What
+									is local storage?</a>
+							</li>
+							<li>The game integrates with 3rd party services provided by Google, Facebook and Twitter,
+								which in turn uses cookies to provide social media features, analyse traffic and
+								personalise content &amp; ads.</li>
+							<li>
+								Information gathering is <em>only</em> done by these services. These parties may know
+								you visited this website, if you use their services. They may and probably will share
+								this data with their partners.
+								We can’t control them but we don’t believe this knowledge poses any threat to you.
+							</li>
+						</ul>
+						<p>Those are the key points. If you want to know more, keep reading.</p>
+						<h4>Statistics tracking</h4>
+						<p>
+							This game measures visitors by using Google Analytics. This records what pages you view
+							within the game, how you arrived at the game and some basic information about your computer.
+							All of that information is
+							anonymous &ndash; so we don’t know who you are; just
+							that&nbsp;<em>somebody&nbsp;</em>visited the game.
+						</p>
+						<p>The information collected from analytics helps us understand what parts of the game are doing
+							well, how people arrive at the game etc. Like most games, we use this information to make it
+							better.</p>
+						<p>
+							You can learn more about&nbsp;<a href="https://www.google.com/analytics/learn/privacy.html"
+								title="Google Analytics' privacy policy" target="_blank">Google
+								Analytics</a>&nbsp;or&nbsp;
+							<a href="https://tools.google.com/dlpage/gaoptout"
+								title="How to opt out of google analytics" target="_blank" rel="nofollow">opt out if you
+								wish</a>.
+						</p>
+						<button class="md-close">OK</button>
+					</div>
+				</div>
+			</div>
+			<div class="md-overlay"></div>
+			<h1>Welcome to
+				<img alt="Dogecoin" src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-12@main/_ext/cdn.jsdelivr.net/gh/Nailington/3kh0-assets@aeb371b7e88542fd5e61eeed9e967a446d84fe1b/DogeMiner/img/dogecoin-d.png" style="height: 70px; width: 70px;" /> DOGEMINER</h1>
+				<p>The Dogecoin Mining Simulator</p>
+				<div class="intro-doge level1 level1-doge_mine1u0 noselect animated fadeIn"></div>
+
+				<div id="loading-indicator">
+					<div class="loadingwrap">
+						<div class="l">L</div>
+						<div class="o">O</div>
+						<div class="a">A</div>
+						<div class="d">D</div>
+						<div class="i">I</div>
+						<div class="n">N</div>
+						<div class="g">G</div>
+					</div>
+					<div id="loadingwhat"></div>
+					<script type="text/javascript">
+						var dotstr = '<span class="animated flash delay-8 duration-10">.</span><span class="animated flash delay-9 duration-10">.</span><span class="animated flash delay-10 duration-10">.</span>';
+                        var loadArr = [
+                            "Calibrating pickaxe",
+                            "Adding <strong>wow</strong> to every sentence",
+                            "Gathering shibes",
+                            "Enslaving kittens",
+                            "Analyzing users browser history",
+                            "Just kidding, Dave",
+                            "Initializing Artificial Intelligence matrix",
+                            "We seem to be stuck in loading. Investigating options",
+                            "Options limited. Stalling for time",
+                            "Manually overriding loading system",
+                        ];
+                        var loadcursor = 0;
+
+                        function nextLoaderText() {
+                            console.log("Loader-timer tick.");
+                            //Check if element still exists (if not, we are done!)
+                            var tmp_element = document.getElementById("loadingwhat");
+                            if (typeof tmp_element != "undefined" && tmp_element !== null) {
+                                tmp_element.className = "animated zoomOut duration-5";
+
+                                setTimeout(function () {
+                                    tmp_element.innerHTML = loadArr[loadcursor] + dotstr;
+                                    if (loadcursor++ >= loadArr.length - 1) {
+                                        //reached the end, way too long to load, manual override required
+                                        //game might not work 100% but atleast the button might
+                                        var override_button = document.getElementById("start-playing");
+                                        override_button.className += " animated fadeInDown duration-5";
+                                        override_button.style.marginTop = "75px";
+                                        override_button.style.display = "block";
+                                        override_button.style.visibility = "visible";
+
+                                        tmp_element.innerHTML = "Stuck in loading, but you can try the button. Godspeed.";
+                                        tmp_element.className = "animated zoomIn duration-5";
+                                    } else {
+                                        tmp_element.className = "animated zoomIn duration-5";
+                                        //call function again
+                                        setTimeout(function () {
+                                            nextLoaderText();
+                                        }, 3000 + Math.random() * 2500);
+                                    }
+                                }, 501);
+                            }
+                        }
+                        setTimeout(function () {
+                            nextLoaderText();
+                        }, 3000);
+					</script>
+				</div>
+				<button style="visibility: hidden;" id="start-playing">START PLAYING</button>
+				<div class="cookies-consent">
+					<strong>Notice:</strong> By playing this game you are agreeing to the use of cookies in order to
+					save your progress and provide other features.
+					<em class="md-trigger" data-modal="modal-cookies">Click here for details.</em>
+				</div>
+		</div>
+
+		<div class="second-part" style="display: none;">
+			<h2 class="animated fadeInDown duration-10 delay-15">This is your target.</h2>
+			<h3 class="animated fadeInDown duration-10 delay-30">The moon.</h3>
+			<h3 class="animated fadeInDown duration-10 delay-45">You need to go there!</h3>
+			<img class="intro-rocket animated bounceInUp duration-10 delay-55" src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-12@main/_ext/cdn.jsdelivr.net/gh/Nailington/3kh0-assets@aeb371b7e88542fd5e61eeed9e967a446d84fe1b/DogeMiner/img/flyingrocket.png" alt="Flying Doge rocket" height="500" width="187" style="position: absolute; left: 200px; top: 250px;" />
+			<button id="second-part-button" class="animated fadeInDown duration-10 delay-65">GOT IT</button>
+		</div>
+		<div class="third-part" style="display: none;">
+			<h3>The cost to go to the moon is
+				<strong class="animated flash delay-15 duration-10">50,000,000,000 dogecoin.</strong></h3>
+			<h4 class="animated fadeInDown delay-25">That's
+				<strong class="animated flash delay-35 duration-5">50 billion</strong> dogecoin! Wow, such many.</h4>
+			<div class="third-part-doge">
+				<h2 class="animated fadeInDown delay-40">To mine dogecoin, just click on Doge</h2>
+				<div class="wowcontainer"></div>
+				<div id="tutminer" class="level1 level1-doge_mine1u0 noselect animated fadeIn delay-40"></div>
+				<div class="hand hand-hand1 animated bounceInDown delay-50 duration-10"></div>
+				<button id="third-part-button" class="animated fadeInUp delay-60 duration-10">GOT IT</button>
+			</div>
+			<div class="third-part-shop" style="display: none;">
+				<h2>Mine faster by hiring helpers:</h2>
+				<div class="space-maker">
+					<div class="miniwowcontainer"></div>
+					<div class="shibes-example">
+						<div style="left: 10px; top: 19px; position: absolute; width: 50px; height: 50px;"
+							class="animated bounceIn delay-5 level1 level1-shibe0"></div>
+						<div style="left: 40px; top: 18px; position: absolute; width: 50px; height: 50px;"
+							class="animated bounceIn delay-14 level1 level1-shibe0"></div>
+						<div style="left: 54px; top: 13px; position: absolute; width: 50px; height: 50px;"
+							class="animated bounceIn delay-2 level1 level1-shibe0"></div>
+						<div style="left: 77px; top: 28px; position: absolute; width: 50px; height: 50px;"
+							class="animated bounceIn delay-6 level1 level1-shibe0"></div>
+						<div style="left: 93px; top: 15px; position: absolute; width: 50px; height: 50px;"
+							class="animated bounceIn delay-12 level1 level1-shibe0"></div>
+						<div tyle="left:111px;top:16px;position:absolute;width:50px;height:50px;"
+							class="animated bounceIn delay-17 level1 level1-shibe0"></div>
+						<div style="left: 129px; top: 13px; position: absolute; width: 50px; height: 50px;"
+							class="animated bounceIn delay-23 level1 level1-shibe0"></div>
+						<div style="left: 160px; top: 18px; position: absolute; width: 50px; height: 50px;"
+							class="animated bounceIn delay-25 level1 level1-shibe0"></div>
+					</div>
+				</div>
+				<h5 class="animated fadeInDown delay-45">The helpers, your pickaxe &amp; more can be
+					<span id="upgraded-example" class="animated flash delay-70 duration-10">upgraded</span> for
+					increased income.</h5>
+				<button id="last-part-button" class="animated fadeInUp duration-10 delay-90">LETS GO</button>
+			</div>
+		</div>
+	</div>
+	<style>
+		#doge2lol {
+			position: absolute;
+			top: 19px;
+			text-align: center;
+			left: 15px;
+			background-color: rgba(255, 228, 163, 0.69);
+			border-radius: 10px;
+			padding: 5px;
+			width: 100%;
+		}
+
+		#doge2lol a {
+			font-size: 24px;
+			color: #391c08;
+			font-weight: 400;
+			text-decoration: none;
+		}
+
+		#doge2lol a:hover {
+			text-decoration: underline;
+		}
+
+		#doge2ad {
+			display: block !important;
+			position: absolute;
+			left: 10px;
+			top: 188px;
+			width: 275px;
+		}
+
+		#doge2ad a {
+			font-size: 28px;
+			color: #936b27;
+			font-weight: 400;
+			text-decoration: underline;
+		}
+
+		@media screen and (max-width: 1200px) {
+			#external-url {
+				display: block !important;
+				position: absolute;
+				right: -1px;
+				top: 223px;
+				width: 300px;
+			}
+
+			#external-url a {
+				font-size: 24px;
+				color: #0f17ad;
+				font-weight: 400;
+				text-decoration: underline;
+			}
+		}
+
+		.introcontainer {
+			opacity: 1;
+			background-color: rgba(51, 51, 51, 0.69);
+		}
+
+		.below-intro {
+			position: absolute;
+			top: 653px;
+			display: block;
+			z-index: 152;
+			width: 980px;
+			left: 0;
+			right: 0;
+			margin-left: auto;
+			margin-right: auto;
+		}
+
+		.intro-txt {
+			display: block;
+			text-align: center;
+		}
+
+		.da-container {
+			display: block;
+			width: 980px;
+			height: 180px;
+			margin-left: auto;
+			margin-right: auto;
+		}
+
+		.da-container ins {
+			max-width: 980px;
+			max-height: 180px;
+			width: 100%;
+			height: 100%;
+		}
+
+		#introscreen {
+			height: 600px;
+		}
+
+		#introscreen .first-part #start-playing {
+			margin-top: 5px;
+		}
+
+		#introscreen .first-part h1 {
+			margin-top: 30px;
+		}
+
+		#introscreen .third-part h3 {
+			margin-top: 25px;
+			margin-bottom: 20px;
+		}
+
+		#introscreen .third-part h2 {
+			margin-top: 9px;
+		}
+
+		#introscreen .third-part .third-part-shop #last-part-button {
+			margin-top: 35px;
+		}
+
+		@media screen and (min-width: 1473px) and (max-height: 855px) {
+			.da-container {
+				height: 120px;
+			}
+
+			.da-container ins {
+				height: 120px;
+			}
+		}
+
+		@media screen and (min-width: 1473px) and (max-height: 794px) {
+			#introscreen {
+				top: 6px;
+			}
+
+			.below-intro {
+				top: 627px;
+			}
+
+			.da-container {
+				height: 90px;
+			}
+
+			.da-container ins {
+				max-height: 90px;
+			}
+		}
+
+		@media screen and (min-width: 1473px) and (max-height: 737px) {
+			.da-container {
+				display: none;
+			}
+
+			.da-container ins {
+				display: none !important;
+			}
+
+			.below-intro {
+				display: none;
+			}
+		}
+
+		@media screen and (max-width: 1000px) {
+			.da-container {
+				width: 728px;
+			}
+
+			.da-container ins {
+				max-width: 728px;
+			}
+		}
+
+		@media screen and (max-width: 1473px) {
+			.below-intro {
+				top: 487px;
+			}
+
+			.da-container {
+				height: 120px;
+			}
+
+			.da-container ins {
+				max-height: 120px;
+			}
+
+			#introscreen {
+				max-height: 457px;
+			}
+
+			#introscreen .first-part h1 {
+				margin-top: 5px;
+				margin-bottom: 0px;
+			}
+
+			#introscreen .first-part .intro-doge {
+				margin-top: -47px;
+			}
+
+			#introscreen .first-part p {
+				margin-top: 0px;
+			}
+
+			#introscreen .first-part #start-playing {
+				margin-top: -11px;
+				font-size: 28px;
+			}
+
+			#introscreen .first-part .cookies-long h3 {
+				margin-top: 0px;
+				margin-bottom: 0px;
+			}
+
+			#introscreen .first-part .cookies-long h4 {
+				margin-top: 3px;
+				margin-bottom: 0;
+				font-size: 13px;
+			}
+
+			#introscreen .first-part .cookies-long button {
+				margin-top: 2px;
+			}
+
+			#introscreen .second-part h2 {
+				margin-top: 10px;
+			}
+
+			#introscreen .third-part h2 {
+				margin-top: 0px;
+			}
+
+			#introscreen .third-part h3 {
+				margin-top: 8px;
+				margin-bottom: 8px;
+			}
+
+			#introscreen .third-part #third-part-button {
+				margin-top: -13px;
+			}
+
+			#introscreen .third-part #tutminer {
+				margin-top: -48px;
+			}
+		}
+
+		@media screen and (max-height: 629px) {
+			.da-container {
+				height: 100px;
+			}
+
+			.da-container ins {
+				max-height: 100px;
+			}
+		}
+
+		@media screen and (max-height: 610px) {
+			.da-container {
+				height: 90px;
+			}
+
+			.da-container ins {
+				max-height: 90px;
+			}
+		}
+
+		@media screen and (max-height: 598px) {
+			.da-container {
+				display: none;
+			}
+
+			.da-container ins {
+				display: none !important;
+			}
+
+			.below-intro {
+				display: none;
+			}
+		}
+
+		@media screen and (max-width: 857px) {
+			.da-container {
+				display: none;
+			}
+
+			.da-container ins {
+				display: none !important;
+			}
+
+			.below-intro {
+				display: none;
+			}
+		}
+
+		@media screen and (max-height: 600px) and (max-width: 900px) {
+			#wrapper {
+				width: 649px;
+				-webkit-transform: scale(0.6) translateZ(0);
+				transform: scale(0.6) translateZ(0);
+			}
+
+			#tabs {
+				width: 577px;
+				right: 85px;
+				-webkit-transform: scale(0.6) translateZ(0);
+				transform: scale(0.6) translateZ(0);
+			}
+
+			#sideadlol {
+				right: 198px;
+				top: 19px;
+				/*max-height: 480px;*/
+				width: 120px !important;
+				height: 240px !important;
+			}
+
+			#sideadlol ins {
+				width: 120px;
+				height: 240px;
+			}
+		}
+
+		#dogem2 {
+			height: 40px;
+			width: 250px;
+		}
+
+		.newlinkz {
+			position: relative;
+			top: 22px;
+			left: 3px;
+			font-size: 0.9em;
+			color: #4066d0e3;
+			font-weight: bold;
+			text-decoration: none;
+		}
+
+		#showhidebutton {
+			top: 104px;
+		}
+	</style>
+
+	<div id="supermegacontainer">
+		<!--[if lt IE 8]>
+                <p class="browsehappy">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> to improve your experience.</p>
+            <![endif]-->
+
+		<div id="superwrapper">
+			<div id="wrapper" class="ui-widget ui-widget-content ui-corner-all tenpadding noselect">
+				<header>
+					<h1 id="titleheader" align="center">
+						<img alt="Dogecoin" src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-12@main/_ext/cdn.jsdelivr.net/gh/Nailington/3kh0-assets@aeb371b7e88542fd5e61eeed9e967a446d84fe1b/DogeMiner/img/dogecoin-d.png" style="height: 70px; width: 70px;" />
+                            DOGEMINER
+                        </h1>
+
+						<div id="progressBar" class="pbar"
+							style="display: none; position: absolute; left: 100px; top: 10px; width: 600px;"
+							title="The cost to go to the moon is 50,000,000,000 dogecoins!">
+							<div></div>
+							<span class="fund">Moon Fund</span>
+						</div>
+
+						<a href="javascript:;" id="launchbutton"
+							style="position: absolute; left: 350px; top: 5px; width: 200px;"
+							class="animated pulseAndColor infinite duration-15"></a>
+
+						<div id="level-status"
+							style="position: absolute; top: 0px; left: 5px; opacity: 0.6; z-index: 2; font-size: 90%;">
+							<small>LOCATION:</small><br />
+							<span id="location">
+                                <font style="color: #a48032;">EARTH</font>
+                            </span>
+							<br />
+							<small title="The cost to go to the moon is 50,000,000,000 dogecoins!">TARGET:<br /></small>
+							<span id="nextlocation" title="The cost to go to the moon is 50,000,000,000 dogecoins!">
+                                <font style="color: #b2b2b2;">MOON</font>
+                            </span>
+							<br />
+							<small title="The cost to go to the moon is 50,000,000,000 dogecoins!">LAUNCH STATUS:</small><br />
+							<span id="progress" title="The cost to go to the moon is 50,000,000,000 dogecoins!">0%</span>
+						</div>
+						<div id="howmanyclicksbro" class="small" style="position: absolute; right: 5px; top: 5px;">
+						</div>
+						<div id="timeplayed" class="small" style="position: absolute; right: 5px; top: 20px;">00:00:00
+						</div>
+						<div id="volumeicon" class="small" style="position: absolute; right: 5px; top: 35px;">
+							<a id="quickmute"
+								href="javascript:;"><span id="muteicon" class="ui-icon ui-icon-volume-on"></span></a>
+						</div>
+						<div class="byline">The Dogecoin Mining Simulator</div>
+				</header>
+				<div id="news" class="newsline"><span>&nbsp;</span></div>
+
+				<div id="random"></div>
+
+				<div class="all-helpers">
+					<div id="helperwrapper">
+						<div id="shibesdiv"></div>
+						<div id="kennelsdiv"></div>
+						<div id="kittensdiv"></div>
+					</div>
+					<div id="helperwrapper2">
+						<div id="rocketsdiv"></div>
+						<div id="basesdiv"></div>
+						<div id="rigsdiv"></div>
+					</div>
+				</div>
+
+				<div class="coinstext">
+					<div id="mined">
+						<p>Dogecoins: <strong>0</strong></p>
+					</div>
+					<div id="persec">
+						<p>Dogecoins per sec: <span class="mined-persec">0</span></p>
+					</div>
+				</div>
+				<div id="minerwrapper">
+					<div id="miner" class="level1 level1-doge_mine1u0 noselect"></div>
+				</div>
+			</div>
+
+			<div id="tabs" class="noselect ui-tabs ui-widget ui-widget-content ui-corner-all">
+				<ul>
+					<li id="shoptab" class="noselect">
+						<a href="#tabs-1"><span class="ui-icon ui-icon-cart"></span>Store</a>
+					</li>
+					<li id="upgradetab" class="noselect">
+						<a href="#tabs-2"><span class="ui-icon ui-icon-arrowthick-1-n"></span>Upgrades</a>
+					</li>
+					<li id="achitab" class="noselect">
+						<a href="#tabs-3"><span class="ui-icon ui-icon-check"></span>Achievements</a>
+					</li>
+					<li class="noselect">
+						<a href="#tabs-4"><span class="ui-icon ui-icon-info"></span>Stats</a>
+					</li>
+					<li class="noselect">
+						<a href="#tabs-5"><span class="ui-icon ui-icon-gear"></span>Settings</a>
+					</li>
+				</ul>
+
+				<div id="tabs-1">
+					<div>
+						<h2 class="helpheader">Get help:</h2>
+
+						<div class="help">
+							<div id="help1" class="helps">
+								<div id="shibesimage" class="level1 level1-shibe0"
+									style="position: absolute; left: 210px;"></div>
+								<strong>
+                                        <h3 id="shibesname" class="inlineheader">Mining Shibe</h3>
+                                        <h3 class="inlineheader"><span id="shibes"></span></h3>
+                                        <br />
+                                        <span id="shibecost"></span>
+                                    </strong>
+								<br />
+								<span id="shibesdesc" class="desc">Very kind shibe to mine much dogecoin.</span><br />
+								<br />
+								<br />
+								<button id="buyshibe" class="shopbutton">Buy!</button>
+							</div>
+
+							<div id="help2" class="helps">
+								<div id="kennelsimage" class="level1 level1-kennels10"
+									style="position: absolute; left: 195px; top: -40px;"></div>
+								<strong>
+                                        <h3 id="kennelsname" class="inlineheader">Doge Kennels</h3>
+                                        <h3 class="inlineheader"><span id="kennels"></span></h3>
+                                        <br />
+                                        <span id="kennelcost"></span>
+                                    </strong>
+								<br />
+								<span id="kennelsdesc" class="desc">Wow very efficiency, entire kennels to mine dogecoin.</span><br />
+								<br />
+								<button id="buykennel" class="shopbutton">Buy!</button>
+							</div>
+
+							<div id="help3" class="helps">
+								<div id="kittensimage" class="level1 level1-kitten10"
+									style="position: absolute; left: 140px; top: 80px;"></div>
+								<strong>
+                                        <h3 id="kittensname" class="inlineheader">Slave Kittens</h3>
+                                        <h3 class="inlineheader"><span id="kittens"></span></h3>
+                                        <br />
+                                        <span id="kittencost"></span>
+                                    </strong>
+								<br />
+								<span id="kittensdesc" class="desc">Kittens to post cute videos to the internet for dogecoin.</span><br />
+								<br />
+								<button id="buykitten" class="shopbutton">Buy!</button>
+							</div>
+
+							<div id="help4" class="helps">
+								<div id="rocketsimage" class="level1 level1-rocket10"
+									style="position: absolute; left: 165px; top: 50px; transform: rotate(-49deg); -webkit-transform: rotate(-49deg); -ms-transform: rotate(-49deg);">
+								</div>
+								<strong>
+                                        <h3 id="rocketsname" class="inlineheader">Space Rocket</h3>
+                                        <h3 class="inlineheader"><span id="rockets"></span></h3>
+                                        <br />
+                                        <span id="rocketcost"></span>
+                                    </strong>
+								<br />
+								<span id="rocketsdesc" class="desc">A rocket to fly to the moon to find more dogecoin.</span><br />
+								<br />
+								<button id="buyrocket" class="shopbutton">Buy!</button>
+							</div>
+
+							<div id="help5" class="helps">
+								<div id="basesimage" class="level1 level1-base10"
+									style="position: absolute; left: 110px; top: 85px;"></div>
+								<strong>
+                                        <h3 id="basesname" class="inlineheader">Moon Base</h3>
+                                        <h3 class="inlineheader"><span id="bases"></span></h3>
+                                        <br />
+                                        <span id="basecost"></span>
+                                    </strong>
+								<br />
+								<span id="basesdesc" class="desc">A base on the moon to extract much dogecoin.</span><br />
+								<br />
+								<button id="buybase" class="shopbutton">Buy!</button>
+							</div>
+
+							<div id="help6" class="helps">
+								<div id="rigsimage" class="level1 level1-rig10"
+									style="position: absolute; left: 105px; top: 90px;"></div>
+								<strong>
+                                        <h3 id="rigsname" class="inlineheader">Time Machine Mining Rig</h3>
+                                        <h3 class="inlineheader"><span id="rigs"></span></h3>
+                                        <br />
+                                        <span id="rigcost"></span>
+                                    </strong>
+								<br />
+								<span id="rigsdesc" class="desc">Mines into the future where infinite dogecoins exist.</span><br />
+								<br />
+								<button id="buyrig" class="shopbutton">Buy!</button>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<div id="tabs-2">
+					<h2 class="helpheader">Get upgrades:</h2>
+					<div class="help">
+						<div id="upgradewrapper"></div>
+					</div>
+				</div>
+
+				<div id="tabs-3">
+					<h2 class="helpheader">Achievements:</h2>
+					<div class="help">
+						<div id="achiwrapper"></div>
+					</div>
+				</div>
+
+				<div id="tabs-4">
+					<h2 class="helpheader">Statistics:</h2>
+					<div class="help">
+						<a href="javascript:;" id="stats">Refresh</a><br />
+						<br />
+						<div id="statisticswrapper">
+							<p>Achievements unlocked (total): <strong class="stats-achis"></strong></p>
+							<p>Total time played: <strong class="stats-timeplayed"></strong></p>
+							<p>Bonus coins grabbed: <strong class="stats-bonuscoins"></strong></p>
+							<p>Total clicks: <strong class="stats-clicks"></strong></p>
+							<div id="statstab">
+								<ul>
+									<li id="level1tab">
+										<a href="#stats1">EARTH</a>
+									</li>
+									<li id="level2tab">
+										<a href="#stats2">MOON</a>
+									</li>
+									<li id="level3tab">
+										<a href="#stats3">????</a>
+									</li>
+									<li id="level4tab">
+										<a href="#stats4">????</a>
+									</li>
+									<li id="level5tab">
+										<a href="#stats5">????</a>
+									</li>
+									<li id="level6tab">
+										<a href="#stats6">????</a>
+									</li>
+								</ul>
+								<div id="stats1">
+									<p class="stats-coins"></p>
+									<p>&nbsp;</p>
+									<p class="stats-shibes"></p>
+									<p class="stats-kennels"></p>
+									<p class="stats-kittens"></p>
+									<p class="stats-rockets"></p>
+									<p class="stats-bases"></p>
+									<p class="stats-rigs"></p>
+									<p>&nbsp;</p>
+									<p class="stats-upgrades"></p>
+								</div>
+								<div id="stats2">
+									<p class="stats-coins"></p>
+									<p>&nbsp;</p>
+									<p class="stats-shibes"></p>
+									<p class="stats-kennels"></p>
+									<p class="stats-kittens"></p>
+									<p class="stats-rockets"></p>
+									<p class="stats-bases"></p>
+									<p class="stats-rigs"></p>
+									<p>&nbsp;</p>
+									<p class="stats-upgrades"></p>
+								</div>
+								<div id="stats3">
+									<p class="stats-coins"></p>
+									<p>&nbsp;</p>
+									<p class="stats-shibes"></p>
+									<p class="stats-kennels"></p>
+									<p class="stats-kittens"></p>
+									<p class="stats-rockets"></p>
+									<p class="stats-bases"></p>
+									<p class="stats-rigs"></p>
+									<p>&nbsp;</p>
+									<p class="stats-upgrades"></p>
+								</div>
+								<div id="stats4">
+									<p class="stats-coins"></p>
+									<p>&nbsp;</p>
+									<p class="stats-shibes"></p>
+									<p class="stats-kennels"></p>
+									<p class="stats-kittens"></p>
+									<p class="stats-rockets"></p>
+									<p class="stats-bases"></p>
+									<p class="stats-rigs"></p>
+									<p>&nbsp;</p>
+									<p class="stats-upgrades"></p>
+								</div>
+								<div id="stats5">
+									<p class="stats-coins"></p>
+									<p>&nbsp;</p>
+									<p class="stats-shibes"></p>
+									<p class="stats-kennels"></p>
+									<p class="stats-kittens"></p>
+									<p class="stats-rockets"></p>
+									<p class="stats-bases"></p>
+									<p class="stats-rigs"></p>
+									<p>&nbsp;</p>
+									<p class="stats-upgrades"></p>
+								</div>
+								<div id="stats6">
+									<p class="stats-coins"></p>
+									<p>&nbsp;</p>
+									<p class="stats-shibes"></p>
+									<p class="stats-kennels"></p>
+									<p class="stats-kittens"></p>
+									<p class="stats-rockets"></p>
+									<p class="stats-bases"></p>
+									<p class="stats-rigs"></p>
+									<p>&nbsp;</p>
+									<p class="stats-upgrades"></p>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<div id="tabs-5">
+					<h2 class="helpheader">Settings:</h2>
+					<div class="help">
+						<a href="javascript:;" id="restartbutton">Reset game</a><br />
+						<br />
+						<input id="music" type="checkbox" checked="checked" />
+						<label for="music">Music</label><br />
+						<br />
+						<input id="sounds" type="checkbox" checked />
+						<label for="sounds">Toggle All Sounds</label><br />
+						<br />
+						<input id="sounds2" type="checkbox" checked />
+						<label for="sounds2">Toggle Pickaxe Sound</label><br />
+						<br />
+						<input id="clickeffects" type="checkbox" checked />
+						<label for="clickeffects">Toggle Click effects</label><br />
+						<br />
+						<input id="animations" type="checkbox" checked />
+						<label for="animations">Toggle Animations</label>
+						<br />
+						<br />
+						<input id="backgroundanims" type="checkbox" checked />
+						<label for="backgroundanims">Toggle Background Switching</label><br />
+						<br />
+						<input id="achievementswitch" type="checkbox" />
+						<label for="achievementswitch">Toggle Achievement Popup</label><br />
+						<br />
+						<a id="exportsave" href="javascript:;">Export Save</a><br />
+						<br />
+						<a id="importsave" href="javascript:;">Import Save</a><br />
+						<br />
+						<a id="switchlevel" href="javascript:;">Switch location</a>
+					</div>
+				</div>
+			</div>
+			<div id="achievementwrapper>">
+				<div id="achievementwindow"></div>
+			</div>
+		</div>
+		<div id="secretcontainer" style="display: hidden; position: absolute; left: -9999px; top: -9999px;"
+			class="noselect"></div>
+	</div>
+	<div id="extracontainer" class="noselect"></div>
+	<div id="savemodal" title="Wow such save function :o)" class="doselect">
+		Hi:)
+	</div>
+
+	<script type="application/ld+json">
+		{
+                "@context": "",
+                "@type": "VideoGame",
+                "applicationCategory": "Game",
+                "operatingSystem": "any",
+                "name": "Dogeminer: The Dogecoin Mining Simulator",
+                "image": "",
+                "url": "",
+                "aggregateRating": {
+                    "@type": "AggregateRating",
+                    "bestRating": "5",
+                    "ratingValue": "4.75",
+                    "reviewCount": "10701",
+                    "worstRating": "1"
+                },
+                "audience": {
+                    "@type": "PeopleAudience",
+                    "suggestedMinAge": "6"
+                },
+                "character": {
+                    "@type": "Person",
+                    "name": "Doge"
+                },
+                "creator": {
+                    "@type": "Person",
+                },
+                "dateCreated": "2014-02-14",
+                "description": "A space-travel, rock-crusher, free clicker adventure game. Build your own mining operation, get dogecoins, hire helpers to increase income, find loot, buy Space Rockets to reach the moon and much more.",
+                "gameLocation": "The Solar System",
+                "keywords": "idle, clicker, game, friendly, wholesome, mining, dogecoin, dogecoins, doge, dogeminer, miner, the moon, moon, space, space travel, upgrades, shop, upgrade, bonus,addictive, cookie clicker, hero, mars",
+                "gameItem": ["Earth", "The Moon", "Mars", "Bonuscoins", "Dogecoin", "Dogecoins", "Mining Shibes", "Doge Kennels", "Slave Kittens", "Space Rocket", "Moon Base", "..."],
+                "isFamilyFriendly": "true",
+                "numberOfPlayers": "1",
+                "genre": "Incremental",
+                "offers": {
+                    "@type": "Offer",
+                    "category": "free",
+                    "price": "0",
+                    "priceCurrency": "USD",
+                    "priceValidUntil": "2044-01-30",
+                    "seller": {
+                        "@type": "Organization",
+                        "name": "rkn"
+                    }
+                }
+            }
+	</script>
+	<script
+		src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-12@main/_ext/cdn.jsdelivr.net/gh/Nailington/3kh0-assets@aeb371b7e88542fd5e61eeed9e967a446d84fe1b/DogeMiner/js/plugins.js">
+	</script>
+	<script
+		src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-12@main/_ext/cdn.jsdelivr.net/gh/Nailington/3kh0-assets@aeb371b7e88542fd5e61eeed9e967a446d84fe1b/DogeMiner/js/main.js">
+	</script>
+</body>
+
+</html>

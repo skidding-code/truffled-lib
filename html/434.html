@@ -1,0 +1,1756 @@
+<!DOCTYPE html>
+
+<html>
+	<head><base href="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-31@main/games/prodigy/select/"><script>(function (C) {
+  var G = typeof self !== 'undefined' ? self : this;
+  if (G.__tz) return;
+  var IS_DOC = typeof document !== 'undefined' && typeof Element !== 'undefined';
+  var CDN = C.c;
+  var SKIP = /^(data:|blob:|javascript:|about:|mailto:|tel:|ws:|wss:|#)/i;
+  var units = Object.keys(C.u || {}).sort(function (a, b) { return b.length - a.length; });
+  var exts = Object.keys(C.x || {}).sort(function (a, b) { return b.length - a.length; });
+  var split = C.s || {};
+  var hostDir = (function () {
+    try {
+      var h = String(G.location.href);
+      if (/^(https?|file):/i.test(h)) return h.slice(0, h.lastIndexOf('/') + 1);
+    } catch (e) {}
+    return null;
+  })();
+
+  function base() {
+    if (C.w) return C.w;
+    try { return document.baseURI; } catch (e) { return C.b; }
+  }
+
+  function rootFor(p, strict) {
+    for (var i = 0; i < units.length; i++) if (p.indexOf(units[i]) === 0) return C.u[units[i]];
+    return strict ? null : C.r;
+  }
+
+  function map(u) {
+    try {
+      if (u == null) return u;
+      if (typeof u !== 'string') {
+        if (typeof URL !== 'undefined' && u instanceof URL) u = u.href;
+        else if (u && typeof u.toString === 'function') u = u.toString();
+        else return u;
+      }
+      var t = u.trim();
+      if (C.w && /^blob:/i.test(t) && /\/[^\/?#]*\.[A-Za-z0-9]{1,8}([?#].*)?$/.test(t)) {
+        return map(new URL(t.slice(t.lastIndexOf('/') + 1), C.w).href);
+      }
+      if (!t || SKIP.test(t)) return u;
+      var abs;
+      try { abs = new URL(t, base()); } catch (e) { return u; }
+      var href = abs.href;
+      if (hostDir && href.indexOf(hostDir) === 0 && !(C.b.indexOf(hostDir) === 0)) {
+        return map(new URL(href.slice(hostDir.length), C.b).href);
+      }
+      if (abs.protocol !== 'http:' && abs.protocol !== 'https:') return u;
+      if (abs.origin === CDN && C.o && abs.pathname.indexOf('/gh/' + C.o + '/') === 0) {
+        var mm = /^\/gh\/[^/]+\/[^/@]+@[^/]+\//.exec(abs.pathname);
+        if (mm) {
+          var rest = abs.pathname.slice(mm[0].length), dp = rest;
+          try { dp = decodeURIComponent(rest); } catch (e) {}
+          var want = rootFor('/' + dp, true);
+          if (want && want !== CDN + mm[0]) return want + rest + abs.search + abs.hash;
+        }
+        return href;
+      }
+      if ((abs.origin === CDN && !/^\/(gh|npm|combine|wp)\//.test(abs.pathname)) || /^(www\.)?truffled\.lol$/i.test(abs.hostname)) {
+        var dpp = abs.pathname;
+        try { dpp = decodeURIComponent(dpp); } catch (e) {}
+        return rootFor(dpp) + abs.pathname.slice(1) + abs.search + abs.hash;
+      }
+      var hp = abs.host + abs.pathname;
+      for (var i = 0; i < exts.length; i++) {
+        if (hp.indexOf(exts[i]) === 0) return C.x[exts[i]] + hp.slice(exts[i].length);
+      }
+      return href;
+    } catch (e) { return u; }
+  }
+
+  function bare(u) { return String(u).replace(/[?#].*$/, ''); }
+  function splitKey(u) {
+    var b = bare(u);
+    if (split[b]) return b;
+    try { var n = new URL(b).href; if (split[n]) return n; } catch (e) {}
+    try { var d = encodeURI(decodeURI(b)); if (split[d]) return d; } catch (e) {}
+    return null;
+  }
+  function splitInfo(u) { var k = splitKey(u); return k ? split[k] : null; }
+
+  var PART = C.p || 19000000;
+  function partUrl(key, i) {
+    var info = split[key], segs = info[3];
+    if (segs) {
+      for (var j = segs.length - 1; j >= 0; j--) if (i >= segs[j][0]) return segs[j][1] + '.part' + i;
+    }
+    return key + '.part' + i;
+  }
+  function getPart(key, i, range) {
+    var u = partUrl(key, i), tries = 0;
+    function go() {
+      return origFetch(u, range ? { headers: { Range: range } } : undefined).then(function (r) {
+        if (!r.ok) throw new Error('part ' + u + ' ' + r.status);
+        return r.arrayBuffer().then(function (ab) { return [ab, r.status]; });
+      }).catch(function (e) {
+        if (++tries < 4) return new Promise(function (ok) { setTimeout(ok, 800 * tries); }).then(go);
+        throw e;
+      });
+    }
+    return go();
+  }
+  var merged = {};
+  function mergeBuf(u) {
+    var key = splitKey(u) || bare(u);
+    if (merged[key]) return merged[key];
+    var n = split[key][0], type = split[key][1] || 'application/octet-stream';
+    var blobs = new Array(n), next = 1;
+    merged[key] = new Promise(function (ok, bad) {
+      var active = 0, done = 0, failed = false;
+      function pump() {
+        while (!failed && active < 4 && next <= n) {
+          (function (i) {
+            active++;
+            getPart(key, i).then(function (r) {
+              blobs[i - 1] = new Blob([r[0]]);
+              active--;
+              if (++done === n) ok(new Blob(blobs, { type: type }));
+              else pump();
+            }, function (e) { failed = true; bad(e); });
+          })(next++);
+        }
+      }
+      pump();
+    });
+    return merged[key];
+  }
+  var blobUrls = {};
+  function mergeUrl(u) {
+    var key = splitKey(u) || bare(u);
+    if (!blobUrls[key]) blobUrls[key] = mergeBuf(key).then(function (b) { return URL.createObjectURL(b); });
+    return blobUrls[key];
+  }
+  function sizeOf(key) { return split[key][2] || 0; }
+  function parseRange(h, size) {
+    var m = /bytes=(\d*)-(\d*)/.exec(h || '');
+    if (!m) return null;
+    var a, b;
+    if (m[1] === '') { a = Math.max(0, size - Number(m[2])); b = size - 1; }
+    else { a = Number(m[1]); b = m[2] === '' ? size - 1 : Math.min(Number(m[2]), size - 1); }
+    if (a > b || a >= size) return null;
+    return [a, b];
+  }
+  function rangeBlob(key, a, b) {
+    var i0 = Math.floor(a / PART), i1 = Math.floor(b / PART), jobs = [];
+    for (var i = i0; i <= i1; i++) {
+      (function (i) {
+        var s = Math.max(a, i * PART) - i * PART, e = Math.min(b, (i + 1) * PART - 1) - i * PART;
+        jobs.push(getPart(key, i + 1, 'bytes=' + s + '-' + e).then(function (r) {
+          return r[1] === 206 ? r[0] : r[0].slice(s, e + 1);
+        }));
+      })(i);
+    }
+    return Promise.all(jobs).then(function (bufs) { return new Blob(bufs, { type: split[key][1] || 'application/octet-stream' }); });
+  }
+  function streamResponse(key) {
+    var n = split[key][0], next = 1, ahead = [];
+    var hdr = { 'Content-Type': split[key][1] || 'application/octet-stream', 'Accept-Ranges': 'bytes' };
+    if (sizeOf(key)) hdr['Content-Length'] = String(sizeOf(key));
+    function fill() { while (ahead.length < 3 && next <= n) ahead.push(getPart(key, next++)); }
+    var rs = new ReadableStream({
+      pull: function (ctrl) {
+        fill();
+        if (!ahead.length) { ctrl.close(); return; }
+        return ahead.shift().then(function (r) { ctrl.enqueue(new Uint8Array(r[0])); fill(); });
+      },
+      cancel: function () { ahead = []; next = n + 1; }
+    });
+    return new Response(rs, { status: 200, statusText: 'OK', headers: hdr });
+  }
+  function splitFetch(key, input, init) {
+    var method = String((init && init.method) || (input && input.method) || 'GET').toUpperCase();
+    var range = null;
+    try { range = new Headers((init && init.headers) || (input && typeof input === 'object' && input.headers) || undefined).get('range'); } catch (e) {}
+    var size = sizeOf(key), type = split[key][1] || 'application/octet-stream';
+    if (method === 'HEAD') {
+      return Promise.resolve(new Response(null, { status: 200, headers: { 'Content-Length': String(size), 'Content-Type': type, 'Accept-Ranges': 'bytes' } }));
+    }
+    var rg = range && size ? parseRange(range, size) : null;
+    if (rg) {
+      return rangeBlob(key, rg[0], rg[1]).then(function (b) {
+        return new Response(b, { status: 206, statusText: 'Partial Content', headers: { 'Content-Type': type, 'Content-Length': String(b.size), 'Content-Range': 'bytes ' + rg[0] + '-' + rg[1] + '/' + size, 'Accept-Ranges': 'bytes' } });
+      });
+    }
+    if (merged[key]) return merged[key].then(function (b) { return new Response(b, { status: 200, headers: { 'Content-Type': type, 'Content-Length': String(b.size) } }); });
+    return Promise.resolve(streamResponse(key));
+  }
+
+  var origFetch = G.fetch ? G.fetch.bind(G) : null;
+  G.__tz = { map: map, cfg: C };
+
+  if (origFetch) {
+    G.fetch = function (input, init) {
+      try {
+        var url = typeof input === 'string' || (typeof URL !== 'undefined' && input instanceof URL) ? String(input) : input && input.url;
+        if (url) {
+          var m = map(url);
+          if (splitInfo(m)) return splitFetch(splitKey(m), input, init);
+          if (m !== url) {
+            if (typeof input === 'string' || input instanceof URL) input = m;
+            else input = new Request(m, input);
+          }
+        }
+      } catch (e) {}
+      return origFetch(input, init);
+    };
+  }
+
+  if (G.XMLHttpRequest) {
+    var XP = G.XMLHttpRequest.prototype;
+    var oOpen = XP.open, oSend = XP.send, oSRH = XP.setRequestHeader;
+    XP.open = function (method, url) {
+      var a = Array.prototype.slice.call(arguments);
+      var m = map(url);
+      if (splitInfo(m) && a[2] !== false) {
+        this.__tzs = { a: a, m: m, h: [] };
+        return;
+      }
+      this.__tzs = null;
+      a[1] = m;
+      return oOpen.apply(this, a);
+    };
+    XP.setRequestHeader = function (k, v) {
+      if (this.__tzs) { this.__tzs.h.push([k, v]); return; }
+      return oSRH.call(this, k, v);
+    };
+    XP.send = function (body) {
+      var s = this.__tzs, x = this;
+      if (!s) return oSend.call(this, body);
+      var key = splitKey(s.m), rh = null;
+      s.h.forEach(function (h) { if (String(h[0]).toLowerCase() === 'range') rh = h[1]; });
+      var rg = rh && sizeOf(key) ? parseRange(rh, sizeOf(key)) : null;
+      var src = rg ? rangeBlob(key, rg[0], rg[1]).then(function (b) { return URL.createObjectURL(b); }) : mergeUrl(s.m);
+      s.h = s.h.filter(function (h) { return String(h[0]).toLowerCase() !== 'range'; });
+      src.then(function (bu) {
+        var a = s.a.slice();
+        a[1] = bu;
+        x.__tzs = null;
+        oOpen.apply(x, a);
+        s.h.forEach(function (h) { try { oSRH.call(x, h[0], h[1]); } catch (e) {} });
+        oSend.call(x, body);
+      }, function () {
+        x.__tzs = null;
+        var a = s.a.slice();
+        a[1] = s.m;
+        oOpen.apply(x, a);
+        oSend.call(x, body);
+      });
+    };
+  }
+
+  var shimSrc = null;
+  function workerBlob(url, opts) {
+    var m = map(url);
+    var abs = new URL(m, base()).href;
+    var cfg = JSON.parse(JSON.stringify(C));
+    cfg.w = abs;
+    var pre = shimSrc ? '(' + shimSrc + ')(' + JSON.stringify(cfg) + ');' : '';
+    var body = opts && opts.type === 'module'
+      ? pre + 'import ' + JSON.stringify(abs) + ';'
+      : pre + 'importScripts(' + JSON.stringify(abs) + ');';
+    return URL.createObjectURL(new Blob([body], { type: 'text/javascript' }));
+  }
+  function needsWrap(u) {
+    try {
+      var abs = new URL(map(u), base());
+      return abs.origin !== G.location.origin && abs.protocol !== 'blob:' && abs.protocol !== 'data:';
+    } catch (e) { return false; }
+  }
+  ['Worker', 'SharedWorker'].forEach(function (k) {
+    var W = G[k];
+    if (!W) return;
+    var Wrapped = function (url, opts) {
+      var u = typeof url === 'string' || url instanceof URL ? String(url) : url;
+      if (typeof u === 'string' && needsWrap(u)) u = workerBlob(u, opts);
+      return opts === undefined ? new W(u) : new W(u, opts);
+    };
+    Wrapped.prototype = W.prototype;
+    try { Object.defineProperty(Wrapped, 'name', { value: k }); } catch (e) {}
+    G[k] = Wrapped;
+  });
+
+  if (!IS_DOC && typeof G.importScripts === 'function') {
+    var oIS = G.importScripts;
+    G.importScripts = function () {
+      var a = Array.prototype.slice.call(arguments).map(function (u) { return map(u); });
+      return oIS.apply(G, a);
+    };
+  }
+
+  if (!IS_DOC) return;
+
+  try { shimSrc = String(document.currentScript && document.currentScript.textContent || ''); } catch (e) {}
+  if (shimSrc) {
+    var mm = /^\s*\(function \(C\)[\s\S]*\}\)\(/.exec(shimSrc);
+    shimSrc = mm ? mm[0].replace(/\)\($/, '').replace(/^\s*\(/, '') : null;
+  }
+
+  function loadHtmlFrame(frame, url) {
+    origFetch(url).then(function (r) { return r.text(); }).then(function (html) {
+      var w = frame.contentWindow;
+      if (!w) return;
+      var d = w.document;
+      html = prepHtml(html, url);
+      d.open();
+      d.write(html);
+      d.close();
+    });
+  }
+  function prepHtml(html, url) {
+    var dir = url.slice(0, url.lastIndexOf('/') + 1);
+    var tag = '<base href="' + dir + '">';
+    var cfg = JSON.parse(JSON.stringify(C));
+    delete cfg.w;
+    var sh = shimSrc ? '<script>(' + shimSrc + ')(' + JSON.stringify(cfg).replace(/<\//g, '<\\/') + ');<\/script>' : '';
+    if (/<base\b[^>]*>/i.test(html)) {
+      var mb = /<base\b[^>]*\bhref\s*=\s*["']?([^"'\s>]+)/i.exec(html);
+      if (mb) tag = '<base href="' + new URL(mb[1], dir).href + '">';
+      html = html.replace(/<base\b[^>]*>/i, '');
+    }
+    if (/<head[^>]*>/i.test(html)) return html.replace(/<head[^>]*>/i, function (m) { return m + tag + sh; });
+    if (/<html[^>]*>/i.test(html)) return html.replace(/<html[^>]*>/i, function (m) { return m + tag + sh; });
+    return tag + sh + html;
+  }
+  function isHtml(u) {
+    try {
+      var p = new URL(u).pathname;
+      return /\.html?$/i.test(p) || /\/$/.test(p);
+    } catch (e) { return false; }
+  }
+  function cdnLike(u) {
+    try { return new URL(u).origin === CDN; } catch (e) { return false; }
+  }
+
+  function hookProp(proto, prop, special) {
+    if (!proto) return;
+    var d = Object.getOwnPropertyDescriptor(proto, prop);
+    if (!d || !d.set || !d.configurable) return;
+    Object.defineProperty(proto, prop, {
+      configurable: true,
+      enumerable: d.enumerable,
+      get: d.get,
+      set: function (v) {
+        var el = this;
+        if (prop === 'srcset') return d.set.call(el, mapSrcset(v));
+        var m = map(v);
+        if (typeof m === 'string' && splitInfo(m)) {
+          mergeUrl(m).then(function (bu) { d.set.call(el, bu); });
+          return;
+        }
+        if (special && special(el, m, function (x) { d.set.call(el, x); })) return;
+        return d.set.call(el, m);
+      },
+    });
+  }
+  function mapSrcset(v) {
+    if (typeof v !== 'string') return v;
+    return v.split(',').map(function (p) {
+      var t = p.trim();
+      if (!t) return t;
+      var sp = t.split(/\s+/);
+      sp[0] = map(sp[0]);
+      return sp.join(' ');
+    }).join(', ');
+  }
+  function iframeSpecial(el, m, set) {
+    if (typeof m === 'string' && cdnLike(m) && isHtml(m)) {
+      set('about:blank');
+      var go = function () { loadHtmlFrame(el, m); };
+      if (el.isConnected) setTimeout(go, 0);
+      else el.__tzPending = go;
+      return true;
+    }
+    return false;
+  }
+  hookProp(G.HTMLScriptElement && HTMLScriptElement.prototype, 'src');
+  hookProp(G.HTMLImageElement && HTMLImageElement.prototype, 'src');
+  hookProp(G.HTMLImageElement && HTMLImageElement.prototype, 'srcset');
+  hookProp(G.HTMLMediaElement && HTMLMediaElement.prototype, 'src');
+  hookProp(G.HTMLSourceElement && HTMLSourceElement.prototype, 'src');
+  hookProp(G.HTMLSourceElement && HTMLSourceElement.prototype, 'srcset');
+  hookProp(G.HTMLLinkElement && HTMLLinkElement.prototype, 'href');
+  hookProp(G.HTMLEmbedElement && HTMLEmbedElement.prototype, 'src');
+  hookProp(G.HTMLObjectElement && HTMLObjectElement.prototype, 'data');
+  hookProp(G.HTMLInputElement && HTMLInputElement.prototype, 'src');
+  hookProp(G.HTMLIFrameElement && HTMLIFrameElement.prototype, 'src', iframeSpecial);
+  try {
+    var svgHref = Object.getOwnPropertyDescriptor(SVGImageElement.prototype, 'href');
+    void svgHref;
+  } catch (e) {}
+
+  var oSetAttr = Element.prototype.setAttribute;
+  var ATTRS = { src: 1, href: 1, data: 1, poster: 1, srcset: 1, 'xlink:href': 1 };
+  Element.prototype.setAttribute = function (name, value) {
+    var n = String(name).toLowerCase();
+    if (ATTRS[n] && typeof value === 'string') {
+      var tag = this.tagName;
+      if (n === 'href' && (tag === 'A' || tag === 'BASE' || tag === 'AREA')) return oSetAttr.call(this, name, value);
+      if (n === 'srcset') return oSetAttr.call(this, name, mapSrcset(value));
+      var m = map(value);
+      if (splitInfo(m)) {
+        var el = this;
+        mergeUrl(m).then(function (bu) { oSetAttr.call(el, name, bu); });
+        return;
+      }
+      if (tag === 'IFRAME' && n === 'src' && iframeSpecial(this, m, function (x) { oSetAttr.call(this, name, x); }.bind(this))) return;
+      return oSetAttr.call(this, name, m);
+    }
+    return oSetAttr.call(this, name, value);
+  };
+
+  var oAppend = Node.prototype.appendChild, oInsert = Node.prototype.insertBefore;
+  function flushPending(n) {
+    if (n && n.__tzPending) {
+      var go = n.__tzPending;
+      n.__tzPending = null;
+      setTimeout(go, 0);
+    }
+  }
+  Node.prototype.appendChild = function (n) {
+    var r = oAppend.call(this, n);
+    flushPending(n);
+    return r;
+  };
+  Node.prototype.insertBefore = function (n, ref) {
+    var r = oInsert.call(this, n, ref);
+    flushPending(n);
+    return r;
+  };
+
+  if (G.Audio) {
+    var OA = G.Audio;
+    var NA = function Audio(src) {
+      var a = new OA();
+      if (src !== undefined) a.src = src;
+      return a;
+    };
+    NA.prototype = OA.prototype;
+    G.Audio = NA;
+  }
+
+  var oOpenWin = G.open;
+  if (oOpenWin) {
+    G.open = function (u) {
+      var a = Array.prototype.slice.call(arguments);
+      if (typeof u === 'string' && u) a[0] = map(u);
+      return oOpenWin.apply(G, a);
+    };
+  }
+
+  function fixStatic(root) {
+    var list = root.querySelectorAll ? root.querySelectorAll('iframe[data-tz-src]') : [];
+    for (var i = 0; i < list.length; i++) {
+      var f = list[i];
+      var s = f.getAttribute('data-tz-src');
+      f.removeAttribute('data-tz-src');
+      var m = map(s);
+      if (cdnLike(m) && isHtml(m)) loadHtmlFrame(f, m);
+      else oSetAttr.call(f, 'src', m);
+    }
+  }
+  if (G.MutationObserver) {
+    new MutationObserver(function (recs) {
+      for (var i = 0; i < recs.length; i++) {
+        var a = recs[i].addedNodes;
+        for (var j = 0; j < a.length; j++) {
+          var n = a[j];
+          if (n.nodeType !== 1) continue;
+          if (n.tagName === 'IFRAME' && n.hasAttribute('data-tz-src')) fixStatic(n.parentNode || document);
+          else if (n.querySelector && n.querySelector('iframe[data-tz-src]')) fixStatic(n);
+        }
+      }
+    }).observe(document, { childList: true, subtree: true });
+  }
+})({"c":"https://cdn.jsdelivr.net","o":"skidding-code","p":19000000,"b":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-31@main/games/prodigy/select/","r":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-31@main/","u":{"/games/prodigy/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-31@main/"},"x":{"fonts.gstatic.com/s/ubuntu/v21/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-01@main/_ext/fonts.gstatic.com/s/ubuntu/v21/","fonts.gstatic.com/s/lato/v25/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-01@main/_ext/fonts.gstatic.com/s/lato/v25/","fonts.gstatic.com/s/tiltwarp/v18/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-01@main/_ext/fonts.gstatic.com/s/tiltwarp/v18/","fonts.gstatic.com/s/googlesans/v29/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-01@main/_ext/fonts.gstatic.com/s/googlesans/v29/","fonts.gstatic.com/s/roboto/v48/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-01@main/_ext/fonts.gstatic.com/s/roboto/v48/","fonts.gstatic.com/s/amaticsc/v28/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-01@main/_ext/fonts.gstatic.com/s/amaticsc/v28/","fonts.gstatic.com/s/caveat/v23/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-01@main/_ext/fonts.gstatic.com/s/caveat/v23/","fonts.gstatic.com/s/comfortaa/v47/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-01@main/_ext/fonts.gstatic.com/s/comfortaa/v47/","fonts.gstatic.com/s/ebgaramond/v33/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-01@main/_ext/fonts.gstatic.com/s/ebgaramond/v33/","fonts.gstatic.com/s/lexend/v26/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-01@main/_ext/fonts.gstatic.com/s/lexend/v26/","fonts.gstatic.com/s/lobster/v32/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-01@main/_ext/fonts.gstatic.com/s/lobster/v32/","fonts.gstatic.com/s/lora/v37/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-01@main/_ext/fonts.gstatic.com/s/lora/v37/","fonts.gstatic.com/s/merriweather/v33/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-01@main/_ext/fonts.gstatic.com/s/merriweather/v33/","fonts.gstatic.com/s/montserrat/v31/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-01@main/_ext/fonts.gstatic.com/s/montserrat/v31/","fonts.gstatic.com/s/nunito/v32/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-01@main/_ext/fonts.gstatic.com/s/nunito/v32/","fonts.gstatic.com/s/oswald/v57/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-01@main/_ext/fonts.gstatic.com/s/oswald/v57/","fonts.gstatic.com/s/pacifico/v23/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-01@main/_ext/fonts.gstatic.com/s/pacifico/v23/","fonts.gstatic.com/s/playfairdisplay/v40/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-01@main/_ext/fonts.gstatic.com/s/playfairdisplay/v40/","fonts.gstatic.com/s/roboto/v51/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-01@main/_ext/fonts.gstatic.com/s/roboto/v51/","fonts.gstatic.com/s/robotomono/v31/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-01@main/_ext/fonts.gstatic.com/s/robotomono/v31/","fonts.gstatic.com/s/robotoserif/v17/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-01@main/_ext/fonts.gstatic.com/s/robotoserif/v17/","fonts.gstatic.com/s/spectral/v15/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-01@main/_ext/fonts.gstatic.com/s/spectral/v15/","fonts.gstatic.com/s/pressstart2p/v16/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-01@main/_ext/fonts.gstatic.com/s/pressstart2p/v16/","fonts.gstatic.com/s/poppins/v24/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-01@main/_ext/fonts.gstatic.com/s/poppins/v24/","fonts.gstatic.com/s/anta/v1/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-01@main/_ext/fonts.gstatic.com/s/anta/v1/","fonts.gstatic.com/s/kanit/v17/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-01@main/_ext/fonts.gstatic.com/s/kanit/v17/","fonts.gstatic.com/s/intertight/v9/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-01@main/_ext/fonts.gstatic.com/s/intertight/v9/","fonts.gstatic.com/s/inter/v20/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-01@main/_ext/fonts.gstatic.com/s/inter/v20/","fonts.gstatic.com/s/materialsymbolsrounded/v383/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-01@main/_ext/fonts.gstatic.com/s/materialsymbolsrounded/v383/","fonts.gstatic.com/s/opensans/v44/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-01@main/_ext/fonts.gstatic.com/s/opensans/v44/","fonts.gstatic.com/s/rajdhani/v17/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-01@main/_ext/fonts.gstatic.com/s/rajdhani/v17/","fonts.gstatic.com/s/inconsolata/v37/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-01@main/_ext/fonts.gstatic.com/s/inconsolata/v37/","fonts.gstatic.com/s/shantellsans/v13/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-01@main/_ext/fonts.gstatic.com/s/shantellsans/v13/","fonts.gstatic.com/s/vt323/v18/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-01@main/_ext/fonts.gstatic.com/s/vt323/v18/","fonts.gstatic.com/s/robotocondensed/v31/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-01@main/_ext/fonts.gstatic.com/s/robotocondensed/v31/","fonts.gstatic.com/s/sourcesanspro/v13/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-01@main/_ext/fonts.gstatic.com/s/sourcesanspro/v13/","fonts.gstatic.com/s/spacemono/v17/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-01@main/_ext/fonts.gstatic.com/s/spacemono/v17/","fonts.gstatic.com/s/outfit/v15/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-01@main/_ext/fonts.gstatic.com/s/outfit/v15/","fonts.gstatic.com/s/lilitaone/v17/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-01@main/_ext/fonts.gstatic.com/s/lilitaone/v17/"},"s":{"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-31@main/games/prodigy/select/images/Background-1.png":[2,"image/png",20028105]}});</script>
+	<title>Old Prodigy (Version Selection)</title>
+	<meta name="description" content="Old Prodigy is back and better than ever! Relive the original experience with a plethora of versions you can choose from!">
+
+	<link rel="icon" type="image/x-icon" href="../assets/favicon.png">
+
+	<link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-01@main/_ext/fonts.googleapis.com/css__b91dd9a4e205.css">
+
+</head>
+	
+	<style>
+	body {
+		background-color: #55B9A7;
+	}
+	
+	.bg-image {
+		height: 100%;
+		width: 100%;
+		left: 0px;
+		top: 0px;
+		right: 0px;
+		bottom: 0px;
+		position: fixed;
+		background-size: cover;
+		background-repeat: no-repeat;
+		background-attachment: fixed;
+		background-position: center center;
+	}
+	
+	.background-banner {
+		user-select: none;
+		position: fixed;
+		right: 0%;
+		bottom: 0%;
+		transform: translate(-8px, -8px);
+	}
+	
+	.definitive-banner {
+		user-select: none;
+		position: fixed;
+		left: 0%;
+		bottom: 0%;
+		transform: translate(+8px, -8px);
+	}
+	
+	.select-panel {
+		user-select: none;
+		display: block;
+		position: fixed;
+		left: 50%;
+		top: 50%;
+		transform: translate(-50%, -50%);
+	}
+	
+	.select-panel .banner {
+		user-select: none;
+		position: fixed;
+		display: block;
+		top: 20px;
+		left: 55px;
+	}
+	
+	.select-panel .overlay {
+		user-select: none;
+		position: fixed;
+		display: block;
+		top: 195px;
+		left: 0px;
+	}
+	
+	.select-panel .textbox {
+		user-select: none;
+		position: fixed;
+		display: block;
+		top: 104px;
+		width: 540px;
+		font: 14pt "Arial";
+		text-align: center;
+		color: rgb(0, 0, 0);
+	}
+	
+	.intext {
+		user-select: none;
+		position: absolute;
+		top: 10px;
+		width: 238px;
+		font: 18px "Ubuntu";
+		text-align: center;
+		font-weight: bold;
+		-webkit-text-stroke: #000;
+		-webkit-text-stroke-width: medium;
+		color: rgb(255, 255, 255);
+	}
+	
+	.button-disabled {
+		filter: brightness(0.5);
+		user-select: none;
+		display: block;
+		position: fixed;
+	}
+	
+	.button {
+		user-select: none;
+		display: block;
+		position: fixed;
+		cursor: pointer;
+	}
+	
+	.button:hover {
+		transform: translate(0px, -3px);
+	}
+	
+	.button:active {
+		transform: translate(0px, 0px);
+	}
+	
+	.warning-panel {
+		user-select: none;
+		display: none;
+		position: fixed;
+		left: 50%;
+		top: 50%;
+		transform: translate(-50%, -50%);
+	}
+	
+	.warning-panel .warning-body {
+		user-select: none;
+		position: fixed;
+		display: block;
+		top: 125px;
+		left: 24px;
+		width: 420px;
+		font: 16px "Ubuntu", sans-serif;
+		font-weight: bold;
+		color: rgb(0, 0, 0);
+	}
+	
+	.theme-config {
+		user-select: none;
+		display: none;
+		position: fixed;
+		left: 50%;
+		top: 50%;
+		transform: translate(-50%, -50%);
+	}
+	
+	.slider {
+	    -webkit-appearance: none;
+		height: 50px;
+		width: 200px;
+		position: fixed;
+		background: url("./images/slider-bar.png");
+		cursor: pointer;
+	}
+	
+	.slider::-webkit-slider-thumb {
+		-webkit-appearance: none;
+		appearance: none;
+		width: 50px;
+		height: 50px;
+		border: 0;
+		background: url("./images/slider-thumb.png");
+		cursor: pointer;
+	}
+	</style>
+	
+<body>
+	<div id="background-1" class="bg-image" style="background-image: url(&quot;./images/Background-1.png&quot;); display: none"></div>
+
+	<div id="background-2" class="bg-image" style="background-image: url(&quot;./images/Background-2.png&quot;); display: none"></div>
+	
+	<div id="background-3" class="bg-image" style="background-image: url(&quot;./images/Background-3.png&quot;); display: none"></div>
+	
+	<div id="background-4" class="bg-image" style="background-image: url(&quot;./images/Background-4.png&quot;); display: none"></div>
+	
+	<div id="background-5" class="bg-image" style="background-image: url(&quot;./images/Background-5.png&quot;); display: none"></div>
+	
+	<div id="background-6" class="bg-image" style="background-image: url(&quot;./images/Background-6.png&quot;); display: none"></div>
+	
+	<div id="background-7" class="bg-image" style="background-image: url(&quot;./images/Background-7.png&quot;); display: none"></div>
+	
+	<div class="theme-config" id="theme-popup" draggable="false">
+		<img src="./images/ThemeConfigPanel.png" draggable="false"/>
+		
+		<a class="button" style="top: -12px; right: -12px;" onclick="closeBetaPopup()" draggable="false">
+			<img alt="Close" src="./images/Icon-Close.png" draggable="false"/>
+		</a>
+		
+		<a class="button" style="top: 130px; left: 50px;" onclick="toggleTheme()" draggable="false">
+			<img id="theme-switch" alt="Switch Theme" src="./images/FreeButton-Theme-Classic.png" draggable="false"/>
+		</a>
+		
+		<a class="button" style="top: 210px; left: 50px;" onclick="toggleBackground()" draggable="false">
+			<img alt="Switch Background" src="./images/FreeButton-Switch.png" draggable="false"/>
+		</a>
+		
+		<img alt="Background Brightness" src="./images/BackgroundBrightnessText.png" style="position: fixed; top: 285px; left: 50%; transform: translate(-50%, 0px);" draggable="false"/>
+		
+		<input id="bg-slider" class="slider" type="range" min="0" max="2" value="1" step="0.01" style="top: 310px; left: 98px;" draggable="false"/>
+		<img id="bg-slider-left" class="button" onclick="decrementBrightness()" style="top: 312px; left: 50px;" src="./images/slider-left.png" draggable="false"/>
+		<img id="bg-slider-right" class="button" onclick="incrementBrightness()" style="top: 312px; right: 50px;" src="./images/slider-right.png" draggable="false"/>
+		
+		<img class="button" onclick="resetOptions()" style="bottom: 20px; left: 100px;" src="./images/Reset.png" draggable="false"/>
+	</div>
+	
+	<div class="warning-panel" id="beta-popup" draggable="false">
+		<img alt="Warning!" src="./images/WarningPanel.png" draggable="false">
+		
+		<div class="warning-body" draggable="false">
+			<div>
+				This version is still in beta. Things may not function as expected. If you encounter any bugs, be sure to make an issue on my
+				<a target="_blank" href="https://github.com/Daboss7173/Daboss7173.github.io/issues" draggable="false">
+					Github
+				</a> so it can be fixed.
+			</div>
+			<br>
+			<div>
+				Do you want to continue?
+			</div>
+		</div>
+		
+		<a onclick="EnterGame(betaConfirmCallback)" class="button" style="bottom: 24px; left: 24px;" draggable="false">
+			<img alt="Yes" src="./images/Yes.png" draggable="false">
+		</a>
+		
+		<a onclick="closeBetaPopup()" class="button" style="bottom: 24px; right: 24px;" draggable="false">
+			<img alt="No" src="./images/No.png" draggable="false">
+		</a>
+	</div>
+	
+	<div class="select-panel" id="mod-select" style="display: none;" draggable="false">
+		<img src="./images/MenuPanel-3.png" draggable="false">
+		
+		<div class="banner" draggable="false">
+			<img alt="Mod Select" src="./images/ModSelect-Banner.png" draggable="false">
+		</div>
+		
+		<div class="textbox" id="select-mod-version" draggable="false">
+			<img src="./images/ModVersionText.png" alt="Choose a version to select mods for." draggable="false">
+		</div>
+		
+		<div class="textbox" id="select-mod-play" style="display: none;" draggable="false">
+			<img src="./images/ModSelectText.png" alt="Select the mods you want to play with." draggable="false">
+		</div>
+		
+		<div id="mod-select-overlay" class="overlay" draggable="false">
+			<img src="./images/MenuPanel-Overlay.png" draggable="false">
+			
+			<!-- Mod Select pages are auto-generated here -->
+				
+		</div>
+		
+		<div class="button" style="bottom: 104px; left: 24px;" draggable="false">
+			<a id="mod-back" onclick="closeBetaPopup()" draggable="false">
+				<img alt="Go back" src="./images/Back.png" draggable="false">
+			</a>
+		</div>
+			
+		<a id="mod-select-apply"  onclick="StartGameMod(currentModVersion)" class="button-disabled" style="bottom: 104px; right: 24px; position: absolute; display: block;" draggable="false">
+			<img alt="Apply" src="./images/Apply.png" draggable="false">
+		</a>
+		
+		<!-- These buttons will enable automatically whenever multiple pages are detected -->
+		<a class="button-disabled" id="mod-previous" onclick="PreviousModPage()" style="top: 134px; left: 24px;" draggable="false">
+			<img alt="Previous page" src="./images/Previous.png" draggable="false">
+		</a>
+		<a class="button-disabled" id="mod-next" onclick="NextModPage()" style="top: 134px; right: 24px;" draggable="false">
+			<img alt="Next page" src="./images/Next.png" draggable="false">
+		</a>
+		
+	</div>
+	
+	<div class="select-panel" id="version-select" draggable="false">
+		<img src="./images/MenuPanel-3.png" draggable="false">
+		
+		<div class="banner" draggable="false">
+			<img alt="Version Select" src="./images/MenuPanel-Banner.png" draggable="false">
+		</div>
+		
+		<div class="textbox" id="select-mod-version" draggable="false">
+			<img src="./images/VersionSelectText.png" alt="Choose a version to play!" draggable="false">
+		</div>
+		
+		<div id="select-panel-overlay" class="overlay" draggable="false">
+			<img src="./images/MenuPanel-Overlay.png" draggable="false">
+			
+			<!-- Pages are auto-generated here -->
+			
+		</div>
+		
+		<div class="button" style="top: 134px; left: 24px;" draggable="false">
+			<a onclick="ExitSelection()" draggable="false">
+				<img alt="Close" src="./images/Close.png" draggable="false">
+			</a>
+		</div>
+		
+		<div class="button" style="top: 134px; right: 24px;" draggable="false" draggable="false">
+			<a onclick="openMods()" draggable="false" draggable="false">
+				<img alt="Mods" src="./images/Mods.png" draggable="false">
+			</a>
+		</div>
+		
+		<div class="button" style="bottom: 104px; left: 24px;" draggable="false">
+			<a onclick="BackPage()" draggable="false">
+				<img alt="Previous page" src="./images/Previous.png" draggable="false">
+			</a>
+		</div>
+		
+		<div class="button" style="bottom: 104px; right: 24px;" draggable="false">
+			<a onclick="NextPage()" draggable="false">
+				<img alt="Next page" src="./images/Next.png" draggable="false">
+			</a>
+		</div>
+		
+	</div>
+	
+	<div id="bg-toggle" class="background-banner" draggable="false">
+		<img src="./images/FreeButton-Banner.png" draggable="false" style="width: 410px; text-align: center;">
+		<div style="left: 50%; top: 0px; transform: translate(-50%); position: fixed; width: 300px;">
+			<a id="change-theme-button" class="button" onclick="openThemeChange()" style="top: 13px;" draggable="false">
+				<img src="./images/FreeButton-Theme.png" draggable="false">
+			</a>
+		</div>
+		
+	</div>
+	
+	<div id="definitive-edition" class="definitive-banner" draggable="false">
+		<img src="./images/FreeButton-Banner.png" draggable="false" style="width: 410px; text-align: center;">
+		<div style="left: 50%; top: 0px; transform: translate(-50%); position: fixed; width: 300px;">
+			<a class="button" onclick="playDefinitiveEdition()" style="top: 13px;" draggable="false">
+				<img src="./images/FreeButton-Definitive.png" draggable="false">
+			</a>
+		</div>
+	</div>
+		
+</body>
+
+<script>
+Menu = {
+	Select: {
+		id: "version-select"
+	},
+	BetaPopup: {
+		id: "beta-popup"
+	},
+	ModSelect: {
+		id: "mod-select"
+	},
+	ThemeConfig: {
+		id: "theme-popup"
+	}
+},
+Pages = [],
+ModPages = {
+	select: [],
+	mod: {}
+},
+Versions = [
+	{
+		src: "./images/1-10-0.png",
+		alt: "Version 1.10.0",
+		ver: "1-10-0"
+	},
+	{
+		src: "./images/1-11-0.png",
+		alt: "Version 1.11.0",
+		ver: "1-11-0"
+	},
+	{
+		src: "./images/1-16-5.png",
+		alt: "Version 1.16.5",
+		ver: "1-16-5"
+	},
+	{
+		src: "./images/1-17-0.png",
+		alt: "Version 1.17.0",
+		ver: "1-17-0"
+	},
+	{
+		src: "./images/1-18-2.png",
+		alt: "Version 1.18.2",
+		ver: "1-18-2"
+	},
+	{
+		src: "./images/1-22-1.png",
+		alt: "Version 1.22.1",
+		ver: "1-22-1"
+	},
+	{
+		src: "./images/1-24-0.png",
+		alt: "Version 1.24.0",
+		ver: "1-24-0"
+	},
+	{
+		src: "./images/1-30-0.png",
+		alt: "Version 1.30.0",
+		ver: "1-30-0"
+	},
+	{
+		src: "./images/1-35-2.png",
+		alt: "Version 1.35.2",
+		ver: "1-35-2"
+	},
+	{
+		src: "./images/1-37-0.png",
+		alt: "Version 1.37.0",
+		ver: "1-37-0"
+	},
+	{
+		src: "./images/1-39-0.png",
+		alt: "Version 1.39.0",
+		ver: "1-39-0"
+	},
+	{
+		src: "./images/1-46-2.png",
+		alt: "Version 1.46.2",
+		ver: "1-46-2"
+	},
+	{
+		src: "./images/1-50-0.png",
+		alt: "Version 1.50.0",
+		ver: "1-50-0"
+	},
+	{
+		src: "./images/1-51-0.png",
+		alt: "Version 1.51.0",
+		ver: "1-51-0"
+	},
+	{
+		src: "./images/1-60-0.png",
+		alt: "Version 1.60.0",
+		ver: "1-60-0"
+	},
+	{
+		src: "./images/1-70-0.png",
+		alt: "Version 1.70.0",
+		ver: "1-70-0"
+	},
+	{
+		src: "./images/1-80-0.png",
+		alt: "Version 1.80.0",
+		ver: "1-80-0"
+	},
+	{
+		src: "./images/1-90-0.png",
+		alt: "Version 1.90.0",
+		ver: "1-90-0"
+	},
+	{
+		src: "./images/2-6-0.png",
+		alt: "Version 2.6.0",
+		ver: "2-6-0"
+	},
+	{
+		src: "./images/2-20-0.png",
+		alt: "Version 2.20.0",
+		ver: "2-20-0"
+	},
+	{
+		src: "./images/2-30-0.png",
+		alt: "Version 2.30.0",
+		ver: "2-30-0"
+	},
+	{
+		src: "./images/2-45-0.png",
+		alt: "Version 2.45.0",
+		ver: "2-45-0"
+	},
+	{
+		src: "./images/3-15-3.png",
+		alt: "Version 3.15.3",
+		ver: "3-15-3",
+		beta: true
+	}
+],
+ModList = [{
+	baseVersion: 0,
+	mods: [{
+		src: "./images/WalkSpeed.png",
+		alt: "Walk Speed",
+		url: "WalkSpeed"
+	}, {
+		src: "./images/FastGameSpeed.png",
+		alt: "Fast Game Speed",
+		url: "FastGameSpeed"
+	}, {
+		src: "./images/ClassicFaces.png",
+		alt: "Classic Faces",
+		url: "ClassicFaces"
+	}]
+}, {
+	baseVersion: 7,
+	mods: [{
+		src: "./images/WalkSpeed.png",
+		alt: "Walk Speed",
+		url: "WalkSpeed"
+	}, {
+		src: "./images/FastGameSpeed.png",
+		alt: "Fast Game Speed",
+		url: "FastGameSpeed"
+	}, {
+		src: "./images/ClassicFaces.png",
+		alt: "Classic Faces",
+		url: "ClassicFaces"
+	}]
+}, {
+	baseVersion: 12,
+	mods: [{
+		src: "./images/WalkSpeed.png",
+		alt: "Walk Speed",
+		url: "WalkSpeed"
+	}, {
+		src: "./images/FastGameSpeed.png",
+		alt: "Fast Game Speed",
+		url: "FastGameSpeed"
+	}, {
+		src: "./images/RebalancedBattles.png",
+		alt: "Rebalanced Battles",
+		url: "RebalancedBattles"
+	}, {
+		src: "./images/ClassicFaces.png",
+		alt: "Classic Faces",
+		url: "ClassicFaces"
+	}]
+}, {
+	baseVersion: 15,
+	mods: [{
+		src: "./images/WalkSpeed.png",
+		alt: "Walk Speed",
+		url: "WalkSpeed"
+	}, {
+		src: "./images/FastGameSpeed.png",
+		alt: "Fast Game Speed",
+		url: "FastGameSpeed"
+	}, {
+		src: "./images/RebalancedBattles.png",
+		alt: "Rebalanced Battles",
+		url: "RebalancedBattles"
+	}, {
+		src: "./images/ImitationTitan.png",
+		alt: "Imitation Titan",
+		url: "ImitationTitan"
+	}]
+}, {
+	baseVersion: 21,
+	mods: [{
+		src: "./images/WalkSpeed.png",
+		alt: "Walk Speed",
+		url: "WalkSpeed"
+	}, {
+		src: "./images/FastGameSpeed.png",
+		alt: "Fast Game Speed",
+		url: "FastGameSpeed"
+	}, {
+		src: "./images/ImitationTitan.png",
+		alt: "Imitation Titan",
+		url: "ImitationTitan"
+	}]
+}/* USED TO TEST MULTIPAGE FUNCTIONALITY | DO NOT USE IN PRODUCTION
+, {
+	custom: true,
+	button: {
+		src: "./images/TESTING.png",
+		alt: "Testing",
+		ver: "TEST1"
+	},
+	mods: []
+}, {
+	custom: true,
+	button: {
+		src: "./images/TESTING.png",
+		alt: "Testing",
+		ver: "TEST2"
+	},
+	mods: []
+}, {
+	custom: true,
+	button: {
+		src: "./images/TESTING.png",
+		alt: "Testing",
+		ver: "TEST3"
+	},
+	mods: []
+}, {
+	custom: true,
+	button: {
+		src: "./images/TESTING.png",
+		alt: "Testing",
+		ver: "TEST4"
+	},
+	mods: []
+}, {
+	custom: true,
+	button: {
+		src: "./images/TESTING.png",
+		alt: "Testing",
+		ver: "TEST5"
+	},
+	mods: []
+}, {
+	custom: true,
+	button: {
+		src: "./images/TESTING.png",
+		alt: "Testing",
+		ver: "TEST6"
+	},
+	mods: []
+}, {
+	custom: true,
+	button: {
+		src: "./images/TESTING.png",
+		alt: "Testing",
+		ver: "TEST7"
+	},
+	mods: []
+}*/];
+Backgrounds = [
+	{
+		element: "background-1",
+		id: "1",
+		nid: 1
+	},
+	{
+		element: "background-2",
+		id: "2",
+		nid: 2
+	},
+	{
+		element: "background-3",
+		id: "3",
+		nid: 3
+	},
+	{
+		element: "background-4",
+		id: "4",
+		nid: 4
+	},
+	{
+		element: "background-5",
+		id: "5",
+		nid: 5
+	},
+	{
+		element: "background-6",
+		id: "6",
+		nid: 6
+	},
+	{
+		element: "background-7",
+		id: "7",
+		nid: 7
+	}
+],
+selectedMods = [],
+currentPage = 0,
+currentMenu = Menu.Select,
+selectedModPage = 0,
+currentModPage = null,
+currentModVersion = null,
+clickSound = "./audio/click.mp3";
+(new Audio(clickSound)).load();
+getCookie = function(cname) {
+	let name = cname + "=";
+	let decodedCookie = decodeURIComponent(document.cookie);
+	let ca = decodedCookie.split(';');
+	for(let i = 0; i <ca.length; i++) {
+		let c = ca[i];
+		while (c.charAt(0) == ' ') {
+			c = c.substring(1);
+		}
+		if (c.indexOf(name) == 0) {
+			return c.substring(name.length, c.length);
+		}
+	}
+	return "";
+},
+setCookie = function(cname, cvalue, exdays) {
+	const d = new Date();
+	d.setTime(d.getTime() + (exdays*24*60*60*1000));
+	let expires = "expires="+ d.toUTCString();
+	document.cookie = cname + "=" + cvalue + ";" + expires + ";path=/";
+},
+getSavedBackground = function() {
+	let backgroundId = getCookie("background");
+	if (backgroundId == "") {
+		backgroundId = "1";
+	};
+	for(let i = 0; i < Backgrounds.length; i++) {
+		if (Backgrounds[i].id == backgroundId) {
+			document.getElementById(Backgrounds[i].element).style.display = "block"
+		} else {
+			document.getElementById(Backgrounds[i].element).style.display = "none"
+		}
+	}
+},
+toggleBackground = function() {
+	PlayClick();
+	let previous = getCookie("background");
+	if (previous == "")
+		previous = "1";
+	let backid;
+	for (let i = 0; i < Backgrounds.length; i++) {
+		if(i == previous - 1)
+			backid = i + 1
+	};
+	if (backid >= Backgrounds.length)
+		backid = 0;
+	backid++;
+	setCookie("background", backid, 4096);
+	getSavedBackground()
+},
+getSavedTheme = function() {
+	let theme = getCookie("theme");
+	if (theme == "")
+		theme = "clean";
+	if (theme == "clean") {
+		cleanTheme();
+	} else {
+		classicTheme();
+	}
+	setCookie("theme", theme, 4096)
+},
+toggleTheme = function() {
+	PlayClick();
+	let previous = getCookie("theme");
+	if (previous == "" || previous == "clean") {
+		classicTheme();
+		setCookie("theme", "classic", 4096)
+	} else {
+		cleanTheme();
+		setCookie("theme", "clean", 4096)
+	}
+	
+},
+openThemeChange = function() {
+	if (currentMenu != Menu.Select)
+		return;
+	PlayClick(),
+	document.getElementById(currentMenu.id).style.display = "none",
+	currentMenu = Menu.ThemeConfig,
+	document.getElementById(currentMenu.id).style.display = "block",
+	resizeMenuElements();
+	disableThemeButton();
+},
+classicTheme = function() {
+    let images = document.getElementsByTagName("img");
+    for(let it in images) {
+		if (isNaN(images[it]) && !isFunction(images[it])) {
+			switch (images[it].getAttribute("src")) {
+				case "./images/MenuPanel-3.png":
+					images[it].setAttribute("src", "./images/classic/MenuPanel-3.png");
+					break;
+				case "./images/FreeButton-Banner.png":
+					images[it].setAttribute("src", "./images/classic/FreeButton-Banner.png");
+					break;
+				case "./images/MenuPanel-Banner.png":
+					images[it].setAttribute("src", "./images/classic/MenuPanel-Banner.png");
+					break;
+				case "./images/MenuPanel-Overlay.png":
+					images[it].setAttribute("src", "./images/classic/MenuPanel-Overlay.png");
+					break;
+				case "./images/ModSelect-Banner.png":
+					images[it].setAttribute("src", "./images/classic/ModSelect-Banner.png");
+					break;
+				case "./images/WarningPanel.png":
+					images[it].setAttribute("src", "./images/classic/WarningPanel.png");
+					break;
+				case "./images/ThemeConfigPanel.png":
+					images[it].setAttribute("src", "./images/classic/ThemeConfigPanel.png");
+					break;
+			}
+		}
+    };
+	let themeButton = document.getElementById("theme-switch");
+	themeButton.setAttribute("src", "./images/FreeButton-Theme-Clean.png");
+},
+cleanTheme = function() {
+    let images = document.getElementsByTagName("img");
+    for(let it in images) {
+		if (isNaN(images[it]) && !isFunction(images[it])) {
+			switch (images[it].getAttribute("src")) {
+				case "./images/classic/MenuPanel-3.png":
+					images[it].setAttribute("src", "./images/MenuPanel-3.png");
+					break;
+				case "./images/classic/FreeButton-Banner.png":
+					images[it].setAttribute("src", "./images/FreeButton-Banner.png");
+					break;
+				case "./images/classic/MenuPanel-Banner.png":
+					images[it].setAttribute("src", "./images/MenuPanel-Banner.png");
+					break;
+				case "./images/classic/MenuPanel-Overlay.png":
+					images[it].setAttribute("src", "./images/MenuPanel-Overlay.png");
+					break;
+				case "./images/classic/ModSelect-Banner.png":
+					images[it].setAttribute("src", "./images/ModSelect-Banner.png");
+					break;
+				case "./images/classic/WarningPanel.png":
+					images[it].setAttribute("src", "./images/WarningPanel.png");
+					break;
+				case "./images/classic/ThemeConfigPanel.png":
+					images[it].setAttribute("src", "./images/ThemeConfigPanel.png");
+					break;
+			}
+		}
+    };
+	let themeButton = document.getElementById("theme-switch");
+	themeButton.setAttribute("src", "./images/FreeButton-Theme-Classic.png");
+},
+enableThemeButton = function() {
+	let button = document.getElementById("change-theme-button");
+	button.setAttribute("class", "button");
+},
+disableThemeButton = function() {
+	let button = document.getElementById("change-theme-button");
+	button.setAttribute("class", "button-disabled");
+},
+getSavedBrightness = function() {
+	let bgLum = getCookie("bgLum");
+	let slider = document.getElementById("bg-slider");
+	if(bgLum == "")
+		bgLum = "1";
+	slider.value = bgLum;
+	setBackgroundBrightness(parseFloat(bgLum));
+},
+setBackgroundBrightness = function(value) {
+	let backgrounds = document.getElementsByClassName("bg-image");
+	for(let it = 0; it < backgrounds.length; it++) {
+		backgrounds[it].style.filter = "brightness(" + value + ")"
+	}
+	setCookie("bgLum", value, 4096);
+	let left = document.getElementById("bg-slider-left");
+	let right = document.getElementById("bg-slider-right");
+	if (parseFloat(value) >= 2) {
+		left.setAttribute("class", "button")
+		right.setAttribute("class", "button-disabled")
+	}
+	else if (parseFloat(value) <= 0) {
+		left.setAttribute("class", "button-disabled")
+		right.setAttribute("class", "button")
+	}
+	else {
+		left.setAttribute("class", "button")
+		right.setAttribute("class", "button")
+	}
+},
+incrementBrightness = function() {
+	let slider = document.getElementById("bg-slider");
+	let value = parseFloat(slider.value);
+	let result = (value + 0.1).toFixed(2);
+	if(value >= 2)
+		return;
+	if (result > 2)
+		result = 2;
+	PlayClick();
+	slider.value = (result).toString();
+	setBackgroundBrightness(result);
+},
+decrementBrightness = function() {
+	let slider = document.getElementById("bg-slider");
+	let value = parseFloat(slider.value);
+	let result = (value - 0.1).toFixed(2);
+	if (value <= 0)
+		return;
+	if (result < 0)
+		result = 0;
+	PlayClick();
+	slider.value = (result).toString();
+	setBackgroundBrightness(result);
+},
+resetOptions = function() {
+	PlayClick();
+	setTimeout(()=> {
+		setCookie("bgLum", "1", 4096);
+		setCookie("background", "1", 4096);
+		setCookie("theme", "clean", 4096);
+		window.location.reload();
+	}, 200);
+},
+PlayClick = function() {
+	(new Audio(clickSound)).play()
+},
+ExitSelection = function() {
+	PlayClick();
+	setTimeout(()=> {
+		window.location.href = "/";
+	}, 200);
+},
+EnterGame = function(version) {
+	PlayClick();
+	if (version == null) {
+		closeBetaPopup();
+		return
+	};
+	setTimeout(()=> {
+		window.location.href = "../" + version + "/";
+	}, 200);
+},
+BackPage = function() {
+	PlayClick(),
+	document.getElementById(Pages[currentPage].id).style.display = "none";
+	if (currentPage === 0) {
+		currentPage = Pages.length - 1
+	} else {
+		currentPage -= 1
+	};
+	document.getElementById(Pages[currentPage].id).style.display = "block";
+	resizeMenuElements();
+},
+NextPage = function() {
+	PlayClick(),
+	document.getElementById(Pages[currentPage].id).style.display = "none";
+	if (currentPage === Pages.length - 1) {
+		currentPage = 0
+	} else {
+		currentPage += 1
+	};
+	document.getElementById(Pages[currentPage].id).style.display = "block"
+	resizeMenuElements();
+},
+PreviousModPage = function() {
+	if (currentModPage !== ModPages.select[selectedModPage] || ModPages.select.length < 2)
+		return;
+		
+	if (selectedModPage === 0) {
+		selectedModPage = ModPages.select.length - 1
+	} else {
+		selectedModPage--
+	};
+	ModSelector();
+},
+NextModPage = function() {
+	if (currentModPage !== ModPages.select[selectedModPage] || ModPages.select.length < 2)
+		return;
+		
+	if (selectedModPage === ModPages.select.length - 1) {
+		selectedModPage = 0
+	} else {
+		selectedModPage++
+	};
+	ModSelector();
+},
+betaConfirmCallback = null,
+openBetaPopup = function(version) {
+	PlayClick(),
+	betaConfirmCallback = version,
+	document.getElementById(currentMenu.id).style.display = "none",
+	currentMenu = Menu.BetaPopup,
+	document.getElementById(currentMenu.id).style.display = "block",
+	resizeMenuElements();
+	disableThemeButton();
+},
+closeBetaPopup = function() {
+	PlayClick(),
+	betaConfirmCallback = null; 
+	document.getElementById(currentMenu.id).style.display = "none",
+	currentMenu = Menu.Select,
+	document.getElementById(currentMenu.id).style.display = "block",
+	resizeMenuElements();
+	enableThemeButton();
+},
+openMods = function() {
+	PlayClick(),
+	document.getElementById(currentMenu.id).style.display = "none",
+	currentMenu = Menu.ModSelect,
+	document.getElementById(currentMenu.id).style.display = "block",
+	currentModPage = ModPages.select[selectedModPage],
+	document.getElementById("mod-previous").className = ModPages.select.length > 1 ? "button" : "button-disabled",
+	document.getElementById("mod-next").className =  ModPages.select.length > 1 ? "button" : "button-disabled",
+	resizeMenuElements();
+	disableThemeButton();
+},
+ModSelector = function(version) {
+	PlayClick();
+	if (currentModPage == ModPages.select[selectedModPage]) {
+		document.getElementById(currentModPage.id).style.display = "none",
+		currentModPage = ModPages.mod[version],
+		currentModVersion = version,
+		document.getElementById(currentModPage.id).style.display = "block",
+		document.getElementById("mod-back").setAttribute("onclick", "ModSelector()"),
+		document.getElementById("select-mod-version").style.display = "none",
+		document.getElementById("select-mod-play").style.display = "block",
+		//document.getElementById("mod-select-apply").style.display = "block",
+		document.getElementById("mod-select-apply").className = "button-disabled",
+		document.getElementById("mod-previous").className = "button-disabled",
+		document.getElementById("mod-next").className = "button-disabled",
+		DeselectAllMods(version)
+	} else {
+		DeselectAllMods(currentModVersion),
+		document.getElementById(currentModPage.id).style.display = "none",
+		currentModPage = ModPages.select[selectedModPage],
+		currentModVersion = null,
+		document.getElementById(currentModPage.id).style.display = "block",
+		document.getElementById("mod-back").setAttribute("onclick", "closeBetaPopup()"),
+		document.getElementById("select-mod-version").style.display = "block",
+		document.getElementById("select-mod-play").style.display = "none",
+		//document.getElementById("mod-select-apply").style.display = "none",
+		document.getElementById("mod-select-apply").className = "button-disabled",
+		document.getElementById("mod-previous").className = ModPages.select.length > 1 ? "button" : "button-disabled",
+		document.getElementById("mod-next").className =  ModPages.select.length > 1 ? "button" : "button-disabled"
+	};
+	resizeMenuElements();
+},
+AddMod = function(modid, version) {
+	PlayClick();
+	if (selectedMods.indexOf(modid) == -1) {
+		document.getElementById("mod-" + modid + "-" + version).setAttribute('src', './images/ModSelectButton-HIGHLIGHT.png'),
+		selectedMods.push(modid)
+	} else {
+		document.getElementById("mod-" + modid + "-" + version).setAttribute('src', './images/ModSelectButton.png'),
+		selectedMods.splice(selectedMods.indexOf(modid), 1)
+	};
+	if (selectedMods.length < 1) {
+		document.getElementById("mod-select-apply").className = "button-disabled"
+	} else {
+		document.getElementById("mod-select-apply").className = "button"
+	}
+},
+DeselectAllMods = function(version) {
+	for(let i = 0; i < selectedMods.length; i += 1) {
+		try {
+			document.getElementById("mod-" + selectedMods[i] + "-" + version).setAttribute('src', './images/ModSelectButton.png')
+		} catch(error) {}
+	};
+	selectedMods = []
+},
+StartGameMod = function(version) {
+	if (selectedMods.length < 1 || version == null) {
+		return;
+	}
+	PlayClick();
+	let ModString = '?mods=' + selectedMods.toString();
+	setTimeout(()=> {
+		window.location.href = "../" + version + "/" + ModString;
+	}, 200);
+},
+generateModPages = function() {
+	function logProgress(msg) {
+		console.log("[MOD PAGE GENERATOR] " + msg)
+	}
+	function addVersionPage() {
+		let page = document.createElement("div");
+		let pageID = "mod-version-select-" + (ModPages.select.length + 1);
+		page.draggable = false;
+		page.id = pageID;
+		ModPages.select.push({
+			id: pageID
+		});
+		document.getElementById("mod-select-overlay").appendChild(page);
+		if (ModPages.select.length > 1)
+			page.style.display = "none";
+		logProgress("New page: " + pageID);
+		return page;
+	}
+	function addModPage(version) {
+		let page = document.createElement("div");
+		let pageID = "mods-" + version;
+		page.draggable = false;
+		page.id = pageID;
+		ModPages.mod[version] = {
+			id: pageID
+		};
+		logProgress("New modded version: " + version);
+		document.getElementById("mod-select-overlay").appendChild(page);
+		return page;
+	}
+	function addVersionButton(ver, curPage, column, columnLength, useCustom) {
+		let currentButton = document.createElement("a"),
+			panelImage = document.createElement("img"),
+			textImage = document.createElement("img"),
+			textElement = document.createElement("div");
+			
+		currentButton.setAttribute("onclick", "ModSelector(\"" + (useCustom ? (ver.button.ver) : (Versions[ver.baseVersion].ver)) + "\")");
+		currentButton.setAttribute("class", "button");
+		currentButton.setAttribute("draggable", false);
+		currentButton.style.position = "absolute";
+		currentButton.style.top = (10 + (columnLength * 50)) + "px";
+		if (column == 1) {
+			currentButton.style.left = "23px"
+		} else {
+			currentButton.style.right = "23px"
+		};
+		panelImage.setAttribute("src", "./images/ModSelectButton.png");
+		panelImage.setAttribute("draggable", false)
+		textImage.setAttribute("src", (useCustom ? (ver.button.src) : (Versions[ver.baseVersion].src)));
+		textImage.setAttribute("alt", (useCustom ? (ver.button.alt) : (Versions[ver.baseVersion].alt)));
+		textImage.setAttribute("draggable", false);
+		textElement.setAttribute("class", "intext");
+		textElement.setAttribute("draggable", false);
+		textElement.appendChild(textImage);
+		currentButton.appendChild(panelImage);
+		currentButton.appendChild(textElement);
+		curPage.appendChild(currentButton);
+	}
+	function addModButton(ver, mod, curPage, column, columnLength, useCustom) {
+		let currentButton = document.createElement("a"),
+			panelImage = document.createElement("img"),
+			textImage = document.createElement("img"),
+			textElement = document.createElement("div");
+			
+		currentButton.setAttribute("onclick", "AddMod(\"" + ver.mods[mod].url + "\", \"" + (useCustom ? (ver.button.ver) : (Versions[ver.baseVersion].ver)) + "\")");
+		currentButton.setAttribute("class", "button");
+		currentButton.setAttribute("draggable", false);
+		currentButton.style.position = "absolute";
+		currentButton.style.top = (10 + (columnLength * 50)) + "px";
+		if (column == 1) {
+			currentButton.style.left = "23px"
+		} else {
+			currentButton.style.right = "23px"
+		};
+		panelImage.setAttribute("src", "./images/ModSelectButton.png");
+		panelImage.setAttribute("draggable", false);
+		panelImage.setAttribute("id", "mod-" + ver.mods[mod].url + "-" + (useCustom ? (ver.button.ver) : (Versions[ver.baseVersion].ver)));
+		textImage.setAttribute("src", ver.mods[mod].src);
+		textImage.setAttribute("alt", ver.mods[mod].alt);
+		textImage.setAttribute("draggable", false);
+		textElement.setAttribute("class", "intext");
+		textElement.setAttribute("draggable", false);
+		textElement.appendChild(textImage);
+		currentButton.appendChild(panelImage);
+		currentButton.appendChild(textElement);
+		curPage.appendChild(currentButton);
+		logProgress("New " + (useCustom ? (ver.button.ver) : (Versions[ver.baseVersion].ver)) + " mod: " + ver.mods[mod].url);
+	}
+	logProgress("Start generating...");
+	let column = 3;
+	let columnLength = 0;
+	let curPage = null;
+	for (var i = 0; i < ModList.length; i++) {
+		let ver = ModList[i];
+		if (columnLength > 4) {
+			columnLength = 0;
+			column++;
+			logProgress("New column: " + column);
+		};
+		if (column > 2) {
+			curPage = addVersionPage();
+			column = 1;
+		};
+		let useCustom = !!ver.custom;
+		addVersionButton(ver, curPage, column, columnLength, useCustom);
+		let verPage = addModPage((useCustom ? (ver.button.ver) : (Versions[ver.baseVersion].ver)));
+		let verCol = 1;
+		let verColLength = 0;
+		verPage.style.display = "none";
+		for (var mod = 0; mod < ver.mods.length; mod++) {
+			if (verColLength > 4) {
+				verColLength = 0;
+				verCol++;
+				logProgress("New " + (useCustom ? (ver.button.ver) : (Versions[ver.baseVersion].ver)) + " column: " + column);
+			};
+			addModButton(ver, mod, verPage, verCol, verColLength, useCustom);
+			verColLength++;
+		}
+		columnLength++;
+	}
+	logProgress("Done!")
+},
+logGenProgress = function(msg) {
+	console.log("[SELECT PAGE GENERATOR] " + msg);
+},
+generatePages = function() {
+	logGenProgress("Start generating...");
+	let pageId = 0,
+		column = 3,
+		columnLength = 0;
+	for (let i = 0; i < Versions.length; i++) {
+		if (columnLength > 4) {
+			columnLength = 0,
+			column++
+			logGenProgress("New column: " + column);
+		};
+		if (column > 2) {
+			pageId++;
+			newPage(pageId);
+			column = 1;
+			logGenProgress("New page: " + pageId);
+		};
+		newVersionButton(i, pageId, columnLength, column);
+		logGenProgress("New version: " + Versions[i].ver)
+		columnLength++
+	}
+	logGenProgress("Done!");
+},
+newVersionButton = function(i, pageId, columnLength, column) {
+	let pageElement = document.getElementById(Pages[pageId - 1].id),
+		currentButton = document.createElement("a"),
+		panelImage = document.createElement("img"),
+		textImage = document.createElement("img"),
+		textElement = document.createElement("div");
+	currentButton.setAttribute("onclick", "EnterGame(\"" + Versions[i].ver + "\")");
+	if (Versions[i].beta == true) {
+		currentButton.setAttribute("onclick", "openBetaPopup(\"" + Versions[i].ver + "\")");
+	};
+	currentButton.setAttribute("class", "button");
+	currentButton.setAttribute("draggable", false);
+	currentButton.style.position = "absolute";
+	currentButton.style.top = (10 + (columnLength * 50)) + "px";
+	if (column == 1) {
+		currentButton.style.left = "23px"
+	} else {
+		currentButton.style.right = "23px"
+	};
+	panelImage.setAttribute("src", "./images/ModSelectButton.png");
+	panelImage.setAttribute("draggable", false)
+	textImage.setAttribute("src", Versions[i].src);
+	textImage.setAttribute("alt", Versions[i].alt);
+	textImage.setAttribute("draggable", false);
+	textElement.setAttribute("class", "intext");
+	textElement.setAttribute("id", "play-version-" + Versions[i].ver);
+	textElement.setAttribute("draggable", false);
+	textElement.appendChild(textImage);
+	currentButton.appendChild(panelImage);
+	currentButton.appendChild(textElement);
+	pageElement.appendChild(currentButton);
+},
+newPage = function(id) {
+	if (id > Pages.length) {
+		Pages[id - 1] = {
+			id: "page-" + id
+		}
+	};
+	let page = document.createElement("div");
+	page.id = "page-" + id;
+	page.draggable = false;
+	if (id != 1) {
+		page.style.display = "none"
+	};
+	document.getElementById("select-panel-overlay").appendChild(page);
+},
+playDefinitiveEdition = function() {
+	PlayClick();
+	setTimeout(()=> {
+		window.location.href = "/";
+	}, 200);
+},
+resizeFromWindow = function(element) {
+	let verSelect = element;
+	if ((window.innerWidth < verSelect.clientWidth) && ((window.innerWidth / verSelect.clientWidth) < (window.innerHeight / verSelect.clientHeight))) {
+		verSelect.style.transform = "scale(" + (window.innerWidth / verSelect.clientWidth) + ") translate(-" + (((verSelect.clientWidth / window.innerWidth) / 2) * 100) + "%" + ", -" + (((verSelect.clientWidth / window.innerWidth) / 2) * 100) + "%" + ")"
+	}
+	else if (window.innerHeight < verSelect.clientHeight) {
+		verSelect.style.transform = "scale(" + (window.innerHeight / verSelect.clientHeight) + ") translate(-" + (((verSelect.clientHeight / window.innerHeight) / 2) * 100) + "%" + ", -" + (((verSelect.clientHeight / window.innerHeight) / 2) * 100) + "%" + ")"
+	}
+	else {
+		verSelect.style.transform = "scale(1) translate(-50%, -50%)"
+	}
+},
+resizeMenuElements = function() {
+	resizeFromWindow(document.getElementById("version-select")),
+	resizeFromWindow(document.getElementById("mod-select")),
+	resizeFromWindow(document.getElementById("beta-popup")),
+	resizeFromWindow(document.getElementById("theme-popup"));
+},
+window.onresize = function() {
+	resizeMenuElements()
+},
+window.onload = function() {
+	document.addEventListener("contextmenu", function(e) {
+		e.preventDefault();
+	}, false);
+	resizeMenuElements();
+},
+isFunction = function(foo) {
+	return foo instanceof Function;
+},
+getSavedBackground(),
+getSavedTheme(),
+getSavedBrightness(),
+generatePages();
+generateModPages();
+
+(() => {
+	let slider = document.getElementById("bg-slider");
+	slider.oninput = function() {
+		setBackgroundBrightness(parseFloat(this.value));
+	};
+})();
+</script>
+
+</html>

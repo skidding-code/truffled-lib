@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><base href="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-06@main/_ext/cdn.jsdelivr.net/gh/Synic-dx/blackJack@main/"><script>(function (C) {
+  var G = typeof self !== 'undefined' ? self : this;
+  if (G.__tz) return;
+  var IS_DOC = typeof document !== 'undefined' && typeof Element !== 'undefined';
+  var CDN = C.c;
+  var SKIP = /^(data:|blob:|javascript:|about:|mailto:|tel:|ws:|wss:|#)/i;
+  var units = Object.keys(C.u || {}).sort(function (a, b) { return b.length - a.length; });
+  var exts = Object.keys(C.x || {}).sort(function (a, b) { return b.length - a.length; });
+  var split = C.s || {};
+  var hostDir = (function () {
+    try {
+      var h = String(G.location.href);
+      if (/^(https?|file):/i.test(h)) return h.slice(0, h.lastIndexOf('/') + 1);
+    } catch (e) {}
+    return null;
+  })();
+
+  function base() {
+    if (C.w) return C.w;
+    try { return document.baseURI; } catch (e) { return C.b; }
+  }
+
+  function rootFor(p, strict) {
+    for (var i = 0; i < units.length; i++) if (p.indexOf(units[i]) === 0) return C.u[units[i]];
+    return strict ? null : C.r;
+  }
+
+  function map(u) {
+    try {
+      if (u == null) return u;
+      if (typeof u !== 'string') {
+        if (typeof URL !== 'undefined' && u instanceof URL) u = u.href;
+        else if (u && typeof u.toString === 'function') u = u.toString();
+        else return u;
+      }
+      var t = u.trim();
+      if (C.w && /^blob:/i.test(t) && /\/[^\/?#]*\.[A-Za-z0-9]{1,8}([?#].*)?$/.test(t)) {
+        return map(new URL(t.slice(t.lastIndexOf('/') + 1), C.w).href);
+      }
+      if (!t || SKIP.test(t)) return u;
+      var abs;
+      try { abs = new URL(t, base()); } catch (e) { return u; }
+      var href = abs.href;
+      if (hostDir && href.indexOf(hostDir) === 0 && !(C.b.indexOf(hostDir) === 0)) {
+        return map(new URL(href.slice(hostDir.length), C.b).href);
+      }
+      if (abs.protocol !== 'http:' && abs.protocol !== 'https:') return u;
+      if (abs.origin === CDN && C.o && abs.pathname.indexOf('/gh/' + C.o + '/') === 0) {
+        var mm = /^\/gh\/[^/]+\/[^/@]+@[^/]+\//.exec(abs.pathname);
+        if (mm) {
+          var rest = abs.pathname.slice(mm[0].length), dp = rest;
+          try { dp = decodeURIComponent(rest); } catch (e) {}
+          var want = rootFor('/' + dp, true);
+          if (want && want !== CDN + mm[0]) return want + rest + abs.search + abs.hash;
+        }
+        return href;
+      }
+      if ((abs.origin === CDN && !/^\/(gh|npm|combine|wp)\//.test(abs.pathname)) || /^(www\.)?truffled\.lol$/i.test(abs.hostname)) {
+        var dpp = abs.pathname;
+        try { dpp = decodeURIComponent(dpp); } catch (e) {}
+        return rootFor(dpp) + abs.pathname.slice(1) + abs.search + abs.hash;
+      }
+      var hp = abs.host + abs.pathname;
+      for (var i = 0; i < exts.length; i++) {
+        if (hp.indexOf(exts[i]) === 0) return C.x[exts[i]] + hp.slice(exts[i].length);
+      }
+      return href;
+    } catch (e) { return u; }
+  }
+
+  function bare(u) { return String(u).replace(/[?#].*$/, ''); }
+  function splitKey(u) {
+    var b = bare(u);
+    if (split[b]) return b;
+    try { var n = new URL(b).href; if (split[n]) return n; } catch (e) {}
+    try { var d = encodeURI(decodeURI(b)); if (split[d]) return d; } catch (e) {}
+    return null;
+  }
+  function splitInfo(u) { var k = splitKey(u); return k ? split[k] : null; }
+
+  var PART = C.p || 19000000;
+  function partUrl(key, i) {
+    var info = split[key], segs = info[3];
+    if (segs) {
+      for (var j = segs.length - 1; j >= 0; j--) if (i >= segs[j][0]) return segs[j][1] + '.part' + i;
+    }
+    return key + '.part' + i;
+  }
+  function getPart(key, i, range) {
+    var u = partUrl(key, i), tries = 0;
+    function go() {
+      return origFetch(u, range ? { headers: { Range: range } } : undefined).then(function (r) {
+        if (!r.ok) throw new Error('part ' + u + ' ' + r.status);
+        return r.arrayBuffer().then(function (ab) { return [ab, r.status]; });
+      }).catch(function (e) {
+        if (++tries < 4) return new Promise(function (ok) { setTimeout(ok, 800 * tries); }).then(go);
+        throw e;
+      });
+    }
+    return go();
+  }
+  var merged = {};
+  function mergeBuf(u) {
+    var key = splitKey(u) || bare(u);
+    if (merged[key]) return merged[key];
+    var n = split[key][0], type = split[key][1] || 'application/octet-stream';
+    var blobs = new Array(n), next = 1;
+    merged[key] = new Promise(function (ok, bad) {
+      var active = 0, done = 0, failed = false;
+      function pump() {
+        while (!failed && active < 4 && next <= n) {
+          (function (i) {
+            active++;
+            getPart(key, i).then(function (r) {
+              blobs[i - 1] = new Blob([r[0]]);
+              active--;
+              if (++done === n) ok(new Blob(blobs, { type: type }));
+              else pump();
+            }, function (e) { failed = true; bad(e); });
+          })(next++);
+        }
+      }
+      pump();
+    });
+    return merged[key];
+  }
+  var blobUrls = {};
+  function mergeUrl(u) {
+    var key = splitKey(u) || bare(u);
+    if (!blobUrls[key]) blobUrls[key] = mergeBuf(key).then(function (b) { return URL.createObjectURL(b); });
+    return blobUrls[key];
+  }
+  function sizeOf(key) { return split[key][2] || 0; }
+  function parseRange(h, size) {
+    var m = /bytes=(\d*)-(\d*)/.exec(h || '');
+    if (!m) return null;
+    var a, b;
+    if (m[1] === '') { a = Math.max(0, size - Number(m[2])); b = size - 1; }
+    else { a = Number(m[1]); b = m[2] === '' ? size - 1 : Math.min(Number(m[2]), size - 1); }
+    if (a > b || a >= size) return null;
+    return [a, b];
+  }
+  function rangeBlob(key, a, b) {
+    var i0 = Math.floor(a / PART), i1 = Math.floor(b / PART), jobs = [];
+    for (var i = i0; i <= i1; i++) {
+      (function (i) {
+        var s = Math.max(a, i * PART) - i * PART, e = Math.min(b, (i + 1) * PART - 1) - i * PART;
+        jobs.push(getPart(key, i + 1, 'bytes=' + s + '-' + e).then(function (r) {
+          return r[1] === 206 ? r[0] : r[0].slice(s, e + 1);
+        }));
+      })(i);
+    }
+    return Promise.all(jobs).then(function (bufs) { return new Blob(bufs, { type: split[key][1] || 'application/octet-stream' }); });
+  }
+  function streamResponse(key) {
+    var n = split[key][0], next = 1, ahead = [];
+    var hdr = { 'Content-Type': split[key][1] || 'application/octet-stream', 'Accept-Ranges': 'bytes' };
+    if (sizeOf(key)) hdr['Content-Length'] = String(sizeOf(key));
+    function fill() { while (ahead.length < 3 && next <= n) ahead.push(getPart(key, next++)); }
+    var rs = new ReadableStream({
+      pull: function (ctrl) {
+        fill();
+        if (!ahead.length) { ctrl.close(); return; }
+        return ahead.shift().then(function (r) { ctrl.enqueue(new Uint8Array(r[0])); fill(); });
+      },
+      cancel: function () { ahead = []; next = n + 1; }
+    });
+    return new Response(rs, { status: 200, statusText: 'OK', headers: hdr });
+  }
+  function splitFetch(key, input, init) {
+    var method = String((init && init.method) || (input && input.method) || 'GET').toUpperCase();
+    var range = null;
+    try { range = new Headers((init && init.headers) || (input && typeof input === 'object' && input.headers) || undefined).get('range'); } catch (e) {}
+    var size = sizeOf(key), type = split[key][1] || 'application/octet-stream';
+    if (method === 'HEAD') {
+      return Promise.resolve(new Response(null, { status: 200, headers: { 'Content-Length': String(size), 'Content-Type': type, 'Accept-Ranges': 'bytes' } }));
+    }
+    var rg = range && size ? parseRange(range, size) : null;
+    if (rg) {
+      return rangeBlob(key, rg[0], rg[1]).then(function (b) {
+        return new Response(b, { status: 206, statusText: 'Partial Content', headers: { 'Content-Type': type, 'Content-Length': String(b.size), 'Content-Range': 'bytes ' + rg[0] + '-' + rg[1] + '/' + size, 'Accept-Ranges': 'bytes' } });
+      });
+    }
+    if (merged[key]) return merged[key].then(function (b) { return new Response(b, { status: 200, headers: { 'Content-Type': type, 'Content-Length': String(b.size) } }); });
+    return Promise.resolve(streamResponse(key));
+  }
+
+  var origFetch = G.fetch ? G.fetch.bind(G) : null;
+  G.__tz = { map: map, cfg: C };
+
+  if (origFetch) {
+    G.fetch = function (input, init) {
+      try {
+        var url = typeof input === 'string' || (typeof URL !== 'undefined' && input instanceof URL) ? String(input) : input && input.url;
+        if (url) {
+          var m = map(url);
+          if (splitInfo(m)) return splitFetch(splitKey(m), input, init);
+          if (m !== url) {
+            if (typeof input === 'string' || input instanceof URL) input = m;
+            else input = new Request(m, input);
+          }
+        }
+      } catch (e) {}
+      return origFetch(input, init);
+    };
+  }
+
+  if (G.XMLHttpRequest) {
+    var XP = G.XMLHttpRequest.prototype;
+    var oOpen = XP.open, oSend = XP.send, oSRH = XP.setRequestHeader;
+    XP.open = function (method, url) {
+      var a = Array.prototype.slice.call(arguments);
+      var m = map(url);
+      if (splitInfo(m) && a[2] !== false) {
+        this.__tzs = { a: a, m: m, h: [] };
+        return;
+      }
+      this.__tzs = null;
+      a[1] = m;
+      return oOpen.apply(this, a);
+    };
+    XP.setRequestHeader = function (k, v) {
+      if (this.__tzs) { this.__tzs.h.push([k, v]); return; }
+      return oSRH.call(this, k, v);
+    };
+    XP.send = function (body) {
+      var s = this.__tzs, x = this;
+      if (!s) return oSend.call(this, body);
+      var key = splitKey(s.m), rh = null;
+      s.h.forEach(function (h) { if (String(h[0]).toLowerCase() === 'range') rh = h[1]; });
+      var rg = rh && sizeOf(key) ? parseRange(rh, sizeOf(key)) : null;
+      var src = rg ? rangeBlob(key, rg[0], rg[1]).then(function (b) { return URL.createObjectURL(b); }) : mergeUrl(s.m);
+      s.h = s.h.filter(function (h) { return String(h[0]).toLowerCase() !== 'range'; });
+      src.then(function (bu) {
+        var a = s.a.slice();
+        a[1] = bu;
+        x.__tzs = null;
+        oOpen.apply(x, a);
+        s.h.forEach(function (h) { try { oSRH.call(x, h[0], h[1]); } catch (e) {} });
+        oSend.call(x, body);
+      }, function () {
+        x.__tzs = null;
+        var a = s.a.slice();
+        a[1] = s.m;
+        oOpen.apply(x, a);
+        oSend.call(x, body);
+      });
+    };
+  }
+
+  var shimSrc = null;
+  function workerBlob(url, opts) {
+    var m = map(url);
+    var abs = new URL(m, base()).href;
+    var cfg = JSON.parse(JSON.stringify(C));
+    cfg.w = abs;
+    var pre = shimSrc ? '(' + shimSrc + ')(' + JSON.stringify(cfg) + ');' : '';
+    var body = opts && opts.type === 'module'
+      ? pre + 'import ' + JSON.stringify(abs) + ';'
+      : pre + 'importScripts(' + JSON.stringify(abs) + ');';
+    return URL.createObjectURL(new Blob([body], { type: 'text/javascript' }));
+  }
+  function needsWrap(u) {
+    try {
+      var abs = new URL(map(u), base());
+      return abs.origin !== G.location.origin && abs.protocol !== 'blob:' && abs.protocol !== 'data:';
+    } catch (e) { return false; }
+  }
+  ['Worker', 'SharedWorker'].forEach(function (k) {
+    var W = G[k];
+    if (!W) return;
+    var Wrapped = function (url, opts) {
+      var u = typeof url === 'string' || url instanceof URL ? String(url) : url;
+      if (typeof u === 'string' && needsWrap(u)) u = workerBlob(u, opts);
+      return opts === undefined ? new W(u) : new W(u, opts);
+    };
+    Wrapped.prototype = W.prototype;
+    try { Object.defineProperty(Wrapped, 'name', { value: k }); } catch (e) {}
+    G[k] = Wrapped;
+  });
+
+  if (!IS_DOC && typeof G.importScripts === 'function') {
+    var oIS = G.importScripts;
+    G.importScripts = function () {
+      var a = Array.prototype.slice.call(arguments).map(function (u) { return map(u); });
+      return oIS.apply(G, a);
+    };
+  }
+
+  if (!IS_DOC) return;
+
+  try { shimSrc = String(document.currentScript && document.currentScript.textContent || ''); } catch (e) {}
+  if (shimSrc) {
+    var mm = /^\s*\(function \(C\)[\s\S]*\}\)\(/.exec(shimSrc);
+    shimSrc = mm ? mm[0].replace(/\)\($/, '').replace(/^\s*\(/, '') : null;
+  }
+
+  function loadHtmlFrame(frame, url) {
+    origFetch(url).then(function (r) { return r.text(); }).then(function (html) {
+      var w = frame.contentWindow;
+      if (!w) return;
+      var d = w.document;
+      html = prepHtml(html, url);
+      d.open();
+      d.write(html);
+      d.close();
+    });
+  }
+  function prepHtml(html, url) {
+    var dir = url.slice(0, url.lastIndexOf('/') + 1);
+    var tag = '<base href="' + dir + '">';
+    var cfg = JSON.parse(JSON.stringify(C));
+    delete cfg.w;
+    var sh = shimSrc ? '<script>(' + shimSrc + ')(' + JSON.stringify(cfg).replace(/<\//g, '<\\/') + ');<\/script>' : '';
+    if (/<base\b[^>]*>/i.test(html)) {
+      var mb = /<base\b[^>]*\bhref\s*=\s*["']?([^"'\s>]+)/i.exec(html);
+      if (mb) tag = '<base href="' + new URL(mb[1], dir).href + '">';
+      html = html.replace(/<base\b[^>]*>/i, '');
+    }
+    if (/<head[^>]*>/i.test(html)) return html.replace(/<head[^>]*>/i, function (m) { return m + tag + sh; });
+    if (/<html[^>]*>/i.test(html)) return html.replace(/<html[^>]*>/i, function (m) { return m + tag + sh; });
+    return tag + sh + html;
+  }
+  function isHtml(u) {
+    try {
+      var p = new URL(u).pathname;
+      return /\.html?$/i.test(p) || /\/$/.test(p);
+    } catch (e) { return false; }
+  }
+  function cdnLike(u) {
+    try { return new URL(u).origin === CDN; } catch (e) { return false; }
+  }
+
+  function hookProp(proto, prop, special) {
+    if (!proto) return;
+    var d = Object.getOwnPropertyDescriptor(proto, prop);
+    if (!d || !d.set || !d.configurable) return;
+    Object.defineProperty(proto, prop, {
+      configurable: true,
+      enumerable: d.enumerable,
+      get: d.get,
+      set: function (v) {
+        var el = this;
+        if (prop === 'srcset') return d.set.call(el, mapSrcset(v));
+        var m = map(v);
+        if (typeof m === 'string' && splitInfo(m)) {
+          mergeUrl(m).then(function (bu) { d.set.call(el, bu); });
+          return;
+        }
+        if (special && special(el, m, function (x) { d.set.call(el, x); })) return;
+        return d.set.call(el, m);
+      },
+    });
+  }
+  function mapSrcset(v) {
+    if (typeof v !== 'string') return v;
+    return v.split(',').map(function (p) {
+      var t = p.trim();
+      if (!t) return t;
+      var sp = t.split(/\s+/);
+      sp[0] = map(sp[0]);
+      return sp.join(' ');
+    }).join(', ');
+  }
+  function iframeSpecial(el, m, set) {
+    if (typeof m === 'string' && cdnLike(m) && isHtml(m)) {
+      set('about:blank');
+      var go = function () { loadHtmlFrame(el, m); };
+      if (el.isConnected) setTimeout(go, 0);
+      else el.__tzPending = go;
+      return true;
+    }
+    return false;
+  }
+  hookProp(G.HTMLScriptElement && HTMLScriptElement.prototype, 'src');
+  hookProp(G.HTMLImageElement && HTMLImageElement.prototype, 'src');
+  hookProp(G.HTMLImageElement && HTMLImageElement.prototype, 'srcset');
+  hookProp(G.HTMLMediaElement && HTMLMediaElement.prototype, 'src');
+  hookProp(G.HTMLSourceElement && HTMLSourceElement.prototype, 'src');
+  hookProp(G.HTMLSourceElement && HTMLSourceElement.prototype, 'srcset');
+  hookProp(G.HTMLLinkElement && HTMLLinkElement.prototype, 'href');
+  hookProp(G.HTMLEmbedElement && HTMLEmbedElement.prototype, 'src');
+  hookProp(G.HTMLObjectElement && HTMLObjectElement.prototype, 'data');
+  hookProp(G.HTMLInputElement && HTMLInputElement.prototype, 'src');
+  hookProp(G.HTMLIFrameElement && HTMLIFrameElement.prototype, 'src', iframeSpecial);
+  try {
+    var svgHref = Object.getOwnPropertyDescriptor(SVGImageElement.prototype, 'href');
+    void svgHref;
+  } catch (e) {}
+
+  var oSetAttr = Element.prototype.setAttribute;
+  var ATTRS = { src: 1, href: 1, data: 1, poster: 1, srcset: 1, 'xlink:href': 1 };
+  Element.prototype.setAttribute = function (name, value) {
+    var n = String(name).toLowerCase();
+    if (ATTRS[n] && typeof value === 'string') {
+      var tag = this.tagName;
+      if (n === 'href' && (tag === 'A' || tag === 'BASE' || tag === 'AREA')) return oSetAttr.call(this, name, value);
+      if (n === 'srcset') return oSetAttr.call(this, name, mapSrcset(value));
+      var m = map(value);
+      if (splitInfo(m)) {
+        var el = this;
+        mergeUrl(m).then(function (bu) { oSetAttr.call(el, name, bu); });
+        return;
+      }
+      if (tag === 'IFRAME' && n === 'src' && iframeSpecial(this, m, function (x) { oSetAttr.call(this, name, x); }.bind(this))) return;
+      return oSetAttr.call(this, name, m);
+    }
+    return oSetAttr.call(this, name, value);
+  };
+
+  var oAppend = Node.prototype.appendChild, oInsert = Node.prototype.insertBefore;
+  function flushPending(n) {
+    if (n && n.__tzPending) {
+      var go = n.__tzPending;
+      n.__tzPending = null;
+      setTimeout(go, 0);
+    }
+  }
+  Node.prototype.appendChild = function (n) {
+    var r = oAppend.call(this, n);
+    flushPending(n);
+    return r;
+  };
+  Node.prototype.insertBefore = function (n, ref) {
+    var r = oInsert.call(this, n, ref);
+    flushPending(n);
+    return r;
+  };
+
+  if (G.Audio) {
+    var OA = G.Audio;
+    var NA = function Audio(src) {
+      var a = new OA();
+      if (src !== undefined) a.src = src;
+      return a;
+    };
+    NA.prototype = OA.prototype;
+    G.Audio = NA;
+  }
+
+  var oOpenWin = G.open;
+  if (oOpenWin) {
+    G.open = function (u) {
+      var a = Array.prototype.slice.call(arguments);
+      if (typeof u === 'string' && u) a[0] = map(u);
+      return oOpenWin.apply(G, a);
+    };
+  }
+
+  function fixStatic(root) {
+    var list = root.querySelectorAll ? root.querySelectorAll('iframe[data-tz-src]') : [];
+    for (var i = 0; i < list.length; i++) {
+      var f = list[i];
+      var s = f.getAttribute('data-tz-src');
+      f.removeAttribute('data-tz-src');
+      var m = map(s);
+      if (cdnLike(m) && isHtml(m)) loadHtmlFrame(f, m);
+      else oSetAttr.call(f, 'src', m);
+    }
+  }
+  if (G.MutationObserver) {
+    new MutationObserver(function (recs) {
+      for (var i = 0; i < recs.length; i++) {
+        var a = recs[i].addedNodes;
+        for (var j = 0; j < a.length; j++) {
+          var n = a[j];
+          if (n.nodeType !== 1) continue;
+          if (n.tagName === 'IFRAME' && n.hasAttribute('data-tz-src')) fixStatic(n.parentNode || document);
+          else if (n.querySelector && n.querySelector('iframe[data-tz-src]')) fixStatic(n);
+        }
+      }
+    }).observe(document, { childList: true, subtree: true });
+  }
+})({"c":"https://cdn.jsdelivr.net","o":"skidding-code","p":19000000,"b":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-06@main/_ext/cdn.jsdelivr.net/gh/Synic-dx/blackJack@main/","r":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-01@main/","u":{"/gamefile/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-01@main/"},"x":{"cdn.jsdelivr.net/gh/Synic-dx/blackJack@main/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-06@main/_ext/cdn.jsdelivr.net/gh/Synic-dx/blackJack@main/","fonts.gstatic.com/s/poppins/v24/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-01@main/_ext/fonts.gstatic.com/s/poppins/v24/","fonts.gstatic.com/s/robotomono/v31/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-01@main/_ext/fonts.gstatic.com/s/robotomono/v31/","fonts.gstatic.com/s/anta/v1/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-01@main/_ext/fonts.gstatic.com/s/anta/v1/","fonts.gstatic.com/s/kanit/v17/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-01@main/_ext/fonts.gstatic.com/s/kanit/v17/","cdn.jsdelivr.net/gh/Synic-dx/blackJack@main/Sounds/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-06@main/_ext/cdn.jsdelivr.net/gh/Synic-dx/blackJack@main/Sounds/","fonts.gstatic.com/s/lato/v25/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-01@main/_ext/fonts.gstatic.com/s/lato/v25/","fonts.gstatic.com/s/tiltwarp/v18/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-01@main/_ext/fonts.gstatic.com/s/tiltwarp/v18/","fonts.gstatic.com/s/googlesans/v29/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-01@main/_ext/fonts.gstatic.com/s/googlesans/v29/","fonts.gstatic.com/s/roboto/v48/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-01@main/_ext/fonts.gstatic.com/s/roboto/v48/","fonts.gstatic.com/s/amaticsc/v28/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-01@main/_ext/fonts.gstatic.com/s/amaticsc/v28/","fonts.gstatic.com/s/caveat/v23/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-01@main/_ext/fonts.gstatic.com/s/caveat/v23/","fonts.gstatic.com/s/comfortaa/v47/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-01@main/_ext/fonts.gstatic.com/s/comfortaa/v47/","fonts.gstatic.com/s/ebgaramond/v33/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-01@main/_ext/fonts.gstatic.com/s/ebgaramond/v33/","fonts.gstatic.com/s/lexend/v26/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-01@main/_ext/fonts.gstatic.com/s/lexend/v26/","fonts.gstatic.com/s/lobster/v32/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-01@main/_ext/fonts.gstatic.com/s/lobster/v32/","fonts.gstatic.com/s/lora/v37/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-01@main/_ext/fonts.gstatic.com/s/lora/v37/","fonts.gstatic.com/s/merriweather/v33/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-01@main/_ext/fonts.gstatic.com/s/merriweather/v33/","fonts.gstatic.com/s/montserrat/v31/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-01@main/_ext/fonts.gstatic.com/s/montserrat/v31/","fonts.gstatic.com/s/nunito/v32/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-01@main/_ext/fonts.gstatic.com/s/nunito/v32/","fonts.gstatic.com/s/oswald/v57/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-01@main/_ext/fonts.gstatic.com/s/oswald/v57/","fonts.gstatic.com/s/pacifico/v23/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-01@main/_ext/fonts.gstatic.com/s/pacifico/v23/","fonts.gstatic.com/s/playfairdisplay/v40/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-01@main/_ext/fonts.gstatic.com/s/playfairdisplay/v40/","fonts.gstatic.com/s/roboto/v51/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-01@main/_ext/fonts.gstatic.com/s/roboto/v51/","fonts.gstatic.com/s/robotoserif/v17/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-01@main/_ext/fonts.gstatic.com/s/robotoserif/v17/","fonts.gstatic.com/s/spectral/v15/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-01@main/_ext/fonts.gstatic.com/s/spectral/v15/","fonts.gstatic.com/s/pressstart2p/v16/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-01@main/_ext/fonts.gstatic.com/s/pressstart2p/v16/","fonts.gstatic.com/s/intertight/v9/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-01@main/_ext/fonts.gstatic.com/s/intertight/v9/","fonts.gstatic.com/s/inter/v20/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-01@main/_ext/fonts.gstatic.com/s/inter/v20/","fonts.gstatic.com/s/materialsymbolsrounded/v383/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-01@main/_ext/fonts.gstatic.com/s/materialsymbolsrounded/v383/","fonts.gstatic.com/s/opensans/v44/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-01@main/_ext/fonts.gstatic.com/s/opensans/v44/","fonts.gstatic.com/s/rajdhani/v17/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-01@main/_ext/fonts.gstatic.com/s/rajdhani/v17/","fonts.gstatic.com/s/inconsolata/v37/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-01@main/_ext/fonts.gstatic.com/s/inconsolata/v37/","fonts.gstatic.com/s/shantellsans/v13/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-01@main/_ext/fonts.gstatic.com/s/shantellsans/v13/","fonts.gstatic.com/s/vt323/v18/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-01@main/_ext/fonts.gstatic.com/s/vt323/v18/","fonts.gstatic.com/s/robotocondensed/v31/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-01@main/_ext/fonts.gstatic.com/s/robotocondensed/v31/","fonts.gstatic.com/s/sourcesanspro/v13/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-01@main/_ext/fonts.gstatic.com/s/sourcesanspro/v13/","fonts.gstatic.com/s/ubuntu/v21/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-01@main/_ext/fonts.gstatic.com/s/ubuntu/v21/","fonts.gstatic.com/s/spacemono/v17/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-01@main/_ext/fonts.gstatic.com/s/spacemono/v17/","fonts.gstatic.com/s/outfit/v15/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-01@main/_ext/fonts.gstatic.com/s/outfit/v15/","fonts.gstatic.com/s/lilitaone/v17/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib-01@main/_ext/fonts.gstatic.com/s/lilitaone/v17/"},"s":{}});</script>
+
+    
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Play blackjack game online">
+    <meta name="author" content="Shinjan Garain">
+    <meta name="robots" content="index,follow">
+    <meta name="google" content="nositelinkssearchbox">
+    <meta name="googlebot" content="notranslate">
+    <meta name="revised" content="Sunday, July 18th, 2024, 12:35 pm">
+    <meta name="rating" content="safe for all">
+    <meta name="copyright" content="Copyright 2024">
+    <meta http-equiv="content-type" content="text/html">
+    <meta http-equiv="default-style" content="stylesheet">
+    <meta http-equiv="Content-language" content="en">
+    <meta http-equiv="Cache-Control" content="no-cache">
+    <meta name="format-detection" content="telephone=yes">
+    <meta name="HandheldFriendly" content="true">
+    <meta property="og:title" content="blackJack Online- by Synic" />
+    <meta property="og:description" content="blackJack game made using vanilla Javascript." />
+    <meta property="og:type" content="website" />
+    <meta property="og:locale" content="en_US" />
+    <title>BlackJack Game Online</title>
+    <link href="style.css" rel="stylesheet">
+    <link rel="icon" href="logo.svg">
+
+</head>
+<body>
+    <header>
+        <svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
+                viewBox="0 0 24 30" xml:space="preserve">
+           <g>
+               <path class="st0" d="M4.9,13.9l0.3-0.1c0.2,0,0.4-0.2,0.5-0.3c0.1-0.2,0.2-0.4,0.1-0.6c0,0,0-0.1,0-0.1l-0.1-0.3c0,0,0,0,0,0
+                   c0.3-0.1,0.6-0.3,0.8-0.5c0.2-0.3,0.3-0.6,0.2-1c-0.1-0.4-0.3-0.7-0.6-0.9l-1.7-1C4.3,9,4.1,9.1,4,9.2l-1.3,1.5
+                   c-0.2,0.3-0.4,0.7-0.3,1.1c0.1,0.3,0.3,0.6,0.5,0.8c0.2,0.2,0.5,0.2,0.7,0.2c0.1,0,0.2,0,0.2,0c0,0,0,0,0,0l0,0.3l0,0.1
+                   c0,0.2,0.2,0.4,0.3,0.5c0.1,0.1,0.3,0.1,0.5,0.1C4.8,13.9,4.9,13.9,4.9,13.9z M3.4,12c-0.1-0.1-0.2-0.2-0.2-0.3
+                   c0-0.1,0-0.3,0.1-0.4l1-1.2l1.4,0.8C5.9,10.8,6,11,6,11.1c0,0.1,0,0.3-0.1,0.4c-0.1,0.1-0.2,0.2-0.3,0.2h0c-0.1,0-0.2,0-0.3,0
+                   l-0.5-0.2c-0.1-0.1-0.3,0-0.4,0.1l-0.4,0.3C4,12,3.9,12,3.8,12C3.7,12.1,3.5,12,3.4,12z M4.7,12.4L4.7,12.4l0.1,0L5.1,13l-0.3,0
+                   L4.7,12.4z"/>
+               <path class="st0" d="M22,6.5L10.7,3C10.4,3,10.1,3,9.9,3.1S9.5,3.5,9.4,3.7l-1,3.4L1.7,8.5C1.1,8.6,0.8,9.2,0.9,9.7l3.4,16.1
+                   c0.1,0.3,0.2,0.5,0.4,0.7c0.2,0.1,0.4,0.2,0.6,0.2c0.1,0,0.1,0,0.2,0l11.2-2.4c0,0,0,0,0.1,0c0.4,0,0.8-0.3,1-0.7l4.8-15.8
+                   C22.8,7.2,22.5,6.6,22,6.5z M5.4,25.9c-0.1,0-0.1,0-0.2,0c-0.1,0-0.1-0.1-0.1-0.2L1.7,9.6c0-0.1,0.1-0.3,0.2-0.3l6.2-1.3L4.6,19.5
+                   c-0.1,0.3-0.1,0.5,0.1,0.8c0.1,0.2,0.3,0.4,0.6,0.5l9.9,3L5.4,25.9z M17.1,23.3c0,0.1-0.2,0.2-0.3,0.2L5.5,20
+                   c-0.1,0-0.1-0.1-0.1-0.1c0-0.1,0-0.1,0-0.2l4.8-15.8c0-0.1,0.1-0.1,0.1-0.1c0.1,0,0.1,0,0.2,0l11.3,3.4c0.1,0,0.1,0.1,0.1,0.1
+                   c0,0.1,0,0.1,0,0.2L17.1,23.3z"/>
+               <path class="st0" d="M11.1,8.6c0.1,0,0.1,0,0.2-0.1l1.7-1c0.2-0.1,0.2-0.3,0.2-0.5l-0.7-1.9c0-0.1-0.1-0.2-0.2-0.2
+                   c-0.1,0-0.2,0-0.3,0L10.2,6C10,6.1,9.9,6.3,10,6.5l0.7,1.8c0,0.1,0.1,0.2,0.2,0.2C11,8.5,11.1,8.6,11.1,8.6z M11.9,5.8L12.3,7
+                   l-1,0.6l-0.4-1.1L11.9,5.8z"/>
+               <path class="st0" d="M16.4,19c-0.1,0-0.2,0-0.3,0l-1.7,1.1c-0.2,0.1-0.2,0.3-0.2,0.5l0.7,1.8c0,0.1,0.1,0.2,0.2,0.2
+                   c0,0,0.1,0,0.1,0c0.1,0,0.1,0,0.2-0.1l1.7-1c0.2-0.1,0.2-0.3,0.2-0.5l-0.7-1.9C16.6,19.2,16.5,19.1,16.4,19z M15.5,21.8L15,20.6
+                   l1-0.6l0.4,1.2L15.5,21.8z"/>
+               <path class="st0" d="M16.3,14.5L15,10.6c0-0.1-0.1-0.2-0.2-0.2c-0.1,0-0.2,0-0.3,0L11,12.6c-0.2,0.1-0.2,0.3-0.2,0.5l1.5,3.7
+                   c0,0.1,0.1,0.2,0.2,0.2c0,0,0.1,0,0.1,0c0.1,0,0.1,0,0.2-0.1l3.3-1.9C16.3,14.9,16.4,14.7,16.3,14.5z M12.9,16L11.7,13l2.7-1.7
+                   l1.1,3.1L12.9,16z"/>
+           </g>
+                <title>Black Games Logo</title>
+                <desc>A stack of cards</desc>
+            </svg>
+        
+        <h1 id="title"><span id="play">play</span><a href="blackJack.html"><span id="name">black</span><span id="plate">Jack</span></a></h1>
+            
+        <p id="rules"><a href="https://www.wikihow.com/Play-Blackjack" target="_blank" rel="noopener" lang="en">Rules</a></p>
+        <p id="bank">$<span id="balance">5000</span></p>
+    </header>
+
+    <main>
+        <section id="left">
+            <h2 id="textleft">Welcome to BlackJack</h2>
+            <h3 id="yourcard"> <span id="you">You:</span> <span id="typeU"> Type </span> of <span id="suitU"> Suit </span> and at: <span id="valueU"> Value </span></h3>
+            <h3 id="dealercard"> <span id="dealer">Dealer:</span> <span id="typeD"> Type </span> of <span id="suitD"> Suit </span> and at: <span id="valueD"> Value </span></h3>
+        </section>
+
+        <section id="right">
+            <h2 id="textright">Choose Bet</h2>
+            <div id="buttons">
+            <button id="button1" type="button">$100</button>
+            <button id="button2" type="button">$500</button>
+            <button id="button3" type="button">$1000</button>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <p id="footertext">&copy;2024 <cite id="creditlink"><a href="https://synic.vercel.app/" rel="noopener" target="_blank" lang="en">Synic, </a></cite><cite id="orglink"><a href="https://github.com/demerits" rel="noopener" target="_blank" lang="en">Aperture</a></cite> <small id="javascript">(Made using Javascript)</small></p>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>
