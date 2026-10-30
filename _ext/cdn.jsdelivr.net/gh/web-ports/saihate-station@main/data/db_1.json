@@ -1,0 +1,106 @@
+{
+	"item": [
+		{
+			"id": 2,
+			"name": "Operator ID card",
+			"description_1st": "Might come in handy somewhere.",
+			"description_2nd": ""
+		},
+		{
+			"id": 3,
+			"name": "Oil lighter",
+			"description_1st": "This lighter has seen lots of use. At least it's full of oil.",
+			"description_2nd": ""
+		},
+		{
+			"id": 4,
+			"name": "Handkerchief with white flower",
+			"description_1st": "This handkerchief was a present. ",
+			"description_2nd": "A small white flower is embroidered on it."
+		},
+		{
+			"id": 5,
+			"name": "Romance film poster",
+			"description_1st": "An image of some famous actors, walking under cherry trees. ",
+			"description_2nd": "Completely uninteresting."
+		},
+		{
+			"id": 6,
+			"name": "Sharp knife",
+			"description_1st": "A used sharp knife. Can cut anything.",
+			"description_2nd": ""
+		},
+		{
+			"id": 7,
+			"name": "Rusty knife",
+			"description_1st": "It's covered in a dark red substance. ",
+			"description_2nd": "Might be useful, with some cleaning up."
+		},
+		{
+			"id": 8,
+			"name": "Smartphone",
+			"description_1st": "An old model from three generations ago. The battery is dead.",
+			"description_2nd": ""
+		},
+		{
+			"id": 9,
+			"name": "Red Ticket",
+			"description_1st": "A creepy-looking ticket.",
+			"description_2nd": "Every time I get one, a bizarre memory resurfaces."
+		},
+		{
+			"id": 10,
+			"name": "500 yen coin",
+			"description_1st": "I've never stolen money before...",
+			"description_2nd": ""
+		},
+		{
+			"id": 12,
+			"name": "Apartment key",
+			"description_1st": "There's not even a keychain. It's just a key.",
+			"description_2nd": ""
+		},
+		{
+			"id": 13,
+			"name": "Sharp knife",
+			"description_1st": "Just end it, quickly.",
+			"description_2nd": ""
+		},
+		{
+			"id": 14,
+			"name": "Handkerchief with white flower",
+			"description_1st": "Forgive them.",
+			"description_2nd": ""
+		},
+		{
+			"id": 15,
+			"name": "Fire extinguisher",
+			"description_1st": "If you get hit with this, it's all over.",
+			"description_2nd": ""
+		},
+		{
+			"id": 16,
+			"name": "Red wine",
+			"description_1st": "A deep red wine.",
+			"description_2nd": "Cooking apples in it would impart a nice aroma."
+		},
+		{
+			"id": 17,
+			"name": "Apple",
+			"description_1st": "A bright red apple. Looks delicious.",
+			"description_2nd": ""
+		},
+		{
+			"id": 18,
+			"name": "Real fleabane",
+			"description_1st": "Means \"reminiscent love\" in hanakotoba.",
+			"description_2nd": "Might wither at any moment."
+		},
+		{
+			"id": 20,
+			"name": "Artificial fleabane",
+			"description_1st": "Means \"everlasting love\" in hanakotoba. It will never wither away.",
+			"description_2nd": ""
+		}
+	]
+}

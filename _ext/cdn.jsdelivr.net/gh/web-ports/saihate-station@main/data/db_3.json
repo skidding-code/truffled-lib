@@ -1,0 +1,106 @@
+{
+	"item": [
+		{
+			"id": 2,
+			"name": "乘務員的ID卡",
+			"description_1st": "或許會在哪裡用到。",
+			"description_2nd": ""
+		},
+		{
+			"id": 3,
+			"name": "煤油打火機",
+			"description_1st": "老舊的煤油打火機。裡面裝滿了煤油。",
+			"description_2nd": ""
+		},
+		{
+			"id": 4,
+			"name": "白花手帕",
+			"description_1st": "某人送的手帕。上面繡著小小的白花。",
+			"description_2nd": ""
+		},
+		{
+			"id": 5,
+			"name": "浪漫愛情片的海報",
+			"description_1st": "知名的男女演員在櫻花隧道漫步。毫無興趣。",
+			"description_2nd": ""
+		},
+		{
+			"id": 6,
+			"name": "銳利小刀",
+			"description_1st": "已經磨過的銳利小刀。\n可以切開任何東西。",
+			"description_2nd": ""
+		},
+		{
+			"id": 7,
+			"name": "生鏽小刀",
+			"description_1st": "上面附著了深紅色的物體。\n",
+			"description_2nd": "打磨之後應該可以用。"
+		},
+		{
+			"id": 8,
+			"name": "手機",
+			"description_1st": "上上上個世代的機種。已經沒電了。",
+			"description_2nd": ""
+		},
+		{
+			"id": 9,
+			"name": "紅色車票",
+			"description_1st": "詭異的車票。每次拿到，腦中就會竄進陌生的記憶。",
+			"description_2nd": ""
+		},
+		{
+			"id": 10,
+			"name": "500圓硬幣",
+			"description_1st": "這是我第一次偷錢……",
+			"description_2nd": ""
+		},
+		{
+			"id": 12,
+			"name": "公寓鑰匙",
+			"description_1st": "一把普通鑰匙。連鑰匙圈都沒有。",
+			"description_2nd": ""
+		},
+		{
+			"id": 13,
+			"name": "銳利小刀",
+			"description_1st": "快點結束這一切吧。",
+			"description_2nd": ""
+		},
+		{
+			"id": 14,
+			"name": "白花手帕",
+			"description_1st": "原諒自己吧。",
+			"description_2nd": ""
+		},
+		{
+			"id": 15,
+			"name": "滅火器",
+			"description_1st": "拿來打人可不是開玩笑的。",
+			"description_2nd": ""
+		},
+		{
+			"id": 16,
+			"name": "紅酒",
+			"description_1st": "紅通通的酒。拿來燉煮蘋果可以增加香氣。",
+			"description_2nd": ""
+		},
+		{
+			"id": 17,
+			"name": "蘋果",
+			"description_1st": "鮮紅的蘋果。看起來很好吃。",
+			"description_2nd": ""
+		},
+		{
+			"id": 18,
+			"name": "春紫苑（真花）",
+			"description_1st": "花語是「追憶之愛」。總有一天會枯萎。",
+			"description_2nd": ""
+		},
+		{
+			"id": 20,
+			"name": "春紫苑（假花）",
+			"description_1st": "花語是「永恆不變的愛」。永遠不會枯萎。",
+			"description_2nd": ""
+		}
+	]
+}
