@@ -1,0 +1,3 @@
+performance.mark("js-parse-end:chunk-lazy-react-partial-keyboard-shortcuts-dialog-e779af1cc898552e.js");
+import*as o from"react";import*as r from"react-dom";import*as t from"react-dom/client";import*as e from"react-is";import*as s from"react/compiler-runtime";import*as a from"react/jsx-runtime";export const __rspack_esm_id="u2l";export const __rspack_esm_ids=["u2l"];export const __webpack_modules__={VAe(o){o.exports={k:"ShortcutsDialogRoot__6TEaN8",b:"LoadingStateContainer__eyzf4A"}},UJ(r){r.exports=o},JO(o){o.exports=r},Ob(o){o.exports=t},Mc(o){o.exports=e},An(o){o.exports=s},Cf(o){o.exports=a}};
+//# sourceMappingURL=chunk-lazy-react-partial-keyboard-shortcuts-dialog-e779af1cc898552e-df1fe4a9de211677.js.map
