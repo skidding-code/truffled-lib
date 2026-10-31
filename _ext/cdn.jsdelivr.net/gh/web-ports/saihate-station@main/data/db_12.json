@@ -1,0 +1,106 @@
+{
+	"item": [
+		{
+			"id": 2,
+			"name": "Badge de conducteur de train",
+			"description_1st": "On peut sûrement l'utiliser quelque part.",
+			"description_2nd": ""
+		},
+		{
+			"id": 3,
+			"name": "Briquet à huile",
+			"description_1st": "Un briquet à huile usé. Il est encore rempli d'huile.",
+			"description_2nd": ""
+		},
+		{
+			"id": 4,
+			"name": "Mouchoir blanc brodé à fleur blanche",
+			"description_1st": "Un cadeau qu'on m'a donné. Une petite fleur blanche est brodée dessus.",
+			"description_2nd": ""
+		},
+		{
+			"id": 5,
+			"name": "Affiche de film à l'eau de rose",
+			"description_1st": "Des acteurs connus marchent sous des cerisiers.",
+			"description_2nd": "Sans intérêt."
+		},
+		{
+			"id": 6,
+			"name": "Couteau aiguisé",
+			"description_1st": "Un couteau aiguisé usé. Peut tout couper.",
+			"description_2nd": ""
+		},
+		{
+			"id": 7,
+			"name": "Couteau rouillé",
+			"description_1st": "Il est couvert d'une substance rouge foncée.\n",
+			"description_2nd": "Peut être utilisé après un petit coup de propre."
+		},
+		{
+			"id": 8,
+			"name": "Téléphone",
+			"description_1st": "Un modèle ancienne génération. Sa batterie est morte.",
+			"description_2nd": ""
+		},
+		{
+			"id": 9,
+			"name": "Ticket rouge",
+			"description_1st": "Un ticket énigmatique. Des souvenirs étranges refont surface à chaque fois que j'en ramasse un.",
+			"description_2nd": ""
+		},
+		{
+			"id": 10,
+			"name": "Pièce de 500 yens",
+			"description_1st": "C'est la première fois que je vole de l'argent...",
+			"description_2nd": ""
+		},
+		{
+			"id": 12,
+			"name": "Clé d'appartement",
+			"description_1st": "Une simple clé, il n'y a même pas de porte-clés dessus.",
+			"description_2nd": ""
+		},
+		{
+			"id": 13,
+			"name": "Couteau aiguisé",
+			"description_1st": "Finissons-en rapidement.",
+			"description_2nd": ""
+		},
+		{
+			"id": 14,
+			"name": "Mouchoir brodé à fleur blanche",
+			"description_1st": "Pardonne-les.",
+			"description_2nd": ""
+		},
+		{
+			"id": 15,
+			"name": "Extincteur",
+			"description_1st": "Un coup et c'est fini.",
+			"description_2nd": ""
+		},
+		{
+			"id": 16,
+			"name": "Vin rouge",
+			"description_1st": "Un vin rouge foncé. Il se marierait parfaitement avec des pommes.",
+			"description_2nd": ""
+		},
+		{
+			"id": 17,
+			"name": "Pomme",
+			"description_1st": "Une pomme rouge vif. Elle a l'air délicieuse.",
+			"description_2nd": ""
+		},
+		{
+			"id": 18,
+			"name": "Vraie vergerette",
+			"description_1st": "Signifie \"amour réminiscent\" dans le langage des fleurs. Peut faner à tout moment.",
+			"description_2nd": ""
+		},
+		{
+			"id": 20,
+			"name": "Vergerette artificielle",
+			"description_1st": "Signifie \"amour éternel\" dans le langage des fleurs. Ne fanera jamais. ",
+			"description_2nd": ""
+		}
+	]
+}

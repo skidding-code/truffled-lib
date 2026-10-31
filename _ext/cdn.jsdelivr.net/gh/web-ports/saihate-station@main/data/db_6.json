@@ -1,0 +1,106 @@
+{
+	"item": [
+		{
+			"id": 2,
+			"name": "Cartão de Identificação",
+			"description_1st": "Pode ser útil.",
+			"description_2nd": ""
+		},
+		{
+			"id": 3,
+			"name": "Isqueiro",
+			"description_1st": "Já foi muito usado. Pelo menos está cheio de óleo.",
+			"description_2nd": ""
+		},
+		{
+			"id": 4,
+			"name": "Lenço de Florzinha",
+			"description_1st": "Foi um presente. Tem uma florzinha branca bordada nele.",
+			"description_2nd": ""
+		},
+		{
+			"id": 5,
+			"name": "Pôster do Filme",
+			"description_1st": "Um pôster com atores famosos, caminhando sob cerejeiras. ",
+			"description_2nd": "Desinteressante."
+		},
+		{
+			"id": 6,
+			"name": "Faca Afiada",
+			"description_1st": "Uma faca usada. Pode cortar qualquer coisa.",
+			"description_2nd": ""
+		},
+		{
+			"id": 7,
+			"name": "Faca Enferrujada",
+			"description_1st": "Coberta com uma substância vermelha. Pode ser útil, se ",
+			"description_2nd": "conseguirmos limpar."
+		},
+		{
+			"id": 8,
+			"name": "Celular",
+			"description_1st": "Um modelo antigo de três gerações atrás. Está sem bateria.",
+			"description_2nd": ""
+		},
+		{
+			"id": 9,
+			"name": "Ticket Vermelho",
+			"description_1st": "Um ticket assustador. Sempre que recebo um, uma memória bizarra vem junto.",
+			"description_2nd": ""
+		},
+		{
+			"id": 10,
+			"name": "500 Ienes",
+			"description_1st": "Eu nunca tinha roubado dinheiro...",
+			"description_2nd": ""
+		},
+		{
+			"id": 12,
+			"name": "Chave do Apartamento",
+			"description_1st": "Nem tem chaveiro. É só uma chave.",
+			"description_2nd": ""
+		},
+		{
+			"id": 13,
+			"name": "Faca Afiada",
+			"description_1st": "Acabar logo com isso.",
+			"description_2nd": ""
+		},
+		{
+			"id": 14,
+			"name": "Lenço de Florzinha",
+			"description_1st": "Perdoe eles.",
+			"description_2nd": ""
+		},
+		{
+			"id": 15,
+			"name": "Extintor",
+			"description_1st": "Se você for atingido por ele, já era.",
+			"description_2nd": ""
+		},
+		{
+			"id": 16,
+			"name": "Vinho Tinto",
+			"description_1st": "Um vinho bem vermelho. ",
+			"description_2nd": "Cozinhar ele com maçãs geraria um aroma gostosinho."
+		},
+		{
+			"id": 17,
+			"name": "Maçã",
+			"description_1st": "Uma maçã vermelha e brilhante. Parece deliciosa.",
+			"description_2nd": ""
+		},
+		{
+			"id": 18,
+			"name": "Fleabane Real",
+			"description_1st": "\"Amor Nostálgico\", na língua das flores.",
+			"description_2nd": "Vai murchar a qualquer momento."
+		},
+		{
+			"id": 20,
+			"name": "Fleabane Falsa",
+			"description_1st": "\"Amor Eterno\", na língua das flores. Nunca irá murchar.",
+			"description_2nd": ""
+		}
+	]
+}
