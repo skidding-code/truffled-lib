@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Slay the Spire</title>
+<style>
+html, body { margin: 0; height: 100%; background: #000; overflow: hidden; }
+#game { position: absolute; visibility: hidden; image-rendering: auto; outline: none; touch-action: none; }
+#loader { position: absolute; inset: 0; background: #000; }
+#note { position: absolute; left: 18px; bottom: 14px; font: 13px/1 system-ui, sans-serif; letter-spacing: .3px; color: #7d7360; }
+#track { position: absolute; left: 0; right: 0; bottom: 0; height: 3px; background: #1a150d; }
+#bar { width: 0; height: 100%; background: #c9a24a; transition: width .2s linear; }
+</style>
+</head>
+<body>
+<canvas id="game" tabindex="0"></canvas>
+<div id="loader"><div id="note">Loading</div><div id="track"><div id="bar"></div></div></div>
+<script src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1515/games/sts/gl.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1515/games/sts/pix.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1515/games/sts/stsn.js"></script>
+<script>__tzw("\u003cscript","","https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1515/games/sts/classes.js")</script>
+<script src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1515/games/sts/sts.js"></script>
+</body>
+</html>
