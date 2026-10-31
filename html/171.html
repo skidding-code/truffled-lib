@@ -95,7 +95,7 @@
         if (!r.ok) throw new Error('part ' + u + ' ' + r.status);
         return r.arrayBuffer().then(function (ab) { return [ab, r.status]; });
       }).catch(function (e) {
-        if (++tries < 4) return new Promise(function (ok) { setTimeout(ok, 800 * tries); }).then(go);
+        if (++tries < 7) return new Promise(function (ok) { setTimeout(ok, 1200 * tries); }).then(go);
         throw e;
       });
     }
@@ -205,8 +205,8 @@
             var tries = 0, inp = input;
             var again = function () {
               return origFetch(typeof inp === 'string' ? inp : inp.clone ? inp.clone() : inp, init).then(function (r) {
-                if ((r.status === 403 || r.status === 429 || r.status >= 500) && ++tries < 4) {
-                  return new Promise(function (ok) { setTimeout(ok, 700 * tries); }).then(again);
+                if ((r.status === 403 || r.status === 429 || r.status >= 500) && ++tries < 7) {
+                  return new Promise(function (ok) { setTimeout(ok, 1200 * tries); }).then(again);
                 }
                 return r;
               });
@@ -250,8 +250,8 @@
         var tries = 0;
         var go = function () {
           return origFetch(s.m, { headers: hdr }).then(function (r) {
-            if ((r.status === 403 || r.status === 429 || r.status >= 500) && ++tries < 4) {
-              return new Promise(function (ok) { setTimeout(ok, 700 * tries); }).then(go);
+            if ((r.status === 403 || r.status === 429 || r.status >= 500) && ++tries < 7) {
+              return new Promise(function (ok) { setTimeout(ok, 1200 * tries); }).then(go);
             }
             return r;
           });
@@ -517,7 +517,7 @@
     var u = String(el[attr] || '');
     if (u.indexOf(CDN + '/gh/') !== 0) return;
     var n = el.__tzRetry || 0;
-    if (n >= 3) return;
+    if (n >= 6) return;
     setTimeout(function () {
       var v = u.replace(/([?&])tzr=\d+&?/, '$1').replace(/[?&]$/, '');
       v = v + (v.indexOf('?') >= 0 ? '&' : '?') + 'tzr=' + (n + 1);
@@ -534,7 +534,7 @@
         oSetAttr.call(el, attr, v);
         if (tag === 'SOURCE' && el.parentNode && el.parentNode.load) el.parentNode.load();
       }
-    }, 700 * (n + 1));
+    }, 1200 * (n + 1));
   }, true);
 
   if (G.MutationObserver) {
@@ -550,7 +550,7 @@
       }
     }).observe(document, { childList: true, subtree: true });
   }
-})({"c":"https://cdn.jsdelivr.net","o":"skidding-code","p":19000000,"b":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@main/gamefile/","r":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@main/","u":{"/gamefile/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@main/"},"x":{"cdn.jsdelivr.net/gh/genizy/google-class@main/escaperoad2/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@main/_ext/cdn.jsdelivr.net/gh/genizy/google-class@main/escaperoad2/","cdn.jsdelivr.net/gh/lonya-k/aws@8e4931429a9c08b542c8def752b11a412dfef6b2/eks_cicd/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@main/_ext/cdn.jsdelivr.net/gh/lonya-k/aws@8e4931429a9c08b542c8def752b11a412dfef6b2/eks_cicd/","cdn.jsdelivr.net/gh/genizy/google-class@3b96af8847aa44f44774e663a9e99b9ca235da7f/escaperoad2/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@main/_ext/cdn.jsdelivr.net/gh/genizy/google-class@3b96af8847aa44f44774e663a9e99b9ca235da7f/escaperoad2/","cdn.jsdelivr.net/gh/genizy/google-class@main/a-game-black-hole/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@main/_ext/cdn.jsdelivr.net/gh/genizy/google-class@main/a-game-black-hole/","cdn.jsdelivr.net/gh/genizy/google-class@main/bart-blast/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@main/_ext/cdn.jsdelivr.net/gh/genizy/google-class@main/bart-blast/","cdn.jsdelivr.net/gh/genizy/google-class@main/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@main/_ext/cdn.jsdelivr.net/gh/genizy/google-class@main/"},"s":{"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@main/_ext/cdn.jsdelivr.net/gh/genizy/google-class@main/a-game-black-hole/index.pck.part1":[2,"application/octet-stream",20866662],"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@main/_ext/cdn.jsdelivr.net/gh/genizy/google-class@main/a-game-black-hole/index.wasm.part1":[2,"application/octet-stream",20866662],"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@main/_ext/cdn.jsdelivr.net/gh/genizy/google-class@main/a-game-black-hole/index.pck.part2":[2,"application/octet-stream",20866662],"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@main/_ext/cdn.jsdelivr.net/gh/genizy/google-class@main/a-game-black-hole/index.pck.part5":[2,"application/octet-stream",20866662],"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@main/_ext/cdn.jsdelivr.net/gh/genizy/google-class@main/a-game-black-hole/index.pck.part4":[2,"application/octet-stream",20866662],"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@main/_ext/cdn.jsdelivr.net/gh/genizy/google-class@main/a-game-black-hole/index.pck.part3":[2,"application/octet-stream",20866662],"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@main/_ext/cdn.jsdelivr.net/gh/genizy/google-class@main/a-game-black-hole/index.pck.part6":[2,"application/octet-stream",20866662],"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@main/_ext/cdn.jsdelivr.net/gh/genizy/google-class@main/bart-blast/index.pck.part1":[2,"application/octet-stream",20866662],"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@main/_ext/cdn.jsdelivr.net/gh/genizy/google-class@main/bart-blast/index.pck.part2":[2,"application/octet-stream",20866662],"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@main/_ext/cdn.jsdelivr.net/gh/genizy/google-class@main/bart-blast/index.wasm.part1":[2,"application/octet-stream",20866662]}});</script>
+})({"c":"https://cdn.jsdelivr.net","o":"skidding-code","p":19000000,"b":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@main/gamefile/","r":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@main/","u":{"/gamefile/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@main/"},"x":{"cdn.jsdelivr.net/gh/genizy/google-class@main/escaperoad2/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@main/_ext/cdn.jsdelivr.net/gh/genizy/google-class@main/escaperoad2/","cdn.jsdelivr.net/gh/lonya-k/aws@8e4931429a9c08b542c8def752b11a412dfef6b2/eks_cicd/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@main/_ext/cdn.jsdelivr.net/gh/lonya-k/aws@8e4931429a9c08b542c8def752b11a412dfef6b2/eks_cicd/","cdn.jsdelivr.net/gh/genizy/google-class@3b96af8847aa44f44774e663a9e99b9ca235da7f/escaperoad2/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@main/_ext/cdn.jsdelivr.net/gh/genizy/google-class@3b96af8847aa44f44774e663a9e99b9ca235da7f/escaperoad2/","cdn.jsdelivr.net/gh/genizy/google-class@main/a-game-black-hole/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@main/_ext/cdn.jsdelivr.net/gh/genizy/google-class@main/a-game-black-hole/","cdn.jsdelivr.net/gh/genizy/google-class@main/bart-blast/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@main/_ext/cdn.jsdelivr.net/gh/genizy/google-class@main/bart-blast/","cdn.jsdelivr.net/gh/genizy/google-class@main/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@main/_ext/cdn.jsdelivr.net/gh/genizy/google-class@main/"},"s":{"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@main/_ext/cdn.jsdelivr.net/gh/genizy/google-class@main/a-game-black-hole/index.pck.part1":[2,"application/octet-stream",20866662],"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@main/_ext/cdn.jsdelivr.net/gh/genizy/google-class@main/a-game-black-hole/index.wasm.part1":[2,"application/octet-stream",20866662],"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@main/_ext/cdn.jsdelivr.net/gh/genizy/google-class@main/a-game-black-hole/index.pck.part2":[2,"application/octet-stream",20866662],"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@main/_ext/cdn.jsdelivr.net/gh/genizy/google-class@main/a-game-black-hole/index.pck.part3":[2,"application/octet-stream",20866662],"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@main/_ext/cdn.jsdelivr.net/gh/genizy/google-class@main/a-game-black-hole/index.pck.part4":[2,"application/octet-stream",20866662],"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@main/_ext/cdn.jsdelivr.net/gh/genizy/google-class@main/a-game-black-hole/index.pck.part5":[2,"application/octet-stream",20866662],"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@main/_ext/cdn.jsdelivr.net/gh/genizy/google-class@main/a-game-black-hole/index.pck.part6":[2,"application/octet-stream",20866662],"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@main/_ext/cdn.jsdelivr.net/gh/genizy/google-class@main/bart-blast/index.pck.part1":[2,"application/octet-stream",20866662],"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@main/_ext/cdn.jsdelivr.net/gh/genizy/google-class@main/bart-blast/index.pck.part2":[2,"application/octet-stream",20866662],"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@main/_ext/cdn.jsdelivr.net/gh/genizy/google-class@main/bart-blast/index.wasm.part1":[2,"application/octet-stream",20866662]}});</script>
 
     <meta charset="utf-8">
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">

@@ -94,7 +94,7 @@
         if (!r.ok) throw new Error('part ' + u + ' ' + r.status);
         return r.arrayBuffer().then(function (ab) { return [ab, r.status]; });
       }).catch(function (e) {
-        if (++tries < 4) return new Promise(function (ok) { setTimeout(ok, 800 * tries); }).then(go);
+        if (++tries < 7) return new Promise(function (ok) { setTimeout(ok, 1200 * tries); }).then(go);
         throw e;
       });
     }
@@ -204,8 +204,8 @@
             var tries = 0, inp = input;
             var again = function () {
               return origFetch(typeof inp === 'string' ? inp : inp.clone ? inp.clone() : inp, init).then(function (r) {
-                if ((r.status === 403 || r.status === 429 || r.status >= 500) && ++tries < 4) {
-                  return new Promise(function (ok) { setTimeout(ok, 700 * tries); }).then(again);
+                if ((r.status === 403 || r.status === 429 || r.status >= 500) && ++tries < 7) {
+                  return new Promise(function (ok) { setTimeout(ok, 1200 * tries); }).then(again);
                 }
                 return r;
               });
@@ -249,8 +249,8 @@
         var tries = 0;
         var go = function () {
           return origFetch(s.m, { headers: hdr }).then(function (r) {
-            if ((r.status === 403 || r.status === 429 || r.status >= 500) && ++tries < 4) {
-              return new Promise(function (ok) { setTimeout(ok, 700 * tries); }).then(go);
+            if ((r.status === 403 || r.status === 429 || r.status >= 500) && ++tries < 7) {
+              return new Promise(function (ok) { setTimeout(ok, 1200 * tries); }).then(go);
             }
             return r;
           });
@@ -516,7 +516,7 @@
     var u = String(el[attr] || '');
     if (u.indexOf(CDN + '/gh/') !== 0) return;
     var n = el.__tzRetry || 0;
-    if (n >= 3) return;
+    if (n >= 6) return;
     setTimeout(function () {
       var v = u.replace(/([?&])tzr=\d+&?/, '$1').replace(/[?&]$/, '');
       v = v + (v.indexOf('?') >= 0 ? '&' : '?') + 'tzr=' + (n + 1);
@@ -533,7 +533,7 @@
         oSetAttr.call(el, attr, v);
         if (tag === 'SOURCE' && el.parentNode && el.parentNode.load) el.parentNode.load();
       }
-    }, 700 * (n + 1));
+    }, 1200 * (n + 1));
   }, true);
 
   if (G.MutationObserver) {
