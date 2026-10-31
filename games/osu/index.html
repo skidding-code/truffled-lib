@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <meta name="theme-color" content="#000000">
+  <title>osu!</title>
+  <link rel="icon" href="favicon.ico">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <canvas id="osu-canvas"></canvas>
+
+  <div id="loading">
+    <div id="loading-bar"></div>
+  </div>
+
+  <div id="drop"><span>drop to import</span></div>
+
+  <div id="crash" hidden>
+    <div class="dialog">
+      <h1>osu! crashed</h1>
+      <pre id="crash-text"></pre>
+      <div class="buttons">
+        <button id="crash-reload" class="pink">Restart</button>
+        <button id="crash-copy">Copy log</button>
+      </div>
+    </div>
+  </div>
+
+  <input type="file" id="file-input" multiple accept=".osz,.osk,.osr,.osu,.olz,.db,.zip" hidden>
+
+  <script src="epoxy.js"></script>
+  <script src="wisp.js"></script>
+  <script type="module" src="main.js"></script>
+</body>
+</html>
