@@ -1,0 +1,523 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pikmin Native</title>
+<!-- Hosts that can't send COOP/COEP headers (GitHub Pages): a service worker adds them (one reload on
+     the first visit). Does nothing when the server already sends them (native/web/serve.py). -->
+<script src="coi-serviceworker.js"></script>
+<style>
+  :root { --bg: #0d1410; --panel: #18231c; --text: #e6efe8; --muted: #9fb3a5; --accent: #e8483a; --line: #2c3b31; }
+  html, body { margin: 0; height: 100%; background: var(--bg); color: var(--text);
+    font: 15px/1.5 system-ui, sans-serif; overflow: hidden; }
+  /* The game fills the tab once it starts (SDL's fill-document mode, web_platform.cpp). */
+  #canvas { position: fixed; inset: 0; display: block; background: #000; width: 100vw; height: 100vh; outline: none; }
+  #panel { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; padding: 16px; }
+  #panel[hidden] { display: none; }
+  #stopped { position: fixed; inset: 0; z-index: 10; display: flex; align-items: center; justify-content: center;
+    padding: 16px; background: rgba(0, 0, 0, 0.7); }
+  .card { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 24px 28px;
+    max-width: 560px; width: 100%; box-sizing: border-box; }
+  h1 { margin: 0 0 8px; font-size: 22px; }
+  p { margin: 8px 0; color: var(--muted); }
+  .row { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 16px; }
+  button, label.button { background: var(--accent); color: #fff; border: 0; border-radius: 6px; padding: 9px 16px;
+    font: inherit; cursor: pointer; }
+  button.secondary, label.button.secondary { background: transparent; border: 1px solid var(--line); color: var(--text); }
+  button.danger { border-color: var(--accent); color: var(--accent); }
+  input[type=file] { display: none; }
+  #status { min-height: 1.5em; color: var(--text); }
+  #error, #gpuWarning { color: #ff9a8f; white-space: pre-wrap; }
+  p.small { font-size: 13px; margin-top: 20px; }
+  /* Empty status / error lines take no room (otherwise a gap sits under the warning above them). */
+  #status:empty, #error:empty { display: none; }
+  h2 { margin: 16px 0 4px; font-size: 15px; }
+  ul.issues { margin: 0; padding-left: 20px; color: var(--muted); }
+  ul.issues li { margin: 2px 0; }
+</style>
+</head>
+<body>
+<canvas id="canvas" tabindex="-1" oncontextmenu="event.preventDefault()"></canvas>
+<div id="panel">
+  <div class="card">
+    <h1>Pikmin Native</h1>
+    <p>Not available in the browser version yet: Super Mario 64 Mode, Online Co&#8209;op, Pikmin 2 Mode, texture packs,
+       custom characters and Discord Rich Presence.</p>
+    <h2>Known issues</h2>
+    <ul class="issues">
+      <li>The game may stutter for a few seconds when loading a level for the first time, due to shader compilation.</li>
+      <li>On some Linux setups, switching to another window while playing can crash the browser's graphics process,
+        which stops the game. Reload to keep playing; progress since your last save is lost.</li>
+    </ul>
+    <p id="gpuWarning" hidden></p>
+    <p id="error"></p>
+    <p id="status"></p>
+    <div class="row">
+      <button id="play" hidden>Play</button>
+      <label class="button" id="chooseLabel" for="disc">Choose disc image (USA, Rev 1)…</label>
+      <input id="disc" type="file" accept=".iso,.gcm,.rvz,.ciso,.gcz,.wia,.wbfs,.tgc,.nfs">
+    </div>
+    <p class="small">Saves and settings are kept in this browser. Export them to a file often. Clearing
+       this site's data deletes them.</p>
+    <div class="row">
+      <button class="secondary" id="export">Export saves</button>
+      <label class="button secondary" for="import">Import saves…</label>
+      <input id="import" type="file" accept=".zip">
+      <button class="secondary danger" id="reset">Reset all data…</button>
+    </div>
+  </div>
+</div>
+<script>
+  const $ = (id) => document.getElementById(id);
+  const canvas = $('canvas');
+  const setStatus = (t) => { $('status').textContent = t; };
+  const setError = (t) => { $('error').textContent = t; };
+
+  function missingFeatures() {
+    const missing = [];
+    if (!self.crossOriginIsolated) missing.push('cross-origin isolation (the page must be served with COOP/COEP headers)');
+    if (!('gpu' in navigator)) missing.push('WebGPU');
+    if (typeof WebAssembly.Suspending !== 'function') missing.push('WebAssembly JavaScript Promise Integration (JSPI)');
+    if (!navigator.storage?.getDirectory) missing.push('the Origin Private File System');
+    return missing;
+  }
+
+  // aurora (gpu.cpp) asks for an adapter with these options and refuses a software (fallback) one,
+  // which a Chromium without a working GPU path hands out -- on Linux, often until Vulkan is turned on.
+  // Same request here, so the page can say so before Play instead of the game stopping at startup.
+  async function checkGpu() {
+    let adapter = null;
+    try {
+      adapter = await navigator.gpu.requestAdapter({ featureLevel: 'compatibility', powerPreference: 'high-performance' });
+    } catch {}
+    if (adapter && !(adapter.info?.isFallbackAdapter ?? adapter.isFallbackAdapter)) return;
+    const linux = /Linux/.test(navigator.userAgent) && !/Android/.test(navigator.userAgent);
+    $('gpuWarning').textContent = (adapter
+      ? 'Your browser only offers software rendering for WebGPU, which the game can\'t use, so it will probably not start.'
+      : 'Your browser didn\'t provide a WebGPU graphics adapter, so the game will probably not start.') +
+      (linux
+        ? '\nTo fix this, open chrome://flags/#enable-vulkan, set it to Enabled and restart the browser.'
+        : '\nCheck that hardware acceleration is turned on in the browser\'s settings.');
+    $('gpuWarning').hidden = false;
+  }
+
+  async function discDir() {
+    return (await navigator.storage.getDirectory()).getDirectoryHandle('disc', { create: true });
+  }
+
+  async function storedDiscName() {
+    for await (const [name, handle] of (await discDir()).entries()) {
+      if (handle.kind === 'file') return name;
+    }
+    return null;
+  }
+
+  const BUNDLED_DISC_NAME = 'Pikmin (USA) (Rev 1).rvz';
+  const BUNDLED_DISC_SIZE = 555216756;
+
+  // Stream into OPFS without keeping the entire disc in memory. Commit the new
+  // image before removing the previous one, so a failed download can be retried.
+  async function storeDiscStream(name, stream, total) {
+    const dir = await discDir();
+    const previous = [];
+    for await (const entry of dir.keys()) previous.push(entry);
+    navigator.storage.persist?.().catch(() => {});
+    const handle = await dir.getFileHandle(name, { create: true });
+    const writable = await handle.createWritable();
+    let done = 0;
+    const progress = new TransformStream({
+      transform(chunk, controller) {
+        done += chunk.byteLength;
+        setStatus(`Loading ${name}… ${Math.floor(done * 100 / total)}%`);
+        controller.enqueue(chunk);
+      },
+      flush() {
+        if (done !== total) throw new Error('The disc download was incomplete. Please retry.');
+      },
+    });
+    try {
+      await stream.pipeThrough(progress).pipeTo(writable);
+    } catch (error) {
+      if (!previous.includes(name)) await dir.removeEntry(name).catch(() => {});
+      throw error;
+    }
+    for (const entry of previous) {
+      if (entry !== name) await dir.removeEntry(entry, { recursive: true });
+    }
+  }
+
+  async function storeDisc(file) {
+    await storeDiscStream(file.name, file.stream(), file.size);
+  }
+
+  async function loadBundledDisc() {
+    const dir = await discDir();
+    try {
+      const file = await (await dir.getFileHandle(BUNDLED_DISC_NAME)).getFile();
+      if (file.size === BUNDLED_DISC_SIZE) {
+        // Remove any older image only after the bundled copy is available.
+        for await (const name of dir.keys()) {
+          if (name !== BUNDLED_DISC_NAME) await dir.removeEntry(name, { recursive: true });
+        }
+        return;
+      }
+    } catch (error) {
+      if (error.name !== 'NotFoundError') throw error;
+    }
+    setStatus(`Loading ${BUNDLED_DISC_NAME}…`);
+    const response = await fetch(encodeURIComponent(BUNDLED_DISC_NAME));
+    if (!response.ok || !response.body) throw new Error(`Disc download failed (HTTP ${response.status}).`);
+    const length = response.headers.get('Content-Length');
+    if (length !== null && Number(length) !== BUNDLED_DISC_SIZE) {
+      await response.body.cancel();
+      throw new Error('The bundled disc has an unexpected size.');
+    }
+    await storeDiscStream(BUNDLED_DISC_NAME, response.body, BUNDLED_DISC_SIZE);
+  }
+
+  // Testing aids (not shown anywhere): ?env=NAME=value;NAME2=value sets environment variables the
+  // game's test aids read (PIKMIN_AUTOBOOT, PIKMIN_TEST_*), and ?config=<url> replaces the data
+  // folder's config.ini with that file before the game starts.
+  const params = new URLSearchParams(location.search);
+  function testEnv() {
+    const env = {};
+    for (const pair of (params.get('env') || '').split(';')) {
+      const eq = pair.indexOf('=');
+      if (eq > 0) env[pair.slice(0, eq)] = pair.slice(eq + 1);
+    }
+    return env;
+  }
+  async function writeTestConfig() {
+    const url = params.get('config');
+    if (!url) return;
+    const text = await (await fetch(url)).text();
+    const data = await (await navigator.storage.getDirectory()).getDirectoryHandle('data', { create: true });
+    const writable = await (await data.getFileHandle('config.ini', { create: true })).createWritable();
+    await writable.write(text);
+    await writable.close();
+    console.log(`[page] config.ini replaced with ${url}`);
+  }
+
+  // ---- Saves: Export / Import (a zip of the data folder, without the shader caches) ----
+  const CRC_TABLE = (() => {
+    const t = new Uint32Array(256);
+    for (let n = 0; n < 256; n++) {
+      let c = n;
+      for (let k = 0; k < 8; k++) c = c & 1 ? 0xEDB88320 ^ (c >>> 1) : c >>> 1;
+      t[n] = c >>> 0;
+    }
+    return t;
+  })();
+  function crc32(bytes) {
+    let c = 0xFFFFFFFF;
+    for (let i = 0; i < bytes.length; i++) c = CRC_TABLE[(c ^ bytes[i]) & 0xFF] ^ (c >>> 8);
+    return (c ^ 0xFFFFFFFF) >>> 0;
+  }
+  const isCache = (name) => /\.db(-wal|-shm)?$/.test(name);
+
+  async function dataDir() {
+    return (await navigator.storage.getDirectory()).getDirectoryHandle('data', { create: true });
+  }
+
+  async function collectSaves(dir, prefix, out) {
+    for await (const [name, handle] of dir.entries()) {
+      if (handle.kind === 'directory') await collectSaves(handle, prefix + name + '/', out);
+      else if (!isCache(name)) out.push({ path: prefix + name, bytes: new Uint8Array(await (await handle.getFile()).arrayBuffer()) });
+    }
+    return out;
+  }
+
+  // A zip with every entry stored (no compression): the saves are small.
+  function makeZip(files) {
+    const enc = new TextEncoder();
+    const now = new Date();
+    const dosTime = (now.getHours() << 11) | (now.getMinutes() << 5) | (now.getSeconds() >> 1);
+    const dosDate = ((now.getFullYear() - 1980) << 9) | ((now.getMonth() + 1) << 5) | now.getDate();
+    const parts = [], central = [];
+    let offset = 0;
+    for (const f of files) {
+      const name = enc.encode(f.path), crc = crc32(f.bytes), size = f.bytes.length;
+      const local = new DataView(new ArrayBuffer(30));
+      local.setUint32(0, 0x04034B50, true); local.setUint16(4, 20, true); local.setUint16(6, 0x0800, true);
+      local.setUint16(10, dosTime, true); local.setUint16(12, dosDate, true);
+      local.setUint32(14, crc, true); local.setUint32(18, size, true); local.setUint32(22, size, true);
+      local.setUint16(26, name.length, true);
+      const entry = new DataView(new ArrayBuffer(46));
+      entry.setUint32(0, 0x02014B50, true); entry.setUint16(4, 20, true); entry.setUint16(6, 20, true);
+      entry.setUint16(8, 0x0800, true); entry.setUint16(12, dosTime, true); entry.setUint16(14, dosDate, true);
+      entry.setUint32(16, crc, true); entry.setUint32(20, size, true);
+      entry.setUint32(24, size, true); entry.setUint16(28, name.length, true); entry.setUint32(42, offset, true);
+      parts.push(local, name, f.bytes);
+      central.push(entry, name);
+      offset += 30 + name.length + size;
+    }
+    const centralSize = central.reduce((n, p) => n + p.byteLength, 0);
+    const end = new DataView(new ArrayBuffer(22));
+    end.setUint32(0, 0x06054B50, true); end.setUint16(8, files.length, true); end.setUint16(10, files.length, true);
+    end.setUint32(12, centralSize, true); end.setUint32(16, offset, true);
+    return new Blob([...parts, ...central, end], { type: 'application/zip' });
+  }
+
+  // Reads stored and deflated entries (zips from this page or from ordinary zip tools).
+  async function readZip(buffer) {
+    const view = new DataView(buffer), dec = new TextDecoder();
+    let eocd = buffer.byteLength - 22;
+    while (eocd >= 0 && view.getUint32(eocd, true) !== 0x06054B50) eocd--;
+    if (eocd < 0) throw new Error('not a zip file');
+    const count = view.getUint16(eocd + 10, true);
+    let p = view.getUint32(eocd + 16, true);
+    const files = [];
+    for (let i = 0; i < count; i++) {
+      if (view.getUint32(p, true) !== 0x02014B50) throw new Error('damaged zip directory');
+      const method = view.getUint16(p + 10, true), compSize = view.getUint32(p + 20, true);
+      const nameLen = view.getUint16(p + 28, true), extraLen = view.getUint16(p + 30, true);
+      const commentLen = view.getUint16(p + 32, true), localOff = view.getUint32(p + 42, true);
+      const path = dec.decode(new Uint8Array(buffer, p + 46, nameLen));
+      p += 46 + nameLen + extraLen + commentLen;
+      if (path.endsWith('/')) continue;
+      const dataStart = localOff + 30 + view.getUint16(localOff + 26, true) + view.getUint16(localOff + 28, true);
+      const raw = new Uint8Array(buffer, dataStart, compSize);
+      let bytes;
+      if (method === 0) bytes = raw;
+      else if (method === 8) bytes = new Uint8Array(await new Response(new Blob([raw]).stream().pipeThrough(new DecompressionStream('deflate-raw'))).arrayBuffer());
+      else throw new Error(`unsupported compression in ${path}`);
+      files.push({ path, bytes });
+    }
+    return files;
+  }
+
+  async function exportSaves() {
+    const files = await collectSaves(await dataDir(), '', []);
+    if (!files.length) { setStatus('Nothing to export yet.'); return; }
+    const url = URL.createObjectURL(makeZip(files));
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `pikmin-native-saves-${new Date().toISOString().slice(0, 10)}.zip`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 60000);
+    setStatus(`Exported ${files.length} files.`);
+  }
+
+  // A memory card save's identity: its .gci header's game code + maker code (bytes 0-5) and file name
+  // (0x08-0x27), whatever the .gci file itself is called -- not bytes 6-7 (padding, banner format), which
+  // differ between copies of the same save. The card folder must hold one .gci per identity, or the game
+  // opens whichever it finds first.
+  const gciKey = (bytes) => bytes.length >= 0x28
+    ? [...bytes.subarray(0, 6), ...bytes.subarray(8, 0x28)].join(',') : null;
+
+  async function importSaves(file) {
+    const files = await readZip(await file.arrayBuffer());
+    const root = await dataDir();
+    let written = 0, replaced = 0;
+    for (const f of files) {
+      const parts = f.path.split('/').filter((s) => s && s !== '.' && s !== '..');
+      if (!parts.length || isCache(parts[parts.length - 1])) continue;
+      let dir = root;
+      for (const part of parts.slice(0, -1)) dir = await dir.getDirectoryHandle(part, { create: true });
+      const name = parts[parts.length - 1];
+      const key = name.toLowerCase().endsWith('.gci') ? gciKey(f.bytes) : null;
+      if (key) {
+        // The same save under another file name (e.g. the empty one the game made on its first start):
+        // the imported one replaces it.
+        const same = [];
+        for await (const [other, handle] of dir.entries()) {
+          if (other === name || handle.kind !== 'file' || !other.toLowerCase().endsWith('.gci')) continue;
+          const head = new Uint8Array(await (await handle.getFile()).slice(0, 0x28).arrayBuffer());
+          if (gciKey(head) === key) same.push(other);
+        }
+        for (const other of same) { await dir.removeEntry(other); replaced++; }
+      }
+      const writable = await (await dir.getFileHandle(name, { create: true })).createWritable();
+      await writable.write(f.bytes);
+      await writable.close();
+      written++;
+    }
+    setStatus(`Imported ${written} files${replaced ? ` (replaced ${replaced} existing memory card save${replaced > 1 ? 's' : ''})` : ''}.`);
+  }
+
+  $('export').addEventListener('click', () => exportSaves().catch((e) => setError(`Export failed: ${e.message}`)));
+  $('import').addEventListener('change', async (event) => {
+    const file = event.target.files[0];
+    event.target.value = ''; // so picking the same file again fires 'change' again
+    if (!file) return;
+    setError('');
+    try {
+      const existing = await collectSaves(await dataDir(), '', []);
+      if (existing.some((f) => f.path.toLowerCase().endsWith('.gci')) &&
+          !confirm(`Import saves from "${file.name}"?\n\nSaves and settings in this browser that are also in the file ` +
+                   '(including a memory card save for the same game) will be overwritten. Export your current ' +
+                   'saves first if you want to keep them.')) {
+        setStatus('Import cancelled.');
+        return;
+      }
+      await importSaves(file);
+    } catch (e) {
+      setError(`Import failed: ${e.message}`);
+    }
+  });
+  // Everything this site keeps: saves, settings, caches and the stored disc image.
+  $('reset').addEventListener('click', async () => {
+    if (!confirm('Delete ALL data this site keeps in this browser?\n\nThis deletes your saves, settings and the ' +
+                 'stored disc image, and can\'t be undone. Export your saves first if you want to keep them.')) {
+      return;
+    }
+    setError('');
+    try {
+      const root = await navigator.storage.getDirectory();
+      const names = [];
+      for await (const name of root.keys()) names.push(name);
+      for (const name of names) await root.removeEntry(name, { recursive: true });
+      setStatus('All data deleted. Reloading…');
+      location.reload();
+    } catch (e) {
+      setError(`Reset failed: ${e.message}`);
+    }
+  });
+
+  // The display's refresh rate for the game's Match Refresh Rate (browsers don't report it): the median of
+  // the last 60 requestAnimationFrame intervals (web_platform.cpp asks for Module.displayRefreshHz).
+  let measuredHz = 0;
+  (() => {
+    const intervals = [];
+    let last = 0;
+    const tick = (t) => {
+      if (last) {
+        intervals.push(t - last);
+        if (intervals.length > 60) intervals.shift();
+        if (intervals.length >= 20) {
+          const sorted = [...intervals].sort((a, b) => a - b);
+          const median = sorted[sorted.length >> 1];
+          if (median > 0) measuredHz = Math.round(1000 / median);
+        }
+      }
+      last = t;
+      requestAnimationFrame(tick);
+    };
+    requestAnimationFrame(tick);
+  })();
+
+  let started = false;
+  let lastCrashCause = '';
+
+  // The game has aborted (e.g. the browser's GPU process restarted, which loses the WebGPU device): show
+  // why, instead of a frozen or black picture with the last audio still playing.
+  function gameStopped() {
+    if (started !== true) return;
+    started = 'stopped'; // no "leave site?" prompt or key capture from here on
+    try { window.Module?.SDL3?.audioContext?.close(); } catch {}
+    try { document.exitPointerLock(); } catch {}
+    const deviceLost = /graphics device was lost|Device lost/i.test(lastCrashCause);
+    const box = document.createElement('div');
+    box.id = 'stopped';
+    box.innerHTML = `<div class="card"><h1>The game stopped</h1><p id="stoppedWhy"></p>
+      <p>Progress since your last save is lost. Reload to keep playing.</p>
+      <div class="row"><button id="stoppedReload">Reload</button>
+      <button class="secondary" id="stoppedExport">Export saves</button></div><p id="stoppedStatus" class="small"></p></div>`;
+    document.body.appendChild(box);
+    $('stoppedWhy').textContent = deviceLost
+      ? "The browser's graphics process restarted, which the game can't recover from yet. On Linux this can " +
+        'happen when switching windows.'
+      : `It hit an error${lastCrashCause ? `: ${lastCrashCause}` : '.'}`;
+    $('stoppedReload').addEventListener('click', () => location.reload());
+    $('stoppedExport').addEventListener('click', () => exportSaves()
+      .then(() => { $('stoppedStatus').textContent = 'Saves exported.'; })
+      .catch((e) => { $('stoppedStatus').textContent = `Export failed: ${e.message}`; }));
+  }
+
+  async function start() {
+    if (started) return;
+    started = true;
+    await writeTestConfig();
+    const env = testEnv();
+    $('panel').hidden = true;
+    canvas.focus();
+    // Ctrl+W (keyboard swarm + walk forward) and the like close the tab, and a page can't stop that
+    // in a normal window: ask first while the game runs. (Fullscreen also locks the keyboard,
+    // web_platform.cpp.) The panel's own reload after a rejected disc goes through.
+    window.addEventListener('beforeunload', (event) => {
+      if (started === true) event.preventDefault();
+    });
+    // Keys whose browser action would take the keyboard away from the game: Tab moves focus out of the
+    // page (keyboard Y), Alt alone focuses the browser's menu, F1 / F3 / F5 / F6 / F7 / F10 open help,
+    // find, reload, the address bar, caret browsing, the menu. SDL can't cancel them itself: its key
+    // handler runs on the game's thread, after the browser has already decided. (F11 / F12 stay.)
+    const browserKeys = new Set(['Tab', 'Alt', 'F1', 'F3', 'F5', 'F6', 'F7', 'F10']);
+    window.addEventListener('keydown', (event) => {
+      if (started === true && browserKeys.has(event.key)) event.preventDefault();
+    }, { capture: true });
+    window.Module = {
+      canvas,
+      preRun: [() => { Object.assign(ENV, env); }],
+      get displayRefreshHz() { return measuredHz; },
+      print: (t) => console.log(t),
+      printErr: (t) => {
+        console.warn(t);
+        // The game prints why it is about to stop ("[crash] cause: ...", crash_handler.h), then aborts.
+        if (t.startsWith('[crash] cause: ')) lastCrashCause = t.slice('[crash] cause: '.length);
+        if (t.startsWith('Aborted(')) gameStopped();
+      },
+      // web_platform.cpp: the disc image can't be used -- the game has stopped, so a reload is needed.
+      onDiscRejected: (message) => {
+        $('panel').hidden = false;
+        setError(message);
+        setStatus('Choose a different disc image.');
+        $('play').hidden = true;
+        started = 'rejected';
+      },
+    };
+    const script = document.createElement('script');
+    script.src = 'pikmin_boot.js';
+    document.body.appendChild(script);
+  }
+
+  $('disc').addEventListener('change', async (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
+    setError('');
+    try {
+      await storeDisc(file);
+    } catch (e) {
+      setError(`Couldn't store the disc image: ${e}`);
+      return;
+    }
+    if (started === 'rejected') {
+      setStatus('Stored. Reloading…');
+      location.reload();
+      return;
+    }
+    start();
+  });
+  $('play').addEventListener('click', start);
+
+  (async () => {
+    const missing = missingFeatures();
+    if (missing.length) {
+      setError(`This browser can't run Pikmin Native. Missing: ${missing.join('; ')}.\n` +
+               'Use a current Chromium-based browser (Chrome, Edge, Brave, Opera).');
+      $('chooseLabel').hidden = true;
+      return;
+    }
+    checkGpu();
+    $('disc').disabled = true;
+    $('reset').disabled = true;
+    try {
+      await loadBundledDisc();
+      setStatus(`Disc image: ${BUNDLED_DISC_NAME}`);
+      await start();
+    } catch (error) {
+      started = false;
+      $('panel').hidden = false;
+      setStatus('Choose a disc image below to try again.');
+      setError(`Couldn't load Pikmin: ${error.message}`);
+    } finally {
+      $('disc').disabled = false;
+      $('reset').disabled = false;
+    }
+  })();
+</script>
+</body>
+</html>
