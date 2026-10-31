@@ -1,8 +1,0 @@
-COMPOSER(s)
-DragonFlame
-
-CHARTER(s)
-SpaceVeta
-
-ARTIST(s)
-DragonFlame

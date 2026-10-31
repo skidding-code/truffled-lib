@@ -1,8 +1,0 @@
-COMPOSER(s)
-Sic
-
-CHARTER(s)
-Seezee
-
-ARTIST(s)
-Knocks

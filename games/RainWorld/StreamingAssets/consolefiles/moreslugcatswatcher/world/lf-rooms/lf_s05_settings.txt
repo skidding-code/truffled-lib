@@ -1,3 +1,0 @@
-Grime: 0.423913
-FadePalette: 8, 0.3152174
-PlacedObjects: BrokenShelterWaterLevel><290.7915><385.3127><, 

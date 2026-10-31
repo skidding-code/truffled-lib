@@ -1,3 +1,0 @@
-Template: UW_SettingsTemplate_Wall
-Palette: 29
-FadePalette: 42, 0.06521739

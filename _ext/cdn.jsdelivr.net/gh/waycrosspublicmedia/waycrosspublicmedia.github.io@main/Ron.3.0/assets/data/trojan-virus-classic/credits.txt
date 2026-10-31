@@ -1,8 +1,0 @@
-COMPOSER(s)
-Jacks
-
-CHARTER(s)
-Seezee
-
-ARTIST(s)
-Seezee
