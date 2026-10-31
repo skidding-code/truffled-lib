@@ -220,6 +220,10 @@ Commons, PO Box 1866, Mountain View, CA 94042, USA.
             if (typeof input === 'string' || input instanceof URL) input = m;
             else input = new Request(m, input);
           }
+          if (typeof m === 'string' && m.indexOf(CDN + '/') === 0 && CDN !== G.location.origin) {
+            if (init && init.credentials === 'include') init = Object.assign({}, init, { credentials: 'omit' });
+            if (input && typeof input === 'object' && !(input instanceof URL) && input.credentials === 'include') input = new Request(input, { credentials: 'omit' });
+          }
           if (C.o && String(m).indexOf(CDN + '/gh/' + C.o + '/') === 0 && String((init && init.method) || (input && input.method) || 'GET').toUpperCase() === 'GET') {
             var tries = 0, inp = input;
             var again = function () {
@@ -254,6 +258,7 @@ Commons, PO Box 1866, Mountain View, CA 94042, USA.
       }
       this.__tzs = null;
       a[1] = m;
+      this.__tzcdn = typeof m === 'string' && m.indexOf(CDN + '/') === 0 && CDN !== G.location.origin;
       return oOpen.apply(this, a);
     };
     XP.setRequestHeader = function (k, v) {
@@ -262,7 +267,10 @@ Commons, PO Box 1866, Mountain View, CA 94042, USA.
     };
     XP.send = function (body) {
       var s = this.__tzs, x = this;
-      if (!s) return oSend.call(this, body);
+      if (!s) {
+        if (this.__tzcdn) try { this.withCredentials = false; } catch (e) {}
+        return oSend.call(this, body);
+      }
       if (s.r) {
         var hdr = {};
         s.h.forEach(function (h) { hdr[h[0]] = h[1]; });

@@ -212,6 +212,10 @@
             if (typeof input === 'string' || input instanceof URL) input = m;
             else input = new Request(m, input);
           }
+          if (typeof m === 'string' && m.indexOf(CDN + '/') === 0 && CDN !== G.location.origin) {
+            if (init && init.credentials === 'include') init = Object.assign({}, init, { credentials: 'omit' });
+            if (input && typeof input === 'object' && !(input instanceof URL) && input.credentials === 'include') input = new Request(input, { credentials: 'omit' });
+          }
           if (C.o && String(m).indexOf(CDN + '/gh/' + C.o + '/') === 0 && String((init && init.method) || (input && input.method) || 'GET').toUpperCase() === 'GET') {
             var tries = 0, inp = input;
             var again = function () {
@@ -246,6 +250,7 @@
       }
       this.__tzs = null;
       a[1] = m;
+      this.__tzcdn = typeof m === 'string' && m.indexOf(CDN + '/') === 0 && CDN !== G.location.origin;
       return oOpen.apply(this, a);
     };
     XP.setRequestHeader = function (k, v) {
@@ -254,7 +259,10 @@
     };
     XP.send = function (body) {
       var s = this.__tzs, x = this;
-      if (!s) return oSend.call(this, body);
+      if (!s) {
+        if (this.__tzcdn) try { this.withCredentials = false; } catch (e) {}
+        return oSend.call(this, body);
+      }
       if (s.r) {
         var hdr = {};
         s.h.forEach(function (h) { hdr[h[0]] = h[1]; });
@@ -578,7 +586,7 @@
       }
     }).observe(document, { childList: true, subtree: true });
   }
-})({"c":"https://cdn.jsdelivr.net","o":"skidding-code","p":19000000,"b":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1207/games/OvoDimensions/","r":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1207/","u":{"/games/OvoDimensions/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1207/","/_ext/ep2.adtrafficquality.google/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0209/"},"x":{"ep2.adtrafficquality.google/sodar/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0209/_ext/ep2.adtrafficquality.google/sodar/","ep2.adtrafficquality.google/sodar/sodar2/257/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0209/_ext/ep2.adtrafficquality.google/sodar/sodar2/257/"},"s":{}});</script>
+})({"c":"https://cdn.jsdelivr.net","o":"skidding-code","p":19000000,"b":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1207/games/OvoDimensions/","r":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1207/","u":{"/games/OvoDimensions/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1207/","/games/OvoDimensions/images/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1764/","/games/OvoDimensions/media/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1765/","/games/OvoDimensions/patch/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1765/","/_ext/ep2.adtrafficquality.google/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0209/"},"x":{"ep2.adtrafficquality.google/sodar/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0209/_ext/ep2.adtrafficquality.google/sodar/","ep2.adtrafficquality.google/sodar/sodar2/257/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0209/_ext/ep2.adtrafficquality.google/sodar/sodar2/257/"},"s":{}});</script>
     <meta charset="UTF-8" />
 	<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
 	<title>OvO Dimensions</title>

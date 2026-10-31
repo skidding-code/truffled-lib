@@ -211,6 +211,10 @@
             if (typeof input === 'string' || input instanceof URL) input = m;
             else input = new Request(m, input);
           }
+          if (typeof m === 'string' && m.indexOf(CDN + '/') === 0 && CDN !== G.location.origin) {
+            if (init && init.credentials === 'include') init = Object.assign({}, init, { credentials: 'omit' });
+            if (input && typeof input === 'object' && !(input instanceof URL) && input.credentials === 'include') input = new Request(input, { credentials: 'omit' });
+          }
           if (C.o && String(m).indexOf(CDN + '/gh/' + C.o + '/') === 0 && String((init && init.method) || (input && input.method) || 'GET').toUpperCase() === 'GET') {
             var tries = 0, inp = input;
             var again = function () {
@@ -245,6 +249,7 @@
       }
       this.__tzs = null;
       a[1] = m;
+      this.__tzcdn = typeof m === 'string' && m.indexOf(CDN + '/') === 0 && CDN !== G.location.origin;
       return oOpen.apply(this, a);
     };
     XP.setRequestHeader = function (k, v) {
@@ -253,7 +258,10 @@
     };
     XP.send = function (body) {
       var s = this.__tzs, x = this;
-      if (!s) return oSend.call(this, body);
+      if (!s) {
+        if (this.__tzcdn) try { this.withCredentials = false; } catch (e) {}
+        return oSend.call(this, body);
+      }
       if (s.r) {
         var hdr = {};
         s.h.forEach(function (h) { hdr[h[0]] = h[1]; });
@@ -577,7 +585,7 @@
       }
     }).observe(document, { childList: true, subtree: true });
   }
-})({"c":"https://cdn.jsdelivr.net","o":"skidding-code","p":19000000,"b":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1703/_ext/cdn.jsdelivr.net/gh/genizy/wbwwb@main/","r":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1703/","u":{"/gamefile/wbwwb.html":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1703/","/_ext/cdn.jsdelivr.net/gh/genizy/wbwwb@main/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1703/"},"x":{"cdn.jsdelivr.net/gh/genizy/wbwwb@main/css/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1703/_ext/cdn.jsdelivr.net/gh/genizy/wbwwb@main/css/","cdn.jsdelivr.net/gh/genizy/wbwwb@main/js/lib/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1703/_ext/cdn.jsdelivr.net/gh/genizy/wbwwb@main/js/lib/","cdn.jsdelivr.net/gh/genizy/wbwwb@main/js/core/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1703/_ext/cdn.jsdelivr.net/gh/genizy/wbwwb@main/js/core/","cdn.jsdelivr.net/gh/genizy/wbwwb@main/js/game/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1703/_ext/cdn.jsdelivr.net/gh/genizy/wbwwb@main/js/game/","cdn.jsdelivr.net/gh/genizy/wbwwb@main/js/peeps/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1703/_ext/cdn.jsdelivr.net/gh/genizy/wbwwb@main/js/peeps/","cdn.jsdelivr.net/gh/genizy/wbwwb@main/js/misc/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1703/_ext/cdn.jsdelivr.net/gh/genizy/wbwwb@main/js/misc/","cdn.jsdelivr.net/gh/genizy/wbwwb@main/js/scenes/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1703/_ext/cdn.jsdelivr.net/gh/genizy/wbwwb@main/js/scenes/","cdn.jsdelivr.net/gh/genizy/wbwwb@main/js/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1703/_ext/cdn.jsdelivr.net/gh/genizy/wbwwb@main/js/"},"s":{}});</script>
+})({"c":"https://cdn.jsdelivr.net","o":"skidding-code","p":19000000,"b":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1703/_ext/cdn.jsdelivr.net/gh/genizy/wbwwb@main/","r":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1703/","u":{"/gamefile/wbwwb.html":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1703/","/_ext/cdn.jsdelivr.net/gh/genizy/wbwwb@main/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1703/"},"x":{"cdn.jsdelivr.net/gh/genizy/wbwwb@main/css/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1703/_ext/cdn.jsdelivr.net/gh/genizy/wbwwb@main/css/","cdn.jsdelivr.net/gh/genizy/wbwwb@main/js/lib/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1703/_ext/cdn.jsdelivr.net/gh/genizy/wbwwb@main/js/lib/","cdn.jsdelivr.net/gh/genizy/wbwwb@main/js/core/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1703/_ext/cdn.jsdelivr.net/gh/genizy/wbwwb@main/js/core/","cdn.jsdelivr.net/gh/genizy/wbwwb@main/js/game/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1703/_ext/cdn.jsdelivr.net/gh/genizy/wbwwb@main/js/game/","cdn.jsdelivr.net/gh/genizy/wbwwb@main/js/peeps/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1703/_ext/cdn.jsdelivr.net/gh/genizy/wbwwb@main/js/peeps/","cdn.jsdelivr.net/gh/genizy/wbwwb@main/js/misc/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1703/_ext/cdn.jsdelivr.net/gh/genizy/wbwwb@main/js/misc/","cdn.jsdelivr.net/gh/genizy/wbwwb@main/js/scenes/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1703/_ext/cdn.jsdelivr.net/gh/genizy/wbwwb@main/js/scenes/","cdn.jsdelivr.net/gh/genizy/wbwwb@main/js/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1703/_ext/cdn.jsdelivr.net/gh/genizy/wbwwb@main/js/","cdn.jsdelivr.net/gh/genizy/wbwwb@main/sprites/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1703/_ext/cdn.jsdelivr.net/gh/genizy/wbwwb@main/sprites/","cdn.jsdelivr.net/gh/genizy/wbwwb@main/sprites/misc/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1703/_ext/cdn.jsdelivr.net/gh/genizy/wbwwb@main/sprites/misc/"},"s":{}});</script>
         
 		<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1703/_ext/cdn.jsdelivr.net/gh/genizy/wbwwb@main/css/game.css">
 

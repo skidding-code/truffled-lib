@@ -213,6 +213,10 @@
             if (typeof input === 'string' || input instanceof URL) input = m;
             else input = new Request(m, input);
           }
+          if (typeof m === 'string' && m.indexOf(CDN + '/') === 0 && CDN !== G.location.origin) {
+            if (init && init.credentials === 'include') init = Object.assign({}, init, { credentials: 'omit' });
+            if (input && typeof input === 'object' && !(input instanceof URL) && input.credentials === 'include') input = new Request(input, { credentials: 'omit' });
+          }
           if (C.o && String(m).indexOf(CDN + '/gh/' + C.o + '/') === 0 && String((init && init.method) || (input && input.method) || 'GET').toUpperCase() === 'GET') {
             var tries = 0, inp = input;
             var again = function () {
@@ -247,6 +251,7 @@
       }
       this.__tzs = null;
       a[1] = m;
+      this.__tzcdn = typeof m === 'string' && m.indexOf(CDN + '/') === 0 && CDN !== G.location.origin;
       return oOpen.apply(this, a);
     };
     XP.setRequestHeader = function (k, v) {
@@ -255,7 +260,10 @@
     };
     XP.send = function (body) {
       var s = this.__tzs, x = this;
-      if (!s) return oSend.call(this, body);
+      if (!s) {
+        if (this.__tzcdn) try { this.withCredentials = false; } catch (e) {}
+        return oSend.call(this, body);
+      }
       if (s.r) {
         var hdr = {};
         s.h.forEach(function (h) { hdr[h[0]] = h[1]; });
@@ -579,7 +587,7 @@
       }
     }).observe(document, { childList: true, subtree: true });
   }
-})({"c":"https://cdn.jsdelivr.net","o":"skidding-code","p":19000000,"b":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1605/games/tetrisweeper/","r":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1605/","u":{"/games/tetrisweeper/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1605/","/gamefile/smb.html":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1560/","/games/tetrisweeper/Build/Tetrisweeper 1.8.8 HTML Brotli.data.unityweb":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1606/","/games/tetrisweeper/Build/Tetrisweeper 1.8.8 HTML Brotli.framework.js.unityweb":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1607/","/games/tetrisweeper/Build/Tetrisweeper 1.8.8 HTML Brotli.jpg":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1607/","/games/tetrisweeper/Build/Tetrisweeper 1.8.8 HTML Brotli.loader.js":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1607/","/games/tetrisweeper/Build/Tetrisweeper 1.8.8 HTML Brotli.wasm.unityweb":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1607/"},"x":{},"s":{"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1606/games/tetrisweeper/Build/Tetrisweeper%201.8.8%20HTML%20Brotli.data.unityweb":[8,"application/octet-stream",137693180,[[1,"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1606/games/tetrisweeper/Build/Tetrisweeper%201.8.8%20HTML%20Brotli.data.unityweb"],[3,"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c2253/games/tetrisweeper/Build/Tetrisweeper%201.8.8%20HTML%20Brotli.data.unityweb"],[5,"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c2254/games/tetrisweeper/Build/Tetrisweeper%201.8.8%20HTML%20Brotli.data.unityweb"],[7,"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c2255/games/tetrisweeper/Build/Tetrisweeper%201.8.8%20HTML%20Brotli.data.unityweb"]]]}});</script>
+})({"c":"https://cdn.jsdelivr.net","o":"skidding-code","p":19000000,"b":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1605/games/tetrisweeper/","r":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1605/","u":{"/games/tetrisweeper/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1605/","/gamefile/smb.html":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1560/","/games/tetrisweeper/Build/Tetrisweeper 1.8.8 HTML Brotli.data.unityweb":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1606/","/games/tetrisweeper/Build/Tetrisweeper 1.8.8 HTML Brotli.framework.js.unityweb":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1607/","/games/tetrisweeper/Build/Tetrisweeper 1.8.8 HTML Brotli.jpg":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1607/","/games/tetrisweeper/Build/Tetrisweeper 1.8.8 HTML Brotli.loader.js":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1607/","/games/tetrisweeper/Build/Tetrisweeper 1.8.8 HTML Brotli.wasm.unityweb":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1607/","/games/tetrisweeper/StreamingAssets/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1766/"},"x":{},"s":{"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1606/games/tetrisweeper/Build/Tetrisweeper%201.8.8%20HTML%20Brotli.data.unityweb":[8,"application/octet-stream",137693180,[[1,"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1606/games/tetrisweeper/Build/Tetrisweeper%201.8.8%20HTML%20Brotli.data.unityweb"],[3,"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c2253/games/tetrisweeper/Build/Tetrisweeper%201.8.8%20HTML%20Brotli.data.unityweb"],[5,"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c2254/games/tetrisweeper/Build/Tetrisweeper%201.8.8%20HTML%20Brotli.data.unityweb"],[7,"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c2255/games/tetrisweeper/Build/Tetrisweeper%201.8.8%20HTML%20Brotli.data.unityweb"]]]}});</script>
     <meta charset="utf-8">
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <title>Unity Web Player | Tetrisweeper</title>
