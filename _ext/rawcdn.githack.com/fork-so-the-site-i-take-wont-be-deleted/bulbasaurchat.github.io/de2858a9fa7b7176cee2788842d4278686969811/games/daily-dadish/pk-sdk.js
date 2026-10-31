@@ -1149,7 +1149,7 @@ function a0_0x391d() {
     "isAdBlocked",
     "split",
     "adViewed",
-    "https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@main/_ext/imasdk.googleapis.com/js/sdkloader/ima3.js",
+    "//imasdk.googleapis.com/js/sdkloader/ima3.js",
     "search",
     "data-adbreak-test",
     "async",

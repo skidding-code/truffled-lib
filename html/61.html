@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
-<head><base href="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@main/games/bfdia 5b/"><script>(function (C) {
+<head><base href="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@main/games/bfdia%205b/"><script>(function (C) {
   var G = typeof self !== 'undefined' ? self : this;
   if (G.__tz) return;
   var IS_DOC = typeof document !== 'undefined' && typeof Element !== 'undefined';
@@ -365,8 +365,8 @@
     delete cfg.w;
     var sh = shimSrc ? '<script>(' + shimSrc + ')(' + JSON.stringify(cfg).replace(/<\//g, '<\\/') + ');<\/script>' : '';
     if (/<base\b[^>]*>/i.test(html)) {
-      var mb = /<base\b[^>]*\bhref\s*=\s*["']?([^"'\s>]+)/i.exec(html);
-      if (mb) tag = '<base href="' + new URL(mb[1], dir).href + '">';
+      var mb = /<base\b[^>]*\bhref\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s>]+))/i.exec(html);
+      if (mb) tag = '<base href="' + new URL(mb[1] !== undefined ? mb[1] : mb[2] !== undefined ? mb[2] : mb[3], dir).href + '">';
       html = html.replace(/<base\b[^>]*>/i, '');
     }
     if (/<head[^>]*>/i.test(html)) return html.replace(/<head[^>]*>/i, function (m) { return m + tag + sh; });
@@ -550,7 +550,7 @@
       }
     }).observe(document, { childList: true, subtree: true });
   }
-})({"c":"https://cdn.jsdelivr.net","o":"skidding-code","p":19000000,"b":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@main/games/bfdia 5b/","r":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@main/","u":{"/games/bfdia 5b/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@main/"},"x":{},"s":{}});</script>
+})({"c":"https://cdn.jsdelivr.net","o":"skidding-code","p":19000000,"b":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@main/games/bfdia%205b/","r":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@main/","u":{"/games/bfdia 5b/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@main/"},"x":{},"s":{}});</script>
 
 	<title>HTML5b - Battle for Dream Island</title>
 	<meta name="description" content="An HTML5 port of the puzzle platformer in the world of Battle for Dream Island."/>

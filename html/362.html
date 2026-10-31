@@ -366,8 +366,8 @@
     delete cfg.w;
     var sh = shimSrc ? '<script>(' + shimSrc + ')(' + JSON.stringify(cfg).replace(/<\//g, '<\\/') + ');<\/script>' : '';
     if (/<base\b[^>]*>/i.test(html)) {
-      var mb = /<base\b[^>]*\bhref\s*=\s*["']?([^"'\s>]+)/i.exec(html);
-      if (mb) tag = '<base href="' + new URL(mb[1], dir).href + '">';
+      var mb = /<base\b[^>]*\bhref\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s>]+))/i.exec(html);
+      if (mb) tag = '<base href="' + new URL(mb[1] !== undefined ? mb[1] : mb[2] !== undefined ? mb[2] : mb[3], dir).href + '">';
       html = html.replace(/<base\b[^>]*>/i, '');
     }
     if (/<head[^>]*>/i.test(html)) return html.replace(/<head[^>]*>/i, function (m) { return m + tag + sh; });
@@ -551,7 +551,7 @@
       }
     }).observe(document, { childList: true, subtree: true });
   }
-})({"c":"https://cdn.jsdelivr.net","o":"skidding-code","p":19000000,"b":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@main/games/motox3m/","r":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@main/","u":{"/games/motox3m/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@main/","/games/mclce/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@main/"},"x":{"imasdk.googleapis.com/js/sdkloader/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@main/_ext/imasdk.googleapis.com/js/sdkloader/","sdk.enjoy4fun.com/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@main/_ext/sdk.enjoy4fun.com/","analytics.tiktok.com/i18n/pixel/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@main/_ext/analytics.tiktok.com/i18n/pixel/","analytics.tiktok.com/i18n/pixel/static/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@main/_ext/analytics.tiktok.com/i18n/pixel/static/","ep2.adtrafficquality.google/sodar/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@main/_ext/ep2.adtrafficquality.google/sodar/","ep2.adtrafficquality.google/sodar/sodar2/257/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@main/_ext/ep2.adtrafficquality.google/sodar/sodar2/257/","imasdk.googleapis.com/js/core/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@main/_ext/imasdk.googleapis.com/js/core/"},"s":{}});</script>
+})({"c":"https://cdn.jsdelivr.net","o":"skidding-code","p":19000000,"b":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@main/games/motox3m/","r":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@main/","u":{"/games/motox3m/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@main/","/games/mclce/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@main/"},"x":{"sdk.enjoy4fun.com/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@main/_ext/sdk.enjoy4fun.com/","analytics.tiktok.com/i18n/pixel/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@main/_ext/analytics.tiktok.com/i18n/pixel/","analytics.tiktok.com/i18n/pixel/static/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@main/_ext/analytics.tiktok.com/i18n/pixel/static/","ep2.adtrafficquality.google/sodar/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@main/_ext/ep2.adtrafficquality.google/sodar/","ep2.adtrafficquality.google/sodar/sodar2/257/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@main/_ext/ep2.adtrafficquality.google/sodar/sodar2/257/"},"s":{}});</script>
     <meta charset="utf-8" />
     <meta http-equiv="x-ua-compatible" content="ie=edge">
     <meta name="viewport" content="initial-scale=1, maximum-scale=1, user-scalable=no, shrink-to-fit=no" />
@@ -576,7 +576,7 @@
     </script>
     <script src="pk-sdk.js"></script>
 
-    <script type="text/javascript" src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@main/_ext/imasdk.googleapis.com/js/sdkloader/ima3.js"></script>
+    <script type="text/javascript" src="https://imasdk.googleapis.com/js/sdkloader/ima3.js"></script>
 
     <script type="text/javascript" src="assets/lib/nape.min.js">
         var nape = "nape.min.js";

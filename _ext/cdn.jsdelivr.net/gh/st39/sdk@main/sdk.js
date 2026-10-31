@@ -1088,7 +1088,7 @@ var adxAds2 = false;
                     value: function() {
                         var e = this,
                             t = new Promise(function(t, n) {
-                                var o = e.options.debug ? "//imasdk.googleapis.com/js/sdkloader/ima3_debug.js" : "https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@main/_ext/imasdk.googleapis.com/js/sdkloader/ima3.js",
+                                var o = e.options.debug ? "//imasdk.googleapis.com/js/sdkloader/ima3_debug.js" : "https://imasdk.googleapis.com/js/sdkloader/ima3.js",
                                     i = document.getElementsByTagName("script")[0],
                                     r = document.createElement("script");
                                 r.type = "text/javascript", r.async = !0, r.src = o, r.onload = function() {

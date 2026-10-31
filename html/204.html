@@ -394,8 +394,8 @@
     delete cfg.w;
     var sh = shimSrc ? '<script>(' + shimSrc + ')(' + JSON.stringify(cfg).replace(/<\//g, '<\\/') + ');<\/script>' : '';
     if (/<base\b[^>]*>/i.test(html)) {
-      var mb = /<base\b[^>]*\bhref\s*=\s*["']?([^"'\s>]+)/i.exec(html);
-      if (mb) tag = '<base href="' + new URL(mb[1], dir).href + '">';
+      var mb = /<base\b[^>]*\bhref\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s>]+))/i.exec(html);
+      if (mb) tag = '<base href="' + new URL(mb[1] !== undefined ? mb[1] : mb[2] !== undefined ? mb[2] : mb[3], dir).href + '">';
       html = html.replace(/<base\b[^>]*>/i, '');
     }
     if (/<head[^>]*>/i.test(html)) return html.replace(/<head[^>]*>/i, function (m) { return m + tag + sh; });
