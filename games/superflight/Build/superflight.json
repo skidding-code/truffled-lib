@@ -1,0 +1,11 @@
+{
+"TOTAL_MEMORY": 2130706432,
+"dataUrl": "superflight.data.unityweb",
+"asmCodeUrl": "superflight.asm.code.unityweb",
+"asmMemoryUrl": "superflight.asm.memory.unityweb",
+"asmFrameworkUrl": "superflight.asm.framework.unityweb",
+"graphicsAPI": ["WebGL 2.0", "WebGL 1.0"],
+"webglContextAttributes": {"preserveDrawingBuffer": false},
+"splashScreenStyle": "Light",
+"backgroundColor": "#FFFFFF"
+}
