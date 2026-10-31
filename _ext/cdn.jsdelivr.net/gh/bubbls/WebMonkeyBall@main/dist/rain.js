@@ -65717,7 +65717,7 @@ var BALL_CLEAR_HEMI_ALPHA_MUL = 1.6;
 var EFFECT_DEPTH_BIAS = 0.2;
 var EFFECT_DEPTH_BIAS_MAX = 0.5;
 var SPARKLE_TEXTURE_PATH =
-  "https://cdn.jsdelivr.net/gh/bubbls/WebMonkeyBall@main/assets/particle/beautifulstar.png";
+  "https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@main/_ext/cdn.jsdelivr.net/gh/bubbls/WebMonkeyBall@main/assets/particle/beautifulstar.png";
 var MIRROR_FLAT_UBO_INDEX = 1;
 var MIRROR_FLAT_UBO_WORDS = 36;
 var MIRROR_WAVY_UBO_INDEX = 1;
