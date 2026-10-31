@@ -1,0 +1,32 @@
+{
+	"songs": [
+		[
+			"ATROCITY",
+			"stinkybutt",
+			[
+				166,
+				53,
+				253
+			]
+		]
+	],
+	"hiddenUntilUnlocked": false,
+	"hideFreeplay": false,
+	"weekBackground": "atrocity",
+	"difficulties": "Hard",
+	"weekCharacters": [
+		"",
+		"",
+		""
+	],
+	"storyName": "atroingmyshit",
+	"weekName": "ATROCITY",
+	"freeplayColor": [
+		146,
+		113,
+		253
+	],
+	"hideStoryMode": false,
+	"weekBefore": "tutorial",
+	"startUnlocked": true
+}
