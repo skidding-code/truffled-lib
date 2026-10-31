@@ -65,7 +65,18 @@
       }
       var hp = abs.host + abs.pathname;
       for (var i = 0; i < exts.length; i++) {
-        if (hp.indexOf(exts[i]) === 0) return C.x[exts[i]] + hp.slice(exts[i].length);
+        if (hp.indexOf(exts[i]) === 0) {
+          var sp = abs.pathname;
+          try { sp = decodeURIComponent(sp); } catch (e) {}
+          sp = '/_ext/' + abs.host + sp;
+          if (/\/$/.test(sp)) sp += 'index.html';
+          else if (!/\.[A-Za-z0-9_]{1,12}$/.test(sp)) sp += '__x';
+          var er = rootFor(sp, true);
+          if (er) {
+            try { return new URL(er + sp.slice(1)).href; } catch (e) {}
+          }
+          return C.x[exts[i]] + hp.slice(exts[i].length);
+        }
       }
       return href;
     } catch (e) { return u; }
@@ -572,10 +583,10 @@
 	<meta charset="utf-8">
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 	<title>GunSpin Unblocked - ClassRoom6x</title>
-	<link rel="shortcut icon" href="TemplateData/favicon.ico">
-	<link rel="stylesheet" href="TemplateData/style.css">
-	<script src="TemplateData/UnityProgress.js"></script>
-	<script src="Build/UnityLoader.js"></script>
+	<link rel="shortcut icon" href="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0931/games/gunspin/TemplateData/favicon.ico">
+	<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0931/games/gunspin/TemplateData/style.css">
+	<script src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0931/games/gunspin/TemplateData/UnityProgress.js"></script>
+	<script src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0931/games/gunspin/Build/UnityLoader.js"></script>
 	<script type="text/javascript" src="/cloak.js"></script>
 <meta name="website" content="classroom6x.gitlab.io" />
 	<script>

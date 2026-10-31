@@ -73,7 +73,18 @@
       }
       var hp = abs.host + abs.pathname;
       for (var i = 0; i < exts.length; i++) {
-        if (hp.indexOf(exts[i]) === 0) return C.x[exts[i]] + hp.slice(exts[i].length);
+        if (hp.indexOf(exts[i]) === 0) {
+          var sp = abs.pathname;
+          try { sp = decodeURIComponent(sp); } catch (e) {}
+          sp = '/_ext/' + abs.host + sp;
+          if (/\/$/.test(sp)) sp += 'index.html';
+          else if (!/\.[A-Za-z0-9_]{1,12}$/.test(sp)) sp += '__x';
+          var er = rootFor(sp, true);
+          if (er) {
+            try { return new URL(er + sp.slice(1)).href; } catch (e) {}
+          }
+          return C.x[exts[i]] + hp.slice(exts[i].length);
+        }
       }
       return href;
     } catch (e) { return u; }
@@ -576,7 +587,7 @@
       }
     }).observe(document, { childList: true, subtree: true });
   }
-})({"c":"https://cdn.jsdelivr.net","o":"skidding-code","p":19000000,"b":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1566/_ext/cdn.jsdelivr.net/gh/bubbls/WebMonkeyBall@main/","r":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1564/","u":{"/gamefile/monk.html":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1564/","/games/stardew/ContentAudio.tar00":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1565/"},"x":{"cdn.jsdelivr.net/gh/bubbls/WebMonkeyBall@main/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1566/_ext/cdn.jsdelivr.net/gh/bubbls/WebMonkeyBall@main/","cdn.jsdelivr.net/gh/bubbls/WebMonkeyBall@main/dist/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1566/_ext/cdn.jsdelivr.net/gh/bubbls/WebMonkeyBall@main/dist/","cdn.jsdelivr.net/gh/bubbls/WebMonkeyBall@main/assets/hud/smb1/bmp_com/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1566/_ext/cdn.jsdelivr.net/gh/bubbls/WebMonkeyBall@main/assets/hud/smb1/bmp_com/","cdn.jsdelivr.net/gh/bubbls/WebMonkeyBall@main/assets/hud/smb1/bmp_nml/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1566/_ext/cdn.jsdelivr.net/gh/bubbls/WebMonkeyBall@main/assets/hud/smb1/bmp_nml/","cdn.jsdelivr.net/gh/bubbls/WebMonkeyBall@main/assets/hud/smb2/bmp_nml/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1566/_ext/cdn.jsdelivr.net/gh/bubbls/WebMonkeyBall@main/assets/hud/smb2/bmp_nml/","cdn.jsdelivr.net/gh/bubbls/WebMonkeyBall@main/assets/hud/smb2/font/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1566/_ext/cdn.jsdelivr.net/gh/bubbls/WebMonkeyBall@main/assets/hud/smb2/font/","cdn.jsdelivr.net/gh/bubbls/WebMonkeyBall@main/assets/particle/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1566/_ext/cdn.jsdelivr.net/gh/bubbls/WebMonkeyBall@main/assets/particle/"},"s":{"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1565/games/stardew/ContentAudio.tar00":[3,"application/octet-stream",41943040]}});</script>
+})({"c":"https://cdn.jsdelivr.net","o":"skidding-code","p":19000000,"b":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1566/_ext/cdn.jsdelivr.net/gh/bubbls/WebMonkeyBall@main/","r":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1564/","u":{"/gamefile/monk.html":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1564/","/games/stardew/ContentAudio.tar00":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1565/","/_ext/cdn.jsdelivr.net/gh/bubbls/WebMonkeyBall@main/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1566/"},"x":{"cdn.jsdelivr.net/gh/bubbls/WebMonkeyBall@main/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1566/_ext/cdn.jsdelivr.net/gh/bubbls/WebMonkeyBall@main/","cdn.jsdelivr.net/gh/bubbls/WebMonkeyBall@main/dist/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1566/_ext/cdn.jsdelivr.net/gh/bubbls/WebMonkeyBall@main/dist/","cdn.jsdelivr.net/gh/bubbls/WebMonkeyBall@main/assets/hud/smb1/bmp_com/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1566/_ext/cdn.jsdelivr.net/gh/bubbls/WebMonkeyBall@main/assets/hud/smb1/bmp_com/","cdn.jsdelivr.net/gh/bubbls/WebMonkeyBall@main/assets/hud/smb1/bmp_nml/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1566/_ext/cdn.jsdelivr.net/gh/bubbls/WebMonkeyBall@main/assets/hud/smb1/bmp_nml/","cdn.jsdelivr.net/gh/bubbls/WebMonkeyBall@main/assets/hud/smb2/bmp_nml/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1566/_ext/cdn.jsdelivr.net/gh/bubbls/WebMonkeyBall@main/assets/hud/smb2/bmp_nml/","cdn.jsdelivr.net/gh/bubbls/WebMonkeyBall@main/assets/hud/smb2/font/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1566/_ext/cdn.jsdelivr.net/gh/bubbls/WebMonkeyBall@main/assets/hud/smb2/font/","cdn.jsdelivr.net/gh/bubbls/WebMonkeyBall@main/assets/particle/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1566/_ext/cdn.jsdelivr.net/gh/bubbls/WebMonkeyBall@main/assets/particle/"},"s":{"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1565/games/stardew/ContentAudio.tar00":[3,"application/octet-stream",41943040]}});</script>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <title>SMB1 Web Gameplay</title>
@@ -587,7 +598,7 @@
   <meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
   <meta name="theme-color" content="#000000" media="(prefers-color-scheme: light)">
 
-  <link rel="stylesheet" href="./style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1566/_ext/cdn.jsdelivr.net/gh/bubbls/WebMonkeyBall@main/style.css" />
   <script type="importmap">
     {
       "imports": {
@@ -645,7 +656,7 @@
         <button id="open-settings" class="ghost compact settings-button" type="button">Settings</button>
       </div>
       <a id="discord-server-link" class="menu-action-link" href="https://discord.gg/j9RRPBTGxt" target="_blank" rel="noopener noreferrer">
-        <img class="discord-server-icon" src="./discord-favicon.ico" alt="" aria-hidden="true" />
+        <img class="discord-server-icon" src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1566/_ext/cdn.jsdelivr.net/gh/bubbls/WebMonkeyBall@main/discord-favicon.ico" alt="" aria-hidden="true" />
         <span>Discord Server</span>
       </a>
     </div>
@@ -1312,7 +1323,7 @@
     window.LOBBY_URL = "https://webmonkeyball-lobby.sndrec32exe.workers.dev";
   </script> 
 
-  <script type="module" src="./dist/rain.js"></script>
+  <script type="module" src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1566/_ext/cdn.jsdelivr.net/gh/bubbls/WebMonkeyBall@main/dist/rain.js"></script>
   <!-- Cloudflare Pages Analytics -->
   <script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "ba4e488caf8849e9af3e0cc5ff39ffaf"}'></script><!-- Cloudflare Pages Analytics -->
 </body>

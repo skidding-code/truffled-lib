@@ -65,7 +65,18 @@
       }
       var hp = abs.host + abs.pathname;
       for (var i = 0; i < exts.length; i++) {
-        if (hp.indexOf(exts[i]) === 0) return C.x[exts[i]] + hp.slice(exts[i].length);
+        if (hp.indexOf(exts[i]) === 0) {
+          var sp = abs.pathname;
+          try { sp = decodeURIComponent(sp); } catch (e) {}
+          sp = '/_ext/' + abs.host + sp;
+          if (/\/$/.test(sp)) sp += 'index.html';
+          else if (!/\.[A-Za-z0-9_]{1,12}$/.test(sp)) sp += '__x';
+          var er = rootFor(sp, true);
+          if (er) {
+            try { return new URL(er + sp.slice(1)).href; } catch (e) {}
+          }
+          return C.x[exts[i]] + hp.slice(exts[i].length);
+        }
       }
       return href;
     } catch (e) { return u; }
@@ -568,11 +579,11 @@
       }
     }).observe(document, { childList: true, subtree: true });
   }
-})({"c":"https://cdn.jsdelivr.net","o":"skidding-code","p":19000000,"b":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1318/games/prodigy/select/","r":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1318/","u":{"/games/prodigy/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1318/"},"x":{"fonts.gstatic.com/s/ubuntu/v21/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0007/_ext/fonts.gstatic.com/s/ubuntu/v21/","ajax.googleapis.com/ajax/libs/jquery/3.4.1/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0493/_ext/ajax.googleapis.com/ajax/libs/jquery/3.4.1/","fonts.gstatic.com/s/lato/v25/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0007/_ext/fonts.gstatic.com/s/lato/v25/","fonts.gstatic.com/s/tiltwarp/v18/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0007/_ext/fonts.gstatic.com/s/tiltwarp/v18/","fonts.gstatic.com/s/googlesans/v29/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0007/_ext/fonts.gstatic.com/s/googlesans/v29/","fonts.gstatic.com/s/roboto/v48/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0007/_ext/fonts.gstatic.com/s/roboto/v48/","fonts.gstatic.com/s/amaticsc/v28/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0007/_ext/fonts.gstatic.com/s/amaticsc/v28/","fonts.gstatic.com/s/caveat/v23/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0007/_ext/fonts.gstatic.com/s/caveat/v23/","fonts.gstatic.com/s/comfortaa/v47/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0007/_ext/fonts.gstatic.com/s/comfortaa/v47/","fonts.gstatic.com/s/ebgaramond/v33/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0007/_ext/fonts.gstatic.com/s/ebgaramond/v33/","fonts.gstatic.com/s/lexend/v26/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0007/_ext/fonts.gstatic.com/s/lexend/v26/","fonts.gstatic.com/s/lobster/v32/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0007/_ext/fonts.gstatic.com/s/lobster/v32/","fonts.gstatic.com/s/lora/v37/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0007/_ext/fonts.gstatic.com/s/lora/v37/","fonts.gstatic.com/s/merriweather/v33/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0007/_ext/fonts.gstatic.com/s/merriweather/v33/","fonts.gstatic.com/s/montserrat/v31/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0007/_ext/fonts.gstatic.com/s/montserrat/v31/","fonts.gstatic.com/s/nunito/v32/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0007/_ext/fonts.gstatic.com/s/nunito/v32/","fonts.gstatic.com/s/oswald/v57/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0007/_ext/fonts.gstatic.com/s/oswald/v57/","fonts.gstatic.com/s/pacifico/v23/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0007/_ext/fonts.gstatic.com/s/pacifico/v23/","fonts.gstatic.com/s/playfairdisplay/v40/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0007/_ext/fonts.gstatic.com/s/playfairdisplay/v40/","fonts.gstatic.com/s/roboto/v51/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0007/_ext/fonts.gstatic.com/s/roboto/v51/","fonts.gstatic.com/s/robotomono/v31/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0007/_ext/fonts.gstatic.com/s/robotomono/v31/","fonts.gstatic.com/s/robotoserif/v17/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0007/_ext/fonts.gstatic.com/s/robotoserif/v17/","fonts.gstatic.com/s/spectral/v15/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0007/_ext/fonts.gstatic.com/s/spectral/v15/","fonts.gstatic.com/s/pressstart2p/v16/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0007/_ext/fonts.gstatic.com/s/pressstart2p/v16/","fonts.gstatic.com/s/poppins/v24/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0007/_ext/fonts.gstatic.com/s/poppins/v24/","fonts.gstatic.com/s/anta/v1/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0007/_ext/fonts.gstatic.com/s/anta/v1/","fonts.gstatic.com/s/kanit/v17/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0007/_ext/fonts.gstatic.com/s/kanit/v17/","fonts.gstatic.com/s/intertight/v9/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0007/_ext/fonts.gstatic.com/s/intertight/v9/","fonts.gstatic.com/s/inter/v20/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0007/_ext/fonts.gstatic.com/s/inter/v20/","fonts.gstatic.com/s/materialsymbolsrounded/v383/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0007/_ext/fonts.gstatic.com/s/materialsymbolsrounded/v383/","ajax.googleapis.com/ajax/libs/jquery/2.2.0/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0493/_ext/ajax.googleapis.com/ajax/libs/jquery/2.2.0/","fonts.gstatic.com/s/opensans/v44/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0007/_ext/fonts.gstatic.com/s/opensans/v44/","fonts.gstatic.com/s/rajdhani/v17/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0007/_ext/fonts.gstatic.com/s/rajdhani/v17/","fonts.gstatic.com/s/inconsolata/v37/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0007/_ext/fonts.gstatic.com/s/inconsolata/v37/","fonts.gstatic.com/s/shantellsans/v13/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0007/_ext/fonts.gstatic.com/s/shantellsans/v13/","fonts.gstatic.com/s/vt323/v18/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0007/_ext/fonts.gstatic.com/s/vt323/v18/","fonts.gstatic.com/s/robotocondensed/v31/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0007/_ext/fonts.gstatic.com/s/robotocondensed/v31/","fonts.gstatic.com/s/sourcesanspro/v13/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0007/_ext/fonts.gstatic.com/s/sourcesanspro/v13/","ajax.googleapis.com/ajax/libs/jquery/1.6.0/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0493/_ext/ajax.googleapis.com/ajax/libs/jquery/1.6.0/","fonts.gstatic.com/s/lilitaone/v17/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0007/_ext/fonts.gstatic.com/s/lilitaone/v17/"},"s":{"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1318/games/prodigy/select/images/Background-1.png":[2,"image/png",20028105]}});</script>
+})({"c":"https://cdn.jsdelivr.net","o":"skidding-code","p":19000000,"b":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1318/games/prodigy/select/","r":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1318/","u":{"/games/prodigy/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1318/","/_ext/fonts.googleapis.com/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0007/","/_ext/fonts.gstatic.com/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0007/","/_ext/ajax.googleapis.com/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0493/"},"x":{"fonts.gstatic.com/s/ubuntu/v21/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0007/_ext/fonts.gstatic.com/s/ubuntu/v21/","ajax.googleapis.com/ajax/libs/jquery/3.4.1/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0493/_ext/ajax.googleapis.com/ajax/libs/jquery/3.4.1/","fonts.gstatic.com/s/lato/v25/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0007/_ext/fonts.gstatic.com/s/lato/v25/","fonts.gstatic.com/s/tiltwarp/v18/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0007/_ext/fonts.gstatic.com/s/tiltwarp/v18/","fonts.gstatic.com/s/googlesans/v29/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0007/_ext/fonts.gstatic.com/s/googlesans/v29/","fonts.gstatic.com/s/roboto/v48/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0007/_ext/fonts.gstatic.com/s/roboto/v48/","fonts.gstatic.com/s/amaticsc/v28/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0007/_ext/fonts.gstatic.com/s/amaticsc/v28/","fonts.gstatic.com/s/caveat/v23/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0007/_ext/fonts.gstatic.com/s/caveat/v23/","fonts.gstatic.com/s/comfortaa/v47/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0007/_ext/fonts.gstatic.com/s/comfortaa/v47/","fonts.gstatic.com/s/ebgaramond/v33/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0007/_ext/fonts.gstatic.com/s/ebgaramond/v33/","fonts.gstatic.com/s/lexend/v26/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0007/_ext/fonts.gstatic.com/s/lexend/v26/","fonts.gstatic.com/s/lobster/v32/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0007/_ext/fonts.gstatic.com/s/lobster/v32/","fonts.gstatic.com/s/lora/v37/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0007/_ext/fonts.gstatic.com/s/lora/v37/","fonts.gstatic.com/s/merriweather/v33/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0007/_ext/fonts.gstatic.com/s/merriweather/v33/","fonts.gstatic.com/s/montserrat/v31/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0007/_ext/fonts.gstatic.com/s/montserrat/v31/","fonts.gstatic.com/s/nunito/v32/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0007/_ext/fonts.gstatic.com/s/nunito/v32/","fonts.gstatic.com/s/oswald/v57/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0007/_ext/fonts.gstatic.com/s/oswald/v57/","fonts.gstatic.com/s/pacifico/v23/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0007/_ext/fonts.gstatic.com/s/pacifico/v23/","fonts.gstatic.com/s/playfairdisplay/v40/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0007/_ext/fonts.gstatic.com/s/playfairdisplay/v40/","fonts.gstatic.com/s/roboto/v51/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0007/_ext/fonts.gstatic.com/s/roboto/v51/","fonts.gstatic.com/s/robotomono/v31/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0007/_ext/fonts.gstatic.com/s/robotomono/v31/","fonts.gstatic.com/s/robotoserif/v17/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0007/_ext/fonts.gstatic.com/s/robotoserif/v17/","fonts.gstatic.com/s/spectral/v15/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0007/_ext/fonts.gstatic.com/s/spectral/v15/","fonts.gstatic.com/s/pressstart2p/v16/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0007/_ext/fonts.gstatic.com/s/pressstart2p/v16/","fonts.gstatic.com/s/poppins/v24/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0007/_ext/fonts.gstatic.com/s/poppins/v24/","fonts.gstatic.com/s/anta/v1/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0007/_ext/fonts.gstatic.com/s/anta/v1/","fonts.gstatic.com/s/kanit/v17/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0007/_ext/fonts.gstatic.com/s/kanit/v17/","fonts.gstatic.com/s/intertight/v9/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0007/_ext/fonts.gstatic.com/s/intertight/v9/","fonts.gstatic.com/s/inter/v20/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0007/_ext/fonts.gstatic.com/s/inter/v20/","fonts.gstatic.com/s/materialsymbolsrounded/v383/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0007/_ext/fonts.gstatic.com/s/materialsymbolsrounded/v383/","ajax.googleapis.com/ajax/libs/jquery/2.2.0/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0493/_ext/ajax.googleapis.com/ajax/libs/jquery/2.2.0/","fonts.gstatic.com/s/opensans/v44/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0007/_ext/fonts.gstatic.com/s/opensans/v44/","fonts.gstatic.com/s/rajdhani/v17/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0007/_ext/fonts.gstatic.com/s/rajdhani/v17/","fonts.gstatic.com/s/inconsolata/v37/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0007/_ext/fonts.gstatic.com/s/inconsolata/v37/","fonts.gstatic.com/s/shantellsans/v13/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0007/_ext/fonts.gstatic.com/s/shantellsans/v13/","fonts.gstatic.com/s/vt323/v18/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0007/_ext/fonts.gstatic.com/s/vt323/v18/","fonts.gstatic.com/s/robotocondensed/v31/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0007/_ext/fonts.gstatic.com/s/robotocondensed/v31/","fonts.gstatic.com/s/sourcesanspro/v13/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0007/_ext/fonts.gstatic.com/s/sourcesanspro/v13/","ajax.googleapis.com/ajax/libs/jquery/1.6.0/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0493/_ext/ajax.googleapis.com/ajax/libs/jquery/1.6.0/","fonts.gstatic.com/s/lilitaone/v17/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0007/_ext/fonts.gstatic.com/s/lilitaone/v17/"},"s":{"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1318/games/prodigy/select/images/Background-1.png":[2,"image/png",20028105]}});</script>
 	<title>Old Prodigy (Version Selection)</title>
 	<meta name="description" content="Old Prodigy is back and better than ever! Relive the original experience with a plethora of versions you can choose from!">
 
-	<link rel="icon" type="image/x-icon" href="../assets/favicon.png">
+	<link rel="icon" type="image/x-icon" href="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1318/games/prodigy/assets/favicon.png">
 
 	<link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0007/_ext/fonts.googleapis.com/css__b91dd9a4e205.css">
 
@@ -719,7 +730,7 @@
 		height: 50px;
 		width: 200px;
 		position: fixed;
-		background: url("./images/slider-bar.png");
+		background: url("https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1318/games/prodigy/select/images/slider-bar.png");
 		cursor: pointer;
 	}
 	
@@ -729,7 +740,7 @@
 		width: 50px;
 		height: 50px;
 		border: 0;
-		background: url("./images/slider-thumb.png");
+		background: url("https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1318/games/prodigy/select/images/slider-thumb.png");
 		cursor: pointer;
 	}
 	</style>
@@ -750,31 +761,31 @@
 	<div id="background-7" class="bg-image" style="background-image: url(&quot;./images/Background-7.png&quot;); display: none"></div>
 	
 	<div class="theme-config" id="theme-popup" draggable="false">
-		<img src="./images/ThemeConfigPanel.png" draggable="false"/>
+		<img src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1318/games/prodigy/select/images/ThemeConfigPanel.png" draggable="false"/>
 		
 		<a class="button" style="top: -12px; right: -12px;" onclick="closeBetaPopup()" draggable="false">
-			<img alt="Close" src="./images/Icon-Close.png" draggable="false"/>
+			<img alt="Close" src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1318/games/prodigy/select/images/Icon-Close.png" draggable="false"/>
 		</a>
 		
 		<a class="button" style="top: 130px; left: 50px;" onclick="toggleTheme()" draggable="false">
-			<img id="theme-switch" alt="Switch Theme" src="./images/FreeButton-Theme-Classic.png" draggable="false"/>
+			<img id="theme-switch" alt="Switch Theme" src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1318/games/prodigy/select/images/FreeButton-Theme-Classic.png" draggable="false"/>
 		</a>
 		
 		<a class="button" style="top: 210px; left: 50px;" onclick="toggleBackground()" draggable="false">
-			<img alt="Switch Background" src="./images/FreeButton-Switch.png" draggable="false"/>
+			<img alt="Switch Background" src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1318/games/prodigy/select/images/FreeButton-Switch.png" draggable="false"/>
 		</a>
 		
-		<img alt="Background Brightness" src="./images/BackgroundBrightnessText.png" style="position: fixed; top: 285px; left: 50%; transform: translate(-50%, 0px);" draggable="false"/>
+		<img alt="Background Brightness" src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1318/games/prodigy/select/images/BackgroundBrightnessText.png" style="position: fixed; top: 285px; left: 50%; transform: translate(-50%, 0px);" draggable="false"/>
 		
 		<input id="bg-slider" class="slider" type="range" min="0" max="2" value="1" step="0.01" style="top: 310px; left: 98px;" draggable="false"/>
-		<img id="bg-slider-left" class="button" onclick="decrementBrightness()" style="top: 312px; left: 50px;" src="./images/slider-left.png" draggable="false"/>
-		<img id="bg-slider-right" class="button" onclick="incrementBrightness()" style="top: 312px; right: 50px;" src="./images/slider-right.png" draggable="false"/>
+		<img id="bg-slider-left" class="button" onclick="decrementBrightness()" style="top: 312px; left: 50px;" src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1318/games/prodigy/select/images/slider-left.png" draggable="false"/>
+		<img id="bg-slider-right" class="button" onclick="incrementBrightness()" style="top: 312px; right: 50px;" src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1318/games/prodigy/select/images/slider-right.png" draggable="false"/>
 		
-		<img class="button" onclick="resetOptions()" style="bottom: 20px; left: 100px;" src="./images/Reset.png" draggable="false"/>
+		<img class="button" onclick="resetOptions()" style="bottom: 20px; left: 100px;" src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1318/games/prodigy/select/images/Reset.png" draggable="false"/>
 	</div>
 	
 	<div class="warning-panel" id="beta-popup" draggable="false">
-		<img alt="Warning!" src="./images/WarningPanel.png" draggable="false">
+		<img alt="Warning!" src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1318/games/prodigy/select/images/WarningPanel.png" draggable="false">
 		
 		<div class="warning-body" draggable="false">
 			<div>
@@ -790,31 +801,31 @@
 		</div>
 		
 		<a onclick="EnterGame(betaConfirmCallback)" class="button" style="bottom: 24px; left: 24px;" draggable="false">
-			<img alt="Yes" src="./images/Yes.png" draggable="false">
+			<img alt="Yes" src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1318/games/prodigy/select/images/Yes.png" draggable="false">
 		</a>
 		
 		<a onclick="closeBetaPopup()" class="button" style="bottom: 24px; right: 24px;" draggable="false">
-			<img alt="No" src="./images/No.png" draggable="false">
+			<img alt="No" src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1318/games/prodigy/select/images/No.png" draggable="false">
 		</a>
 	</div>
 	
 	<div class="select-panel" id="mod-select" style="display: none;" draggable="false">
-		<img src="./images/MenuPanel-3.png" draggable="false">
+		<img src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1318/games/prodigy/select/images/MenuPanel-3.png" draggable="false">
 		
 		<div class="banner" draggable="false">
-			<img alt="Mod Select" src="./images/ModSelect-Banner.png" draggable="false">
+			<img alt="Mod Select" src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1318/games/prodigy/select/images/ModSelect-Banner.png" draggable="false">
 		</div>
 		
 		<div class="textbox" id="select-mod-version" draggable="false">
-			<img src="./images/ModVersionText.png" alt="Choose a version to select mods for." draggable="false">
+			<img src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1318/games/prodigy/select/images/ModVersionText.png" alt="Choose a version to select mods for." draggable="false">
 		</div>
 		
 		<div class="textbox" id="select-mod-play" style="display: none;" draggable="false">
-			<img src="./images/ModSelectText.png" alt="Select the mods you want to play with." draggable="false">
+			<img src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1318/games/prodigy/select/images/ModSelectText.png" alt="Select the mods you want to play with." draggable="false">
 		</div>
 		
 		<div id="mod-select-overlay" class="overlay" draggable="false">
-			<img src="./images/MenuPanel-Overlay.png" draggable="false">
+			<img src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1318/games/prodigy/select/images/MenuPanel-Overlay.png" draggable="false">
 			
 			<!-- Mod Select pages are auto-generated here -->
 				
@@ -822,37 +833,37 @@
 		
 		<div class="button" style="bottom: 104px; left: 24px;" draggable="false">
 			<a id="mod-back" onclick="closeBetaPopup()" draggable="false">
-				<img alt="Go back" src="./images/Back.png" draggable="false">
+				<img alt="Go back" src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1318/games/prodigy/select/images/Back.png" draggable="false">
 			</a>
 		</div>
 			
 		<a id="mod-select-apply"  onclick="StartGameMod(currentModVersion)" class="button-disabled" style="bottom: 104px; right: 24px; position: absolute; display: block;" draggable="false">
-			<img alt="Apply" src="./images/Apply.png" draggable="false">
+			<img alt="Apply" src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1318/games/prodigy/select/images/Apply.png" draggable="false">
 		</a>
 		
 		<!-- These buttons will enable automatically whenever multiple pages are detected -->
 		<a class="button-disabled" id="mod-previous" onclick="PreviousModPage()" style="top: 134px; left: 24px;" draggable="false">
-			<img alt="Previous page" src="./images/Previous.png" draggable="false">
+			<img alt="Previous page" src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1318/games/prodigy/select/images/Previous.png" draggable="false">
 		</a>
 		<a class="button-disabled" id="mod-next" onclick="NextModPage()" style="top: 134px; right: 24px;" draggable="false">
-			<img alt="Next page" src="./images/Next.png" draggable="false">
+			<img alt="Next page" src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1318/games/prodigy/select/images/Next.png" draggable="false">
 		</a>
 		
 	</div>
 	
 	<div class="select-panel" id="version-select" draggable="false">
-		<img src="./images/MenuPanel-3.png" draggable="false">
+		<img src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1318/games/prodigy/select/images/MenuPanel-3.png" draggable="false">
 		
 		<div class="banner" draggable="false">
-			<img alt="Version Select" src="./images/MenuPanel-Banner.png" draggable="false">
+			<img alt="Version Select" src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1318/games/prodigy/select/images/MenuPanel-Banner.png" draggable="false">
 		</div>
 		
 		<div class="textbox" id="select-mod-version" draggable="false">
-			<img src="./images/VersionSelectText.png" alt="Choose a version to play!" draggable="false">
+			<img src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1318/games/prodigy/select/images/VersionSelectText.png" alt="Choose a version to play!" draggable="false">
 		</div>
 		
 		<div id="select-panel-overlay" class="overlay" draggable="false">
-			<img src="./images/MenuPanel-Overlay.png" draggable="false">
+			<img src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1318/games/prodigy/select/images/MenuPanel-Overlay.png" draggable="false">
 			
 			<!-- Pages are auto-generated here -->
 			
@@ -860,45 +871,45 @@
 		
 		<div class="button" style="top: 134px; left: 24px;" draggable="false">
 			<a onclick="ExitSelection()" draggable="false">
-				<img alt="Close" src="./images/Close.png" draggable="false">
+				<img alt="Close" src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1318/games/prodigy/select/images/Close.png" draggable="false">
 			</a>
 		</div>
 		
 		<div class="button" style="top: 134px; right: 24px;" draggable="false" draggable="false">
 			<a onclick="openMods()" draggable="false" draggable="false">
-				<img alt="Mods" src="./images/Mods.png" draggable="false">
+				<img alt="Mods" src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1318/games/prodigy/select/images/Mods.png" draggable="false">
 			</a>
 		</div>
 		
 		<div class="button" style="bottom: 104px; left: 24px;" draggable="false">
 			<a onclick="BackPage()" draggable="false">
-				<img alt="Previous page" src="./images/Previous.png" draggable="false">
+				<img alt="Previous page" src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1318/games/prodigy/select/images/Previous.png" draggable="false">
 			</a>
 		</div>
 		
 		<div class="button" style="bottom: 104px; right: 24px;" draggable="false">
 			<a onclick="NextPage()" draggable="false">
-				<img alt="Next page" src="./images/Next.png" draggable="false">
+				<img alt="Next page" src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1318/games/prodigy/select/images/Next.png" draggable="false">
 			</a>
 		</div>
 		
 	</div>
 	
 	<div id="bg-toggle" class="background-banner" draggable="false">
-		<img src="./images/FreeButton-Banner.png" draggable="false" style="width: 410px; text-align: center;">
+		<img src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1318/games/prodigy/select/images/FreeButton-Banner.png" draggable="false" style="width: 410px; text-align: center;">
 		<div style="left: 50%; top: 0px; transform: translate(-50%); position: fixed; width: 300px;">
 			<a id="change-theme-button" class="button" onclick="openThemeChange()" style="top: 13px;" draggable="false">
-				<img src="./images/FreeButton-Theme.png" draggable="false">
+				<img src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1318/games/prodigy/select/images/FreeButton-Theme.png" draggable="false">
 			</a>
 		</div>
 		
 	</div>
 	
 	<div id="definitive-edition" class="definitive-banner" draggable="false">
-		<img src="./images/FreeButton-Banner.png" draggable="false" style="width: 410px; text-align: center;">
+		<img src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1318/games/prodigy/select/images/FreeButton-Banner.png" draggable="false" style="width: 410px; text-align: center;">
 		<div style="left: 50%; top: 0px; transform: translate(-50%); position: fixed; width: 300px;">
 			<a class="button" onclick="playDefinitiveEdition()" style="top: 13px;" draggable="false">
-				<img src="./images/FreeButton-Definitive.png" draggable="false">
+				<img src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1318/games/prodigy/select/images/FreeButton-Definitive.png" draggable="false">
 			</a>
 		</div>
 	</div>

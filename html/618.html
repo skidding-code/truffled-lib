@@ -63,7 +63,18 @@
       }
       var hp = abs.host + abs.pathname;
       for (var i = 0; i < exts.length; i++) {
-        if (hp.indexOf(exts[i]) === 0) return C.x[exts[i]] + hp.slice(exts[i].length);
+        if (hp.indexOf(exts[i]) === 0) {
+          var sp = abs.pathname;
+          try { sp = decodeURIComponent(sp); } catch (e) {}
+          sp = '/_ext/' + abs.host + sp;
+          if (/\/$/.test(sp)) sp += 'index.html';
+          else if (!/\.[A-Za-z0-9_]{1,12}$/.test(sp)) sp += '__x';
+          var er = rootFor(sp, true);
+          if (er) {
+            try { return new URL(er + sp.slice(1)).href; } catch (e) {}
+          }
+          return C.x[exts[i]] + hp.slice(exts[i].length);
+        }
       }
       return href;
     } catch (e) { return u; }
@@ -566,7 +577,7 @@
       }
     }).observe(document, { childList: true, subtree: true });
   }
-})({"c":"https://cdn.jsdelivr.net","o":"skidding-code","p":19000000,"b":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1712/gamefile/","r":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1712/","u":{"/gamefile/twhg.html":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1712/","/games/worlds-hardest-game-2/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1712/"},"x":{"cdn.jsdelivr.net/gh/u-cvlassrom-y/google@main/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0640/_ext/cdn.jsdelivr.net/gh/u-cvlassrom-y/google@main/","cdn.jsdelivr.net/gh/vjspranav/FlashGames@c4afbfe9dd12f23ef93e19d7f3d298105448f349/games/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1712/_ext/cdn.jsdelivr.net/gh/vjspranav/FlashGames@c4afbfe9dd12f23ef93e19d7f3d298105448f349/games/"},"s":{}});</script>
+})({"c":"https://cdn.jsdelivr.net","o":"skidding-code","p":19000000,"b":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1712/gamefile/","r":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1712/","u":{"/gamefile/twhg.html":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1712/","/games/worlds-hardest-game-2/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1712/","/_ext/cdn.jsdelivr.net/gh/u-cvlassrom-y/google@main/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0640/","/_ext/cdn.jsdelivr.net/gh/vjspranav/FlashGames@c4afbfe9dd12f23ef93e19d7f3d298105448f349/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1712/"},"x":{"cdn.jsdelivr.net/gh/u-cvlassrom-y/google@main/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0640/_ext/cdn.jsdelivr.net/gh/u-cvlassrom-y/google@main/","cdn.jsdelivr.net/gh/vjspranav/FlashGames@c4afbfe9dd12f23ef93e19d7f3d298105448f349/games/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1712/_ext/cdn.jsdelivr.net/gh/vjspranav/FlashGames@c4afbfe9dd12f23ef93e19d7f3d298105448f349/games/"},"s":{}});</script>
     
     
 

@@ -64,7 +64,18 @@
       }
       var hp = abs.host + abs.pathname;
       for (var i = 0; i < exts.length; i++) {
-        if (hp.indexOf(exts[i]) === 0) return C.x[exts[i]] + hp.slice(exts[i].length);
+        if (hp.indexOf(exts[i]) === 0) {
+          var sp = abs.pathname;
+          try { sp = decodeURIComponent(sp); } catch (e) {}
+          sp = '/_ext/' + abs.host + sp;
+          if (/\/$/.test(sp)) sp += 'index.html';
+          else if (!/\.[A-Za-z0-9_]{1,12}$/.test(sp)) sp += '__x';
+          var er = rootFor(sp, true);
+          if (er) {
+            try { return new URL(er + sp.slice(1)).href; } catch (e) {}
+          }
+          return C.x[exts[i]] + hp.slice(exts[i].length);
+        }
       }
       return href;
     } catch (e) { return u; }
@@ -574,9 +585,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no" />
     <meta name="generator" content="Construct 3" />
 
-    <link rel="manifest" href="appmanifest.json" />
-    <link rel="icon" href="./splash.jpeg">
-    <link rel="stylesheet" href="style.css" />
+    <link rel="manifest" href="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0255/games/basket-random/appmanifest.json" />
+    <link rel="icon" href="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0255/games/basket-random/splash.jpeg">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0255/games/basket-random/style.css" />
     <script src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0001/js/main.js"></script>
     <script>
       window.addEventListener(
@@ -593,7 +604,7 @@
 
 </head>
   <body>
-    <script src="box2d.wasm.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0255/games/basket-random/box2d.wasm.js"></script>
     <noscript>
       <div id="notSupportedWrap">
         <h2 id="notSupportedTitle">This content requires JavaScript</h2>
@@ -606,9 +617,9 @@
         </p>
       </div>
     </noscript>
-    <script src="scripts/supportcheck.js"></script>
-    <script src="scripts/offlineclient.js"></script>
-    <script src="scripts/main.js"></script>
-    <script src="scripts/register-sw.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0255/games/basket-random/scripts/supportcheck.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0255/games/basket-random/scripts/offlineclient.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0255/games/basket-random/scripts/main.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0255/games/basket-random/scripts/register-sw.js"></script>
   </body>
 </html>

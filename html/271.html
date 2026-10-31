@@ -63,7 +63,18 @@
       }
       var hp = abs.host + abs.pathname;
       for (var i = 0; i < exts.length; i++) {
-        if (hp.indexOf(exts[i]) === 0) return C.x[exts[i]] + hp.slice(exts[i].length);
+        if (hp.indexOf(exts[i]) === 0) {
+          var sp = abs.pathname;
+          try { sp = decodeURIComponent(sp); } catch (e) {}
+          sp = '/_ext/' + abs.host + sp;
+          if (/\/$/.test(sp)) sp += 'index.html';
+          else if (!/\.[A-Za-z0-9_]{1,12}$/.test(sp)) sp += '__x';
+          var er = rootFor(sp, true);
+          if (er) {
+            try { return new URL(er + sp.slice(1)).href; } catch (e) {}
+          }
+          return C.x[exts[i]] + hp.slice(exts[i].length);
+        }
       }
       return href;
     } catch (e) { return u; }
@@ -566,7 +577,7 @@
       }
     }).observe(document, { childList: true, subtree: true });
   }
-})({"c":"https://cdn.jsdelivr.net","o":"skidding-code","p":19000000,"b":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0955/gamefile/","r":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0955/","u":{"/gamefile/hobo2.html":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0955/","/games/hcr/index.html":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0950/","/games/hcr/hcr.data":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0951/","/games/hcr/hcr.js":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0952/","/games/hcr/hcr.wasm":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0953/","/games/hcr/image.bin":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0954/","/games/hcr/programs.txt":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0954/","/games/hl-main/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0932/"},"x":{"cdn.jsdelivr.net/gh/u-cvlassrom-y/google@main/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0640/_ext/cdn.jsdelivr.net/gh/u-cvlassrom-y/google@main/","cdn.jsdelivr.net/gh/BinBashBanana/gstore@master/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0955/_ext/cdn.jsdelivr.net/gh/BinBashBanana/gstore@master/"},"s":{"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0951/games/hcr/hcr.data":[6,"application/octet-stream",103210907,[[1,"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0951/games/hcr/hcr.data"],[3,"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1937/games/hcr/hcr.data"],[5,"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1938/games/hcr/hcr.data"]]],"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0953/games/hcr/hcr.wasm":[4,"application/wasm",60885942,[[1,"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0953/games/hcr/hcr.wasm"],[3,"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1939/games/hcr/hcr.wasm"]]],"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0954/games/hcr/image.bin":[2,"application/octet-stream",22085632]}});</script>
+})({"c":"https://cdn.jsdelivr.net","o":"skidding-code","p":19000000,"b":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0955/gamefile/","r":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0955/","u":{"/gamefile/hobo2.html":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0955/","/games/hcr/index.html":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0950/","/games/hcr/hcr.data":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0951/","/games/hcr/hcr.js":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0952/","/games/hcr/hcr.wasm":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0953/","/games/hcr/image.bin":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0954/","/games/hcr/programs.txt":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0954/","/games/hl-main/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0932/","/_ext/cdn.jsdelivr.net/gh/u-cvlassrom-y/google@main/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0640/","/_ext/cdn.jsdelivr.net/gh/BinBashBanana/gstore@master/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0955/"},"x":{"cdn.jsdelivr.net/gh/u-cvlassrom-y/google@main/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0640/_ext/cdn.jsdelivr.net/gh/u-cvlassrom-y/google@main/","cdn.jsdelivr.net/gh/BinBashBanana/gstore@master/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0955/_ext/cdn.jsdelivr.net/gh/BinBashBanana/gstore@master/"},"s":{"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0951/games/hcr/hcr.data":[6,"application/octet-stream",103210907,[[1,"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0951/games/hcr/hcr.data"],[3,"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1937/games/hcr/hcr.data"],[5,"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1938/games/hcr/hcr.data"]]],"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0953/games/hcr/hcr.wasm":[4,"application/wasm",60885942,[[1,"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0953/games/hcr/hcr.wasm"],[3,"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1939/games/hcr/hcr.wasm"]]],"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0954/games/hcr/image.bin":[2,"application/octet-stream",22085632]}});</script>
     <meta charset="utf-8" />
     <meta http-equiv="x-ua-compatible" content="ie=edge">
     <meta name="viewport" content="initial-scale=1, maximum-scale=1, user-scalable=no, shrink-to-fit=no" />

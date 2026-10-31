@@ -64,7 +64,18 @@
       }
       var hp = abs.host + abs.pathname;
       for (var i = 0; i < exts.length; i++) {
-        if (hp.indexOf(exts[i]) === 0) return C.x[exts[i]] + hp.slice(exts[i].length);
+        if (hp.indexOf(exts[i]) === 0) {
+          var sp = abs.pathname;
+          try { sp = decodeURIComponent(sp); } catch (e) {}
+          sp = '/_ext/' + abs.host + sp;
+          if (/\/$/.test(sp)) sp += 'index.html';
+          else if (!/\.[A-Za-z0-9_]{1,12}$/.test(sp)) sp += '__x';
+          var er = rootFor(sp, true);
+          if (er) {
+            try { return new URL(er + sp.slice(1)).href; } catch (e) {}
+          }
+          return C.x[exts[i]] + hp.slice(exts[i].length);
+        }
       }
       return href;
     } catch (e) { return u; }
@@ -567,10 +578,10 @@
       }
     }).observe(document, { childList: true, subtree: true });
   }
-})({"c":"https://cdn.jsdelivr.net","o":"skidding-code","p":19000000,"b":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1033/games/krunker/","r":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1033/","u":{"/games/krunker/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1033/","/js/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0001/","/libcurljs/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0867/"},"x":{},"s":{}});</script>
+})({"c":"https://cdn.jsdelivr.net","o":"skidding-code","p":19000000,"b":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1033/games/krunker/","r":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1033/","u":{"/games/krunker/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1033/","/js/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0001/","/libcurljs/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0867/","/_ext/fonts.googleapis.com/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0007/"},"x":{},"s":{}});</script>
 <meta charset="UTF-8">
 <title>Krunker</title>
-<link rel="shortcut icon" type="image/png" href="img/favicon.png"/>
+<link rel="shortcut icon" type="image/png" href="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1033/games/krunker/img/favicon.png"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=0">
 <meta name="description" content="Krunker.io is a free io Multiplayer First Person Shooter. No Download browser FPS! Free!">
 <meta name="keywords" content="FPS,Apex,Free,IO,roblox,fortnite,online,shooter">
@@ -578,13 +589,13 @@
 <meta property="og:title" content="Krunker">
 <meta property="og:image" content="promo/og.png">
 <meta property="og:description" content="Krunker.io is a free io Multiplayer First Person Shooter. No Download browser FPS! Free!">
-<link rel="stylesheet" href="css/main.css"/>
-<link rel="stylesheet" href="css/flag.css"/>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1033/games/krunker/css/main.css"/>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1033/games/krunker/css/flag.css"/>
 <link href="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0007/_ext/fonts.googleapis.com/icon__dc00de0f1dc6.css" rel="stylesheet">
 
 </head>
 <body oncontextmenu="return false;">
-<script src="checkout.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1033/games/krunker/checkout.js"></script>
 
 <div id="loadingBg"></div>
 
@@ -624,8 +635,8 @@ Download and Login to Enter
 </div>
 <span id="bdayTag">Ends November 1st</span>
 <div style="position:absolute;left:76px;bottom:55px;">
-<img id="androidDB" onclick="openURL(&quot;https://play.google.com/store/apps/details?id=ch.yendis.krunkerhub&quot;)" src="img/android.png"></img>
-<img id="iosDB" onclick="openURL(&quot;https://apps.apple.com/app/id1515679115&quot;)" src="img/ios.png"></img>
+<img id="androidDB" onclick="openURL(&quot;https://play.google.com/store/apps/details?id=ch.yendis.krunkerhub&quot;)" src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1033/games/krunker/img/android.png"></img>
+<img id="iosDB" onclick="openURL(&quot;https://apps.apple.com/app/id1515679115&quot;)" src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1033/games/krunker/img/ios.png"></img>
 </div>
 </div>
 </div>
@@ -678,11 +689,11 @@ PAYMENT METHOD<div></div>
 Reversing a payment can<br/> result in the termination<br/>
 of your krunker account.</div>
 <div id="androidPayB" onclick="openURL('https://apps.apple.com/app/id1515679115')">
-<img src="img/app_1.png" style="width:26px;margin-right:6px;margin-bottom:-2px"/>
+<img src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1033/games/krunker/img/app_1.png" style="width:26px;margin-right:6px;margin-bottom:-2px"/>
 Pay on Apple
 </div>
 <div id="androidPayB" onclick="openURL('https://play.google.com/store/apps/details?id=ch.yendis.krunkerhub&amp;hl=en_AU')">
-<img src="img/app_0.png" style="width:26px;margin-right:6px;margin-bottom:-5px"/>
+<img src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1033/games/krunker/img/app_0.png" style="width:26px;margin-right:6px;margin-bottom:-5px"/>
 Pay on Android App
 </div>
 <div style="height:6px"></div>
@@ -755,7 +766,7 @@ Pay on Android App
 </div>
 
 <div id="gameNameHolder">
-<img id="mainLogo" src="img/logo_4.png"/>
+<img id="mainLogo" src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1033/games/krunker/img/logo_4.png"/>
 </div>
 
 
@@ -765,7 +776,7 @@ Pay on Android App
 </div>
 
 <div id="merchHolder" onclick="openURL('https://shop.spreadshirt.com/krunkerio')">
-<img id="merchImg" src="img/merch.png"/>
+<img id="merchImg" src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1033/games/krunker/img/merch.png"/>
 </div>
 
 <div id="spectButton">
@@ -783,7 +794,7 @@ Pay on Android App
 <div id="menuClassName"></div>
 <div>
 <div id="policeButton" class="button buttonB" onclick="shoPolicePop()" style="height:78px;width:60px;vertical-align:bottom">
-<img src="img/police.png" style="height:45px;margin-left:-10px"/>
+<img src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1033/games/krunker/img/police.png" style="height:45px;margin-left:-10px"/>
 </div>
 <div id="customizeButton" class="button buttonG bigShadowT" onmouseenter="playTick()" onclick="showWindow(3)">
 Customize <span class="material-icons" style="font-size:36px;
@@ -802,7 +813,7 @@ Login or Register <span class="material-icons" style="
 </div>
 <div id="signedInHeaderBar" class="headerBarLeft headerBar" style="display: none">
 <div id="menuUsernameContainer" onclick="showWindow(5)">
-<img src="img/favicon.png" id="menuMiniProfilePic">
+<img src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1033/games/krunker/img/favicon.png" id="menuMiniProfilePic">
 <div id="menuAccountUsername">?</div>
 </div>
 <div class="verticalSeparator" style="height:35px;"></div>
@@ -884,7 +895,7 @@ Login or Register <span class="material-icons" style="
 </div>
 
 <div id="phonePop">
-<img id="phoneImg" src="img/phone_r.png"/>
+<img id="phoneImg" src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1033/games/krunker/img/phone_r.png"/>
 </div>
 
 <div id="windowHolder" style="display:none">
@@ -937,11 +948,11 @@ Login or Register <span class="material-icons" style="
 <div id="aimRecticle">
 <div class="topBox black"></div>
 <div class="leftBox black"></div>
-<img id="recticleImg" src="textures/recticle.png"/>
+<img id="recticleImg" src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1033/games/krunker/textures/recticle.png"/>
 <div class="bottomBox black"></div>
 <div class="rightBox black"></div>
 </div>
-<img id="aimDot" src="textures/reticles/reticle_0.png"/>
+<img id="aimDot" src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1033/games/krunker/textures/reticles/reticle_0.png"/>
 
 <div id="chatUI" style="display:none">
 <div id="chatBG"></div>
@@ -1018,15 +1029,15 @@ Spectating
 <div id="scoreZoneCount" class="countIcon"></div>
 <div id="livesCount" class="countIcon"></div>
 <div id="killCount" class="countIcon">
-<img src="img/skull_0.png" id="killsIcon"/>
+<img src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1033/games/krunker/img/skull_0.png" id="killsIcon"/>
 <span id="killsVal">0</span>
 </div>
 <div id="deathCount" class="countIcon">
-<img src="img/skull_1.png" id="deathsIcon"/>
+<img src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1033/games/krunker/img/skull_1.png" id="deathsIcon"/>
 <span id="deathsVal">0</span>
 </div>
 <div id="streakCount" class="countIcon">
-<img src="img/skull_2.png" id="streakIcon"/>
+<img src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1033/games/krunker/img/skull_2.png" id="streakIcon"/>
 <span id="streakVal">0</span>
 </div>
 <div id="scoreCount" class="countIcon">
@@ -1037,7 +1048,7 @@ Spectating
 <div></div>
 <div id="killFeed"></div>
 </div>
-<img id="bloodDisplay" src="img/blood.png"/>
+<img id="bloodDisplay" src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1033/games/krunker/img/blood.png"/>
 <div id="chalDisplay">
 <div id="chalName" class="centerUIB"></div>
 </div>
@@ -1051,14 +1062,14 @@ Spectating
 <div id="killStreakHolder"></div>
 <div id="ammoDisplay" class="UIB">
 <div id="ammoVal"></div>&nbsp;<div id="ammoMax"></div>
-<img id="ammoIcon" src="textures/ammo_0.png">
+<img id="ammoIcon" src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1033/games/krunker/textures/ammo_0.png">
 </div>
 </div>
 </div>
 <div id="gameMessage"></div>
 <div id="topLeftHolder">
 <div id="timerDisplay" class="leftUIB">
-<img src="img/timer.png" id="timerIcon"/>
+<img src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1033/games/krunker/img/timer.png" id="timerIcon"/>
 <span id="timerVal"></span>
 </div>
 <div class="debugInfo">
@@ -1138,7 +1149,7 @@ remove_red_eye
 <div id="killCard"></div>
 </div>
 <div id="texts3DHolder"></div>
-<img id="hitmarker" src="textures/hitmarker_3.png"/>
+<img id="hitmarker" src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1033/games/krunker/textures/hitmarker_3.png"/>
 <div id="igXPBar">
 <div id="igXPBarProg"></div>
 </div>
@@ -1182,20 +1193,20 @@ LOADING...
 <div id="mobileSwap"></div>
 </div>
 
-<!-- <script src="recaptcha_api.js"></script> -->
-<!-- <script src="hcaptcha_api.js" async defer></script> -->
+<!-- <script src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1033/games/krunker/recaptcha_api.js"></script> -->
+<!-- <script src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1033/games/krunker/hcaptcha_api.js" async defer></script> -->
 <!-- <script async src="//platform.twitter.com/widgets.js" charset="utf-8"></script> -->
 <!-- <script src="https://apis.google.com/js/platform.js"></script> -->
-<script src="libs/howler.min.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1033/games/krunker/libs/howler.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
-<script src="libs/Tween.min.js"></script>
-<script src="libs/rStats.js"></script>
-<script src="libs/rStats.extras.js"></script>
-<script src="libs/zip.js"></script>
-<script src="libs/nipplejs.min.js"></script>
- <script src="libs/zip-ext.js"></script>
-<script src="libs/purejscarousel.js"></script>
-<script src="js/hook.js"></script>
-<script src="js/index.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1033/games/krunker/libs/Tween.min.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1033/games/krunker/libs/rStats.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1033/games/krunker/libs/rStats.extras.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1033/games/krunker/libs/zip.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1033/games/krunker/libs/nipplejs.min.js"></script>
+ <script src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1033/games/krunker/libs/zip-ext.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1033/games/krunker/libs/purejscarousel.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1033/games/krunker/js/hook.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1033/games/krunker/js/index.js"></script>
 </body>
 </html>

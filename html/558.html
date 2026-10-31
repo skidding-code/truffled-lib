@@ -63,7 +63,18 @@
       }
       var hp = abs.host + abs.pathname;
       for (var i = 0; i < exts.length; i++) {
-        if (hp.indexOf(exts[i]) === 0) return C.x[exts[i]] + hp.slice(exts[i].length);
+        if (hp.indexOf(exts[i]) === 0) {
+          var sp = abs.pathname;
+          try { sp = decodeURIComponent(sp); } catch (e) {}
+          sp = '/_ext/' + abs.host + sp;
+          if (/\/$/.test(sp)) sp += 'index.html';
+          else if (!/\.[A-Za-z0-9_]{1,12}$/.test(sp)) sp += '__x';
+          var er = rootFor(sp, true);
+          if (er) {
+            try { return new URL(er + sp.slice(1)).href; } catch (e) {}
+          }
+          return C.x[exts[i]] + hp.slice(exts[i].length);
+        }
       }
       return href;
     } catch (e) { return u; }
@@ -566,19 +577,19 @@
       }
     }).observe(document, { childList: true, subtree: true });
   }
-})({"c":"https://cdn.jsdelivr.net","o":"skidding-code","p":19000000,"b":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1612/games/binding-of-isaac/","r":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1612/","u":{"/games/binding-of-isaac/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1612/","/extra/data/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0469/","/games/psp/tja/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1572/","/js/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0001/"},"x":{"apifiles.ngfiles.com/medals/20000/20774/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1109/_ext/apifiles.ngfiles.com/medals/20000/20774/","cdn.emulatorjs.org/stable/data/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0470/_ext/cdn.emulatorjs.org/stable/data/","apifiles.ngfiles.com/medals/20000/20552/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1109/_ext/apifiles.ngfiles.com/medals/20000/20552/","apifiles.ngfiles.com/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1109/_ext/apifiles.ngfiles.com/","apifiles.ngfiles.com/medals/15000/15021/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1109/_ext/apifiles.ngfiles.com/medals/15000/15021/","apifiles.ngfiles.com/icons/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1109/_ext/apifiles.ngfiles.com/icons/","cdn.emulatorjs.org/stable/data/localization/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0470/_ext/cdn.emulatorjs.org/stable/data/localization/","cdn.emulatorjs.org/stable/data/cores/reports/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0470/_ext/cdn.emulatorjs.org/stable/data/cores/reports/","cdn.emulatorjs.org/stable/data/cores/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0470/_ext/cdn.emulatorjs.org/stable/data/cores/","cdn.emulatorjs.org/stable/data/compression/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0470/_ext/cdn.emulatorjs.org/stable/data/compression/","apifiles.ngfiles.com/medals/25000/25243/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1109/_ext/apifiles.ngfiles.com/medals/25000/25243/"},"s":{}});</script>
+})({"c":"https://cdn.jsdelivr.net","o":"skidding-code","p":19000000,"b":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1612/games/binding-of-isaac/","r":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1612/","u":{"/games/binding-of-isaac/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1612/","/extra/data/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0469/","/games/psp/tja/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1572/","/js/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0001/","/_ext/apifiles.ngfiles.com/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1109/","/_ext/cdn.emulatorjs.org/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0470/"},"x":{"apifiles.ngfiles.com/medals/20000/20774/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1109/_ext/apifiles.ngfiles.com/medals/20000/20774/","cdn.emulatorjs.org/stable/data/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0470/_ext/cdn.emulatorjs.org/stable/data/","apifiles.ngfiles.com/medals/20000/20552/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1109/_ext/apifiles.ngfiles.com/medals/20000/20552/","apifiles.ngfiles.com/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1109/_ext/apifiles.ngfiles.com/","apifiles.ngfiles.com/medals/15000/15021/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1109/_ext/apifiles.ngfiles.com/medals/15000/15021/","apifiles.ngfiles.com/icons/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1109/_ext/apifiles.ngfiles.com/icons/","cdn.emulatorjs.org/stable/data/localization/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0470/_ext/cdn.emulatorjs.org/stable/data/localization/","cdn.emulatorjs.org/stable/data/cores/reports/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0470/_ext/cdn.emulatorjs.org/stable/data/cores/reports/","cdn.emulatorjs.org/stable/data/cores/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0470/_ext/cdn.emulatorjs.org/stable/data/cores/","cdn.emulatorjs.org/stable/data/compression/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0470/_ext/cdn.emulatorjs.org/stable/data/compression/","apifiles.ngfiles.com/medals/25000/25243/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1109/_ext/apifiles.ngfiles.com/medals/25000/25243/"},"s":{}});</script>
     <!-- Google tag (gtag.js) -->
 
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Binding of Isaac| BCHS Unblocked Games</title>
-    <link rel="icon" type="image/x-icon" href="bigredbutton.png" />
-    <link rel="shortcut icon" type="image/x-icon" href="bigredbutton.png" />
+    <link rel="icon" type="image/x-icon" href="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1612/games/binding-of-isaac/bigredbutton.png" />
+    <link rel="shortcut icon" type="image/x-icon" href="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1612/games/binding-of-isaac/bigredbutton.png" />
 
 </head>
   <body>
     <script src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0001/js/main.js"></script>
     <div id="ruffle" width="100%" height="100%"></div>
-    <script src="ruffle.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1612/games/binding-of-isaac/ruffle.js"></script>
     <script>
       window.RufflePlayer = window.RufflePlayer || {};
       window.addEventListener("load", (event) => {

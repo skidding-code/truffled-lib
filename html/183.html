@@ -71,7 +71,18 @@
       }
       var hp = abs.host + abs.pathname;
       for (var i = 0; i < exts.length; i++) {
-        if (hp.indexOf(exts[i]) === 0) return C.x[exts[i]] + hp.slice(exts[i].length);
+        if (hp.indexOf(exts[i]) === 0) {
+          var sp = abs.pathname;
+          try { sp = decodeURIComponent(sp); } catch (e) {}
+          sp = '/_ext/' + abs.host + sp;
+          if (/\/$/.test(sp)) sp += 'index.html';
+          else if (!/\.[A-Za-z0-9_]{1,12}$/.test(sp)) sp += '__x';
+          var er = rootFor(sp, true);
+          if (er) {
+            try { return new URL(er + sp.slice(1)).href; } catch (e) {}
+          }
+          return C.x[exts[i]] + hp.slice(exts[i].length);
+        }
       }
       return href;
     } catch (e) { return u; }
@@ -590,9 +601,9 @@
     <title>Fireboy & Watergirl 1 Forest Temple</title>
 
 
-    <link rel="manifest" href="manifest.json">
-    <link rel="icon" sizes="60x60" href="icon-60x60.png">
-    <link rel="apple-touch-icon" href="icon-60x60.png">
+    <link rel="manifest" href="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0663/games/watergirl-1/manifest.json">
+    <link rel="icon" sizes="60x60" href="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0663/games/watergirl-1/icon-60x60.png">
+    <link rel="apple-touch-icon" href="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0663/games/watergirl-1/icon-60x60.png">
     <!-- Global site tag (gtag.js) - Google Analytics -->
 5LDZFF61JD"></script>
 <script>
@@ -610,7 +621,7 @@
         window.requireNode = window.require;
         window.require = undefined;
     </script>
-    <script src="bower_components/requirejs/require.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0663/games/watergirl-1/bower_components/requirejs/require.js"></script>
     <div id="root">
         <div id="container"></div>
         <div id="hammer"></div>

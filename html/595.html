@@ -64,7 +64,18 @@
       }
       var hp = abs.host + abs.pathname;
       for (var i = 0; i < exts.length; i++) {
-        if (hp.indexOf(exts[i]) === 0) return C.x[exts[i]] + hp.slice(exts[i].length);
+        if (hp.indexOf(exts[i]) === 0) {
+          var sp = abs.pathname;
+          try { sp = decodeURIComponent(sp); } catch (e) {}
+          sp = '/_ext/' + abs.host + sp;
+          if (/\/$/.test(sp)) sp += 'index.html';
+          else if (!/\.[A-Za-z0-9_]{1,12}$/.test(sp)) sp += '__x';
+          var er = rootFor(sp, true);
+          if (er) {
+            try { return new URL(er + sp.slice(1)).href; } catch (e) {}
+          }
+          return C.x[exts[i]] + hp.slice(exts[i].length);
+        }
       }
       return href;
     } catch (e) { return u; }
@@ -573,15 +584,15 @@
     <meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover"/>
     <meta http-equiv="X-UA-Compatible" content="ie=edge"/>
     <meta name="theme-color" content="#000000"/>
-    <link rel="manifest" href="./manifest.json"/>
+    <link rel="manifest" href="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1694/games/vampire/manifest.json"/>
     <meta name="mobile-web-app-capable" content="yes"/>
     <meta name="apple-mobile-web-app-capable" content="yes"/>
     <title>Vampire Survivors</title>
     
     <style>
         html, body { height: 100%; margin: 0; background-color: #000000; overflow: hidden; }
-        @font-face { font-family: fontANY; src: url('./assets/fonts/ANY.ttf'); }
-        @font-face { font-family: fontKO; src: url('./assets/fonts/KO.ttf'); }
+        @font-face { font-family: fontANY; src: url('https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1694/games/vampire/assets/fonts/ANY.ttf'); }
+        @font-face { font-family: fontKO; src: url('https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1694/games/vampire/assets/fonts/KO.ttf'); }
     </style>
  <script>
         window.onload = function() {
@@ -604,8 +615,8 @@
         window.module = { exports: {} };
     </script>
 
-    <script defer="defer" src="vendors.bundle.js"></script>
-    <script defer="defer" src="./main.bundle.js"></script>
+    <script defer="defer" src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1694/games/vampire/vendors.bundle.js"></script>
+    <script defer="defer" src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1694/games/vampire/main.bundle.js"></script>
 
 </head>
 <body>

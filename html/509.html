@@ -64,7 +64,18 @@
       }
       var hp = abs.host + abs.pathname;
       for (var i = 0; i < exts.length; i++) {
-        if (hp.indexOf(exts[i]) === 0) return C.x[exts[i]] + hp.slice(exts[i].length);
+        if (hp.indexOf(exts[i]) === 0) {
+          var sp = abs.pathname;
+          try { sp = decodeURIComponent(sp); } catch (e) {}
+          sp = '/_ext/' + abs.host + sp;
+          if (/\/$/.test(sp)) sp += 'index.html';
+          else if (!/\.[A-Za-z0-9_]{1,12}$/.test(sp)) sp += '__x';
+          var er = rootFor(sp, true);
+          if (er) {
+            try { return new URL(er + sp.slice(1)).href; } catch (e) {}
+          }
+          return C.x[exts[i]] + hp.slice(exts[i].length);
+        }
       }
       return href;
     } catch (e) { return u; }
@@ -567,12 +578,12 @@
       }
     }).observe(document, { childList: true, subtree: true });
   }
-})({"c":"https://cdn.jsdelivr.net","o":"skidding-code","p":19000000,"b":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1534/games/soniccd/","r":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1534/","u":{"/games/soniccd/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1534/","/gamefile/sonicexe.html":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1534/"},"x":{"raw.githack.com/EmulatorJS/EmulatorJS/main/data/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1532/_ext/raw.githack.com/EmulatorJS/EmulatorJS/main/data/"},"s":{}});</script>
+})({"c":"https://cdn.jsdelivr.net","o":"skidding-code","p":19000000,"b":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1534/games/soniccd/","r":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1534/","u":{"/games/soniccd/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1534/","/gamefile/sonicexe.html":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1534/","/_ext/raw.githack.com/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1532/"},"x":{"raw.githack.com/EmulatorJS/EmulatorJS/main/data/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1532/_ext/raw.githack.com/EmulatorJS/EmulatorJS/main/data/"},"s":{}});</script>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width">
     <title>DS Online</title>
-    <link href="icon.png" rel="icon" type="img/png" />
-    <link href="style.css" rel="stylesheet" type="text/css" />
+    <link href="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1534/games/soniccd/icon.png" rel="icon" type="img/png" />
+    <link href="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1534/games/soniccd/style.css" rel="stylesheet" type="text/css" />
 
 </head>
   <body>
@@ -587,7 +598,7 @@
     EJS_pathtodata = 'data/';
     EJS_color = "#71febc";
 </script>
-<script src="data/loader.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1534/games/soniccd/data/loader.js"></script>
 
   </body>
 </html>

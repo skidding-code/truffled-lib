@@ -64,7 +64,18 @@
       }
       var hp = abs.host + abs.pathname;
       for (var i = 0; i < exts.length; i++) {
-        if (hp.indexOf(exts[i]) === 0) return C.x[exts[i]] + hp.slice(exts[i].length);
+        if (hp.indexOf(exts[i]) === 0) {
+          var sp = abs.pathname;
+          try { sp = decodeURIComponent(sp); } catch (e) {}
+          sp = '/_ext/' + abs.host + sp;
+          if (/\/$/.test(sp)) sp += 'index.html';
+          else if (!/\.[A-Za-z0-9_]{1,12}$/.test(sp)) sp += '__x';
+          var er = rootFor(sp, true);
+          if (er) {
+            try { return new URL(er + sp.slice(1)).href; } catch (e) {}
+          }
+          return C.x[exts[i]] + hp.slice(exts[i].length);
+        }
       }
       return href;
     } catch (e) { return u; }
@@ -567,11 +578,11 @@
       }
     }).observe(document, { childList: true, subtree: true });
   }
-})({"c":"https://cdn.jsdelivr.net","o":"skidding-code","p":19000000,"b":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0007/games/30dolar/","r":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0007/","u":{"/games/30dolar/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0007/"},"x":{"fonts.gstatic.com/s/lato/v25/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0007/_ext/fonts.gstatic.com/s/lato/v25/","fonts.gstatic.com/s/tiltwarp/v18/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0007/_ext/fonts.gstatic.com/s/tiltwarp/v18/","fonts.gstatic.com/s/googlesans/v29/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0007/_ext/fonts.gstatic.com/s/googlesans/v29/","fonts.gstatic.com/s/roboto/v48/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0007/_ext/fonts.gstatic.com/s/roboto/v48/","fonts.gstatic.com/s/amaticsc/v28/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0007/_ext/fonts.gstatic.com/s/amaticsc/v28/","fonts.gstatic.com/s/caveat/v23/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0007/_ext/fonts.gstatic.com/s/caveat/v23/","fonts.gstatic.com/s/comfortaa/v47/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0007/_ext/fonts.gstatic.com/s/comfortaa/v47/","fonts.gstatic.com/s/ebgaramond/v33/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0007/_ext/fonts.gstatic.com/s/ebgaramond/v33/","fonts.gstatic.com/s/lexend/v26/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0007/_ext/fonts.gstatic.com/s/lexend/v26/","fonts.gstatic.com/s/lobster/v32/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0007/_ext/fonts.gstatic.com/s/lobster/v32/","fonts.gstatic.com/s/lora/v37/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0007/_ext/fonts.gstatic.com/s/lora/v37/","fonts.gstatic.com/s/merriweather/v33/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0007/_ext/fonts.gstatic.com/s/merriweather/v33/","fonts.gstatic.com/s/montserrat/v31/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0007/_ext/fonts.gstatic.com/s/montserrat/v31/","fonts.gstatic.com/s/nunito/v32/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0007/_ext/fonts.gstatic.com/s/nunito/v32/","fonts.gstatic.com/s/oswald/v57/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0007/_ext/fonts.gstatic.com/s/oswald/v57/","fonts.gstatic.com/s/pacifico/v23/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0007/_ext/fonts.gstatic.com/s/pacifico/v23/","fonts.gstatic.com/s/playfairdisplay/v40/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0007/_ext/fonts.gstatic.com/s/playfairdisplay/v40/","fonts.gstatic.com/s/roboto/v51/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0007/_ext/fonts.gstatic.com/s/roboto/v51/","fonts.gstatic.com/s/robotomono/v31/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0007/_ext/fonts.gstatic.com/s/robotomono/v31/","fonts.gstatic.com/s/robotoserif/v17/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0007/_ext/fonts.gstatic.com/s/robotoserif/v17/","fonts.gstatic.com/s/spectral/v15/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0007/_ext/fonts.gstatic.com/s/spectral/v15/","fonts.gstatic.com/s/pressstart2p/v16/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0007/_ext/fonts.gstatic.com/s/pressstart2p/v16/","fonts.gstatic.com/s/poppins/v24/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0007/_ext/fonts.gstatic.com/s/poppins/v24/","fonts.gstatic.com/s/anta/v1/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0007/_ext/fonts.gstatic.com/s/anta/v1/","fonts.gstatic.com/s/kanit/v17/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0007/_ext/fonts.gstatic.com/s/kanit/v17/","fonts.gstatic.com/s/intertight/v9/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0007/_ext/fonts.gstatic.com/s/intertight/v9/","fonts.gstatic.com/s/inter/v20/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0007/_ext/fonts.gstatic.com/s/inter/v20/","fonts.gstatic.com/s/materialsymbolsrounded/v383/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0007/_ext/fonts.gstatic.com/s/materialsymbolsrounded/v383/","fonts.gstatic.com/s/opensans/v44/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0007/_ext/fonts.gstatic.com/s/opensans/v44/","fonts.gstatic.com/s/rajdhani/v17/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0007/_ext/fonts.gstatic.com/s/rajdhani/v17/","fonts.gstatic.com/s/inconsolata/v37/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0007/_ext/fonts.gstatic.com/s/inconsolata/v37/","fonts.gstatic.com/s/shantellsans/v13/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0007/_ext/fonts.gstatic.com/s/shantellsans/v13/","fonts.gstatic.com/s/vt323/v18/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0007/_ext/fonts.gstatic.com/s/vt323/v18/","fonts.gstatic.com/s/robotocondensed/v31/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0007/_ext/fonts.gstatic.com/s/robotocondensed/v31/","fonts.gstatic.com/s/sourcesanspro/v13/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0007/_ext/fonts.gstatic.com/s/sourcesanspro/v13/","fonts.gstatic.com/s/ubuntu/v21/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0007/_ext/fonts.gstatic.com/s/ubuntu/v21/","fonts.gstatic.com/s/lilitaone/v17/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0007/_ext/fonts.gstatic.com/s/lilitaone/v17/"},"s":{}});</script>
+})({"c":"https://cdn.jsdelivr.net","o":"skidding-code","p":19000000,"b":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0007/games/30dolar/","r":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0007/","u":{"/games/30dolar/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0007/","/_ext/fonts.googleapis.com/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0007/","/_ext/fonts.gstatic.com/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0007/"},"x":{"fonts.gstatic.com/s/lato/v25/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0007/_ext/fonts.gstatic.com/s/lato/v25/","fonts.gstatic.com/s/tiltwarp/v18/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0007/_ext/fonts.gstatic.com/s/tiltwarp/v18/","fonts.gstatic.com/s/googlesans/v29/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0007/_ext/fonts.gstatic.com/s/googlesans/v29/","fonts.gstatic.com/s/roboto/v48/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0007/_ext/fonts.gstatic.com/s/roboto/v48/","fonts.gstatic.com/s/amaticsc/v28/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0007/_ext/fonts.gstatic.com/s/amaticsc/v28/","fonts.gstatic.com/s/caveat/v23/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0007/_ext/fonts.gstatic.com/s/caveat/v23/","fonts.gstatic.com/s/comfortaa/v47/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0007/_ext/fonts.gstatic.com/s/comfortaa/v47/","fonts.gstatic.com/s/ebgaramond/v33/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0007/_ext/fonts.gstatic.com/s/ebgaramond/v33/","fonts.gstatic.com/s/lexend/v26/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0007/_ext/fonts.gstatic.com/s/lexend/v26/","fonts.gstatic.com/s/lobster/v32/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0007/_ext/fonts.gstatic.com/s/lobster/v32/","fonts.gstatic.com/s/lora/v37/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0007/_ext/fonts.gstatic.com/s/lora/v37/","fonts.gstatic.com/s/merriweather/v33/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0007/_ext/fonts.gstatic.com/s/merriweather/v33/","fonts.gstatic.com/s/montserrat/v31/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0007/_ext/fonts.gstatic.com/s/montserrat/v31/","fonts.gstatic.com/s/nunito/v32/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0007/_ext/fonts.gstatic.com/s/nunito/v32/","fonts.gstatic.com/s/oswald/v57/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0007/_ext/fonts.gstatic.com/s/oswald/v57/","fonts.gstatic.com/s/pacifico/v23/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0007/_ext/fonts.gstatic.com/s/pacifico/v23/","fonts.gstatic.com/s/playfairdisplay/v40/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0007/_ext/fonts.gstatic.com/s/playfairdisplay/v40/","fonts.gstatic.com/s/roboto/v51/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0007/_ext/fonts.gstatic.com/s/roboto/v51/","fonts.gstatic.com/s/robotomono/v31/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0007/_ext/fonts.gstatic.com/s/robotomono/v31/","fonts.gstatic.com/s/robotoserif/v17/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0007/_ext/fonts.gstatic.com/s/robotoserif/v17/","fonts.gstatic.com/s/spectral/v15/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0007/_ext/fonts.gstatic.com/s/spectral/v15/","fonts.gstatic.com/s/pressstart2p/v16/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0007/_ext/fonts.gstatic.com/s/pressstart2p/v16/","fonts.gstatic.com/s/poppins/v24/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0007/_ext/fonts.gstatic.com/s/poppins/v24/","fonts.gstatic.com/s/anta/v1/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0007/_ext/fonts.gstatic.com/s/anta/v1/","fonts.gstatic.com/s/kanit/v17/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0007/_ext/fonts.gstatic.com/s/kanit/v17/","fonts.gstatic.com/s/intertight/v9/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0007/_ext/fonts.gstatic.com/s/intertight/v9/","fonts.gstatic.com/s/inter/v20/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0007/_ext/fonts.gstatic.com/s/inter/v20/","fonts.gstatic.com/s/materialsymbolsrounded/v383/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0007/_ext/fonts.gstatic.com/s/materialsymbolsrounded/v383/","fonts.gstatic.com/s/opensans/v44/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0007/_ext/fonts.gstatic.com/s/opensans/v44/","fonts.gstatic.com/s/rajdhani/v17/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0007/_ext/fonts.gstatic.com/s/rajdhani/v17/","fonts.gstatic.com/s/inconsolata/v37/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0007/_ext/fonts.gstatic.com/s/inconsolata/v37/","fonts.gstatic.com/s/shantellsans/v13/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0007/_ext/fonts.gstatic.com/s/shantellsans/v13/","fonts.gstatic.com/s/vt323/v18/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0007/_ext/fonts.gstatic.com/s/vt323/v18/","fonts.gstatic.com/s/robotocondensed/v31/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0007/_ext/fonts.gstatic.com/s/robotocondensed/v31/","fonts.gstatic.com/s/sourcesanspro/v13/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0007/_ext/fonts.gstatic.com/s/sourcesanspro/v13/","fonts.gstatic.com/s/ubuntu/v21/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0007/_ext/fonts.gstatic.com/s/ubuntu/v21/","fonts.gstatic.com/s/lilitaone/v17/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0007/_ext/fonts.gstatic.com/s/lilitaone/v17/"},"s":{}});</script>
 
         <title>DON'T YOU LECTURE ME WITH YOUR THIRTY DOLLAR WEBSITE</title>
-        <link rel="stylesheet" href="🎨.css" charset="UTF-8" />
-        <link rel="icon" href="assets/🗿.png"></link>
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0007/games/30dolar/%C3%B0%C2%9F%C2%8E%C2%A8.css" charset="UTF-8" />
+        <link rel="icon" href="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0007/games/30dolar/assets/%C3%B0%C2%9F%C2%97%C2%BF.png"></link>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=820">
         <meta property="og:title" content="DON'T YOU LECTURE ME WITH YOUR THIRTY DOLLAR WEBSITE">
@@ -586,10 +597,10 @@
           
             gtag('config', 'G-WLTG1S4STB');
           </script>
-        <script src="lib/jquery.min.js"></script>
-        <script src="lib/jquery-ui.min.js"></script>
-        <script src="lib/jquery.ui.touch-punch.min.js"></script>
-        <script src="lib/howler.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0007/games/30dolar/lib/jquery.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0007/games/30dolar/lib/jquery-ui.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0007/games/30dolar/lib/jquery.ui.touch-punch.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0007/games/30dolar/lib/howler.min.js"></script>
 
 </head>
 
@@ -633,18 +644,18 @@
                     <div class="playbuttons">
                         <p id="bpmInfo" class="stopInfo" style="display: none;"><span id="BPM"></span> BPM &nbsp;&nbsp;•&nbsp;&nbsp; <span id="volume"></span>% Volume</p>
                         <div id="stopBtn" class="stopInfo" style="background-color: var(--emojiyellow); display: none;" onclick="cancel({ stopSounds: true })" oncontextmenu="return false">
-                            <img src="assets/stop.png">
+                            <img src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0007/games/30dolar/assets/stop.png">
                             <h1>Stop</h1>
                         </div>
 
                         <p class="playInfo" mobile="Hold to skip intro">Right click to skip intro</p>
                         <div id="playBtn" class="playInfo" style="background-color: var(--emojigreen)" onclick="startSequence()" oncontextmenu="startSequence(true); return false">
-                            <img src="assets/play.png">
+                            <img src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0007/games/30dolar/assets/play.png">
                             <h1>Play</h1>
                         </div>
 
                         <div id="resetBtn" style="background-color: var(--emojired)" onclick="if (!active && $('#sequence').children().length) { shiftHeld ? $('#clearsounds').click() : $('#clearAll').css('display', 'flex') }" oncontextmenu="return false">
-                            <img src="assets/reset.png">
+                            <img src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0007/games/30dolar/assets/reset.png">
                             <h1>Clear</h1>
                         </div>
 
@@ -671,11 +682,11 @@
                 <div class="infobox" style="flex-direction:column; align-items: flex-start">
                     <h1 style="margin-bottom: 12px" class="noPin">Selected section: <b id="selectedSection">None</b></h1>
                     <div class="sectionControls">
-                        <img onclick="changeSection(-1)" class="imgButton" src="./assets/section_previous.png" title="Previous section">
-                        <img onclick="changeSection(1)" class="imgButton" src="./assets/section_next.png" title="Next section">
-                        <img class="requiresSelected imgButton cantSelect" id="hideSection" onclick="toggleSectionVisibility()" src="./assets/section_hide.png" title="Hide section">
-                        <img class="requiresSelected imgButton cantSelect" id="showSection" onclick="toggleSectionVisibility()" src="./assets/section_show.png" title="Show section" style="display: none">
-                        <img class="requiresSelected imgButton cantSelect" onclick="deselectSection()" src="./assets/section_deselect.png" id="Deselect section">
+                        <img onclick="changeSection(-1)" class="imgButton" src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0007/games/30dolar/assets/section_previous.png" title="Previous section">
+                        <img onclick="changeSection(1)" class="imgButton" src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0007/games/30dolar/assets/section_next.png" title="Next section">
+                        <img class="requiresSelected imgButton cantSelect" id="hideSection" onclick="toggleSectionVisibility()" src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0007/games/30dolar/assets/section_hide.png" title="Hide section">
+                        <img class="requiresSelected imgButton cantSelect" id="showSection" onclick="toggleSectionVisibility()" src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0007/games/30dolar/assets/section_show.png" title="Show section" style="display: none">
+                        <img class="requiresSelected imgButton cantSelect" onclick="deselectSection()" src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0007/games/30dolar/assets/section_deselect.png" id="Deselect section">
                     </div>
                     <span class="noPin" style="margin-top: 12px">
                         <p>Ctrl+Click to select a section</p>
@@ -691,17 +702,17 @@
             <div class="playbuttons saveButtons" id="saveOptions" style="display: none; margin-top: 30px; flex-direction: row; justify-content: center;";>
 
                 <div id="saveBtn" onclick="quickSave()" style="position: relative" oncontextmenu="return false">
-                    <img src="assets/save.svg">
+                    <img src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0007/games/30dolar/assets/save.svg">
                     <h1>Save</h1>
                 </div>
 
                 <div id="downloadBtn" oncontextmenu="return false">
-                    <img src="assets/download.svg">
+                    <img src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0007/games/30dolar/assets/download.svg">
                     <h1 id="saveAsText">Save As</h1>
                 </div>
 
                 <div id="loadBtn" onclick="$('#loadFile').click()" oncontextmenu="return false">
-                    <img src="assets/load.svg">
+                    <img src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0007/games/30dolar/assets/load.svg">
                     <h1>Load</h1>
                 </div>
 
@@ -714,9 +725,9 @@
 
             <div class="socialLinks" style="margin-bottom: 10px; padding-top: 25px">
                 <p style="font-size: 20px; margin: 0px 10px 0px 0px">#thirtydollarwebsite creations on:</p>
-                <div class="socialTag"><a target="_blank" href="https://youtube.com/results?search_query=%23thirtydollarwebsite"><img src="./assets/social_youtube.svg"> <p>YouTube</p></a></div>
-                <div class="socialTag"><a target="_blank" href="https://tiktok.com/search?q=%23thirtydollarwebsite"><img src="./assets/social_tiktok.svg"> <p>TikTok</p></a></div>
-                <div class="socialTag"><a target="_blank" href="https://twitter.com/search?q=%23thirtydollarwebsite&src=typed_query&f=top"><img src="./assets/social_twitter.svg"> <p>Twitter</p></a></div>
+                <div class="socialTag"><a target="_blank" href="https://youtube.com/results?search_query=%23thirtydollarwebsite"><img src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0007/games/30dolar/assets/social_youtube.svg"> <p>YouTube</p></a></div>
+                <div class="socialTag"><a target="_blank" href="https://tiktok.com/search?q=%23thirtydollarwebsite"><img src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0007/games/30dolar/assets/social_tiktok.svg"> <p>TikTok</p></a></div>
+                <div class="socialTag"><a target="_blank" href="https://twitter.com/search?q=%23thirtydollarwebsite&src=typed_query&f=top"><img src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0007/games/30dolar/assets/social_twitter.svg"> <p>Twitter</p></a></div>
             </div>
 
             <div>           
@@ -749,22 +760,22 @@
         <div id="proHotbar" style="display: none">
             <div class="hotbarTabs">
                 <div class="hotbarTab" tab="all" desc="Sounds">
-                    <img src="./assets/tab_all.svg">
+                    <img src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0007/games/30dolar/assets/tab_all.svg">
                 </div>
                 <div class="hotbarTab" tab="actions" desc="Actions">
-                    <img src="./assets/tab_actions.svg">
+                    <img src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0007/games/30dolar/assets/tab_actions.svg">
                 </div>
                 <div class="hotbarTab" tab="recent" desc="Recent">
-                    <img src="./assets/tab_recent.svg">
+                    <img src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0007/games/30dolar/assets/tab_recent.svg">
                 </div>
                 <!-- <div class="hotbarBat" tab="favorite" desc="Favorites">
-                    <img src="./assets/tab_favorites.svg">
+                    <img src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0007/games/30dolar/assets/tab_favorites.svg">
                 </div> -->
                 <div class="hotbarTab" tab="notes" desc="Notes">
-                    <img src="./assets/tab_notes.svg">
+                    <img src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0007/games/30dolar/assets/tab_notes.svg">
                 </div>
                 <div class="hotbarTab" tab="percussion" desc="Percussion">
-                    <img src="./assets/tab_percussion.svg">
+                    <img src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0007/games/30dolar/assets/tab_percussion.svg">
                 </div>
                 <div id="hotbarHovertext" style="display: flex; justify-content: flex-start; align-items: center">
                     <h1 class="hotbarLabel" id="hotbarText" style="white-space: nowrap;"></h1>
@@ -971,7 +982,7 @@
 
     </body>
     
-    <script type="text/javascript" src="🗿.js" charset="UTF-8"></script>
-    <script type="text/javascript" src="▶.js" charset="UTF-8"></script>
-    <script type="text/javascript" src="💾.js" charset="UTF-8"></script>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0007/games/30dolar/%C3%B0%C2%9F%C2%97%C2%BF.js" charset="UTF-8"></script>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0007/games/30dolar/%C3%A2%C2%96%C2%B6.js" charset="UTF-8"></script>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0007/games/30dolar/%C3%B0%C2%9F%C2%92%C2%BE.js" charset="UTF-8"></script>
 </html>

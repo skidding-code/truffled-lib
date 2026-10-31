@@ -65,7 +65,18 @@
       }
       var hp = abs.host + abs.pathname;
       for (var i = 0; i < exts.length; i++) {
-        if (hp.indexOf(exts[i]) === 0) return C.x[exts[i]] + hp.slice(exts[i].length);
+        if (hp.indexOf(exts[i]) === 0) {
+          var sp = abs.pathname;
+          try { sp = decodeURIComponent(sp); } catch (e) {}
+          sp = '/_ext/' + abs.host + sp;
+          if (/\/$/.test(sp)) sp += 'index.html';
+          else if (!/\.[A-Za-z0-9_]{1,12}$/.test(sp)) sp += '__x';
+          var er = rootFor(sp, true);
+          if (er) {
+            try { return new URL(er + sp.slice(1)).href; } catch (e) {}
+          }
+          return C.x[exts[i]] + hp.slice(exts[i].length);
+        }
       }
       return href;
     } catch (e) { return u; }
@@ -568,7 +579,7 @@
       }
     }).observe(document, { childList: true, subtree: true });
   }
-})({"c":"https://cdn.jsdelivr.net","o":"skidding-code","p":19000000,"b":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1190/_ext/cdn.jsdelivr.net/gh/waycrosspublicmedia/teardrop/play/","r":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1189/","u":{"/gamefile/mytear.html":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1189/"},"x":{"cdn.jsdelivr.net/gh/waycrosspublicmedia/teardrop/play/Sprites/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1190/_ext/cdn.jsdelivr.net/gh/waycrosspublicmedia/teardrop/play/Sprites/","cdn.jsdelivr.net/gh/waycrosspublicmedia/teardrop/play/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1190/_ext/cdn.jsdelivr.net/gh/waycrosspublicmedia/teardrop/play/","cdn.jsdelivr.net/gh/waycrosspublicmedia/teardrop/play/bfdi/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1190/_ext/cdn.jsdelivr.net/gh/waycrosspublicmedia/teardrop/play/bfdi/","cdn.jsdelivr.net/gh/waycrosspublicmedia/teardrop/play/Fonts/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1190/_ext/cdn.jsdelivr.net/gh/waycrosspublicmedia/teardrop/play/Fonts/","cdn.jsdelivr.net/gh/waycrosspublicmedia/teardrop/play/Animations/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1190/_ext/cdn.jsdelivr.net/gh/waycrosspublicmedia/teardrop/play/Animations/","cdn.jsdelivr.net/gh/waycrosspublicmedia/teardrop/play/Audio/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1190/_ext/cdn.jsdelivr.net/gh/waycrosspublicmedia/teardrop/play/Audio/","cdn.jsdelivr.net/gh/waycrosspublicmedia/teardrop/play/Sprites/Oldies/Bodies/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1190/_ext/cdn.jsdelivr.net/gh/waycrosspublicmedia/teardrop/play/Sprites/Oldies/Bodies/","cdn.jsdelivr.net/gh/waycrosspublicmedia/teardrop/play/Sprites/Oldies/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1190/_ext/cdn.jsdelivr.net/gh/waycrosspublicmedia/teardrop/play/Sprites/Oldies/","cdn.jsdelivr.net/gh/waycrosspublicmedia/teardrop/play/Sprites/Bodies/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1190/_ext/cdn.jsdelivr.net/gh/waycrosspublicmedia/teardrop/play/Sprites/Bodies/","cdn.jsdelivr.net/gh/waycrosspublicmedia/teardrop/play/Sprites/Rooms/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1190/_ext/cdn.jsdelivr.net/gh/waycrosspublicmedia/teardrop/play/Sprites/Rooms/","cdn.jsdelivr.net/gh/waycrosspublicmedia/teardrop/play/icons/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1190/_ext/cdn.jsdelivr.net/gh/waycrosspublicmedia/teardrop/play/icons/"},"s":{}});</script>
+})({"c":"https://cdn.jsdelivr.net","o":"skidding-code","p":19000000,"b":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1190/_ext/cdn.jsdelivr.net/gh/waycrosspublicmedia/teardrop/play/","r":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1189/","u":{"/gamefile/mytear.html":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1189/","/_ext/cdn.jsdelivr.net/gh/waycrosspublicmedia/teardrop/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1190/"},"x":{"cdn.jsdelivr.net/gh/waycrosspublicmedia/teardrop/play/Sprites/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1190/_ext/cdn.jsdelivr.net/gh/waycrosspublicmedia/teardrop/play/Sprites/","cdn.jsdelivr.net/gh/waycrosspublicmedia/teardrop/play/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1190/_ext/cdn.jsdelivr.net/gh/waycrosspublicmedia/teardrop/play/","cdn.jsdelivr.net/gh/waycrosspublicmedia/teardrop/play/bfdi/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1190/_ext/cdn.jsdelivr.net/gh/waycrosspublicmedia/teardrop/play/bfdi/","cdn.jsdelivr.net/gh/waycrosspublicmedia/teardrop/play/Fonts/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1190/_ext/cdn.jsdelivr.net/gh/waycrosspublicmedia/teardrop/play/Fonts/","cdn.jsdelivr.net/gh/waycrosspublicmedia/teardrop/play/Animations/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1190/_ext/cdn.jsdelivr.net/gh/waycrosspublicmedia/teardrop/play/Animations/","cdn.jsdelivr.net/gh/waycrosspublicmedia/teardrop/play/Audio/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1190/_ext/cdn.jsdelivr.net/gh/waycrosspublicmedia/teardrop/play/Audio/","cdn.jsdelivr.net/gh/waycrosspublicmedia/teardrop/play/Sprites/Oldies/Bodies/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1190/_ext/cdn.jsdelivr.net/gh/waycrosspublicmedia/teardrop/play/Sprites/Oldies/Bodies/","cdn.jsdelivr.net/gh/waycrosspublicmedia/teardrop/play/Sprites/Oldies/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1190/_ext/cdn.jsdelivr.net/gh/waycrosspublicmedia/teardrop/play/Sprites/Oldies/","cdn.jsdelivr.net/gh/waycrosspublicmedia/teardrop/play/Sprites/Bodies/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1190/_ext/cdn.jsdelivr.net/gh/waycrosspublicmedia/teardrop/play/Sprites/Bodies/","cdn.jsdelivr.net/gh/waycrosspublicmedia/teardrop/play/Sprites/Rooms/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1190/_ext/cdn.jsdelivr.net/gh/waycrosspublicmedia/teardrop/play/Sprites/Rooms/","cdn.jsdelivr.net/gh/waycrosspublicmedia/teardrop/play/icons/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1190/_ext/cdn.jsdelivr.net/gh/waycrosspublicmedia/teardrop/play/icons/"},"s":{}});</script>
     <meta name="viewport" content="width=device-width, user-scalable=no">
     <meta name="theme-color" content="#000000">
     <title>myTeardrop</title>
@@ -669,7 +680,7 @@
         image-rendering: optimizeSpeed;
     }
 </style>
-<img id="collecting" src="Sprites/Load.png" style="bottom: calc(52%);">
+<img id="collecting" src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1190/_ext/cdn.jsdelivr.net/gh/waycrosspublicmedia/teardrop/play/Sprites/Load.png" style="bottom: calc(52%);">
 <div id="loader">
     <div id="bar"></div>
 </div>
@@ -698,8 +709,8 @@
     let loadbackground = document.getElementById("loadbackground");
     loadbackground.style.transform = `translate(-50%, -50%) scale(${scale}, ${scale})`;
 </script>-->
-<script src="pixi.js"></script>
-<script src="matter.js"></script>
-<script src="pizzicato.js"></script>
-<script type="module" src="ease.js"></script>
-<script type="module" src="bfdi/bfdi.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1190/_ext/cdn.jsdelivr.net/gh/waycrosspublicmedia/teardrop/play/pixi.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1190/_ext/cdn.jsdelivr.net/gh/waycrosspublicmedia/teardrop/play/matter.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1190/_ext/cdn.jsdelivr.net/gh/waycrosspublicmedia/teardrop/play/pizzicato.js"></script>
+<script type="module" src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1190/_ext/cdn.jsdelivr.net/gh/waycrosspublicmedia/teardrop/play/ease.js"></script>
+<script type="module" src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1190/_ext/cdn.jsdelivr.net/gh/waycrosspublicmedia/teardrop/play/bfdi/bfdi.js"></script>

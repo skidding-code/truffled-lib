@@ -64,7 +64,18 @@
       }
       var hp = abs.host + abs.pathname;
       for (var i = 0; i < exts.length; i++) {
-        if (hp.indexOf(exts[i]) === 0) return C.x[exts[i]] + hp.slice(exts[i].length);
+        if (hp.indexOf(exts[i]) === 0) {
+          var sp = abs.pathname;
+          try { sp = decodeURIComponent(sp); } catch (e) {}
+          sp = '/_ext/' + abs.host + sp;
+          if (/\/$/.test(sp)) sp += 'index.html';
+          else if (!/\.[A-Za-z0-9_]{1,12}$/.test(sp)) sp += '__x';
+          var er = rootFor(sp, true);
+          if (er) {
+            try { return new URL(er + sp.slice(1)).href; } catch (e) {}
+          }
+          return C.x[exts[i]] + hp.slice(exts[i].length);
+        }
       }
       return href;
     } catch (e) { return u; }
@@ -567,14 +578,14 @@
       }
     }).observe(document, { childList: true, subtree: true });
   }
-})({"c":"https://cdn.jsdelivr.net","o":"skidding-code","p":19000000,"b":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0203/_ext/cdn.jsdelivr.net/gh/greeniYT/y@main/angrybirds-3.1/","r":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0203/","u":{"/gamefile/angrybirdsonline.html":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0203/"},"x":{"cdn.jsdelivr.net/gh/greeniYT/y@main/angrybirds-3.1/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0203/_ext/cdn.jsdelivr.net/gh/greeniYT/y@main/angrybirds-3.1/"},"s":{}});</script>
+})({"c":"https://cdn.jsdelivr.net","o":"skidding-code","p":19000000,"b":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0203/_ext/cdn.jsdelivr.net/gh/greeniYT/y@main/angrybirds-3.1/","r":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0203/","u":{"/gamefile/angrybirdsonline.html":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0203/","/_ext/cdn.jsdelivr.net/gh/greeniYT/y@main/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0203/"},"x":{"cdn.jsdelivr.net/gh/greeniYT/y@main/angrybirds-3.1/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0203/_ext/cdn.jsdelivr.net/gh/greeniYT/y@main/angrybirds-3.1/"},"s":{}});</script>
 
   
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=Edge,chrome=1">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="google" content="notranslate">
-    <link rel="shortcut icon" href="icon.png">
+    <link rel="shortcut icon" href="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0203/_ext/cdn.jsdelivr.net/gh/greeniYT/y@main/angrybirds-3.1/icon.png">
     <title>Angry Birds Online</title>
     <meta name="keywords" content="H5 Games, Angry Birds Online">
     <meta name="description" content="Play angry birds online">
@@ -633,12 +644,12 @@
         <!--[if lte IE 7]>
                     <script>!function(){var e="offsetWidth",t="offsetHeight",o=document,i="loading",n=o.body,d=function(){var d=o.getElementById(i);d&&(d.style.top=(n[t]-d[t])/2+"px",d.style.left=(n[e]-d[e])/2+"px")},f=o.documentMode;f<=7&&(n.onresize=d,d()),f<=5&&o.write("<style>#"+i+" img{height:70%}</style>")}();</script>
                 <![endif]-->
-        <img src="icon.png">
+        <img src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0203/_ext/cdn.jsdelivr.net/gh/greeniYT/y@main/angrybirds-3.1/icon.png">
         <p id="label">LOADING</p>
       </div>
     </div>
 
     <!-- main -->
-    <script src="main.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0203/_ext/cdn.jsdelivr.net/gh/greeniYT/y@main/angrybirds-3.1/main.js"></script>
   </body>
 </html>

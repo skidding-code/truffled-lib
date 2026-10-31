@@ -62,7 +62,18 @@
       }
       var hp = abs.host + abs.pathname;
       for (var i = 0; i < exts.length; i++) {
-        if (hp.indexOf(exts[i]) === 0) return C.x[exts[i]] + hp.slice(exts[i].length);
+        if (hp.indexOf(exts[i]) === 0) {
+          var sp = abs.pathname;
+          try { sp = decodeURIComponent(sp); } catch (e) {}
+          sp = '/_ext/' + abs.host + sp;
+          if (/\/$/.test(sp)) sp += 'index.html';
+          else if (!/\.[A-Za-z0-9_]{1,12}$/.test(sp)) sp += '__x';
+          var er = rootFor(sp, true);
+          if (er) {
+            try { return new URL(er + sp.slice(1)).href; } catch (e) {}
+          }
+          return C.x[exts[i]] + hp.slice(exts[i].length);
+        }
       }
       return href;
     } catch (e) { return u; }
@@ -571,7 +582,7 @@
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 <title>Ragdoll Archers</title>
-<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1365/games/ragdoll-archers/style.css">
 
 <body>
 <div id="unity-container" class="unity-desktop">
@@ -579,13 +590,13 @@
 </div>
 <div id="loading-cover">
 <div id="unity-loading-bar">
-<div id="unity-logo"><img src="logo.jpeg"></div>
+<div id="unity-logo"><img src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1365/games/ragdoll-archers/logo.jpeg"></div>
 <div class="progress-spinner-container">
-<div class="spinner-left"><img src="spinner.png"></div>
+<div class="spinner-left"><img src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1365/games/ragdoll-archers/spinner.png"></div>
 <div id="unity-progress-bar-empty">
 <div id="unity-progress-bar-full"></div>
 </div>
-<div class="spinner-right"><img src="spinner.png"></div>
+<div class="spinner-right"><img src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1365/games/ragdoll-archers/spinner.png"></div>
 </div>
 </div>
 </div>

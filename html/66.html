@@ -64,7 +64,18 @@
       }
       var hp = abs.host + abs.pathname;
       for (var i = 0; i < exts.length; i++) {
-        if (hp.indexOf(exts[i]) === 0) return C.x[exts[i]] + hp.slice(exts[i].length);
+        if (hp.indexOf(exts[i]) === 0) {
+          var sp = abs.pathname;
+          try { sp = decodeURIComponent(sp); } catch (e) {}
+          sp = '/_ext/' + abs.host + sp;
+          if (/\/$/.test(sp)) sp += 'index.html';
+          else if (!/\.[A-Za-z0-9_]{1,12}$/.test(sp)) sp += '__x';
+          var er = rootFor(sp, true);
+          if (er) {
+            try { return new URL(er + sp.slice(1)).href; } catch (e) {}
+          }
+          return C.x[exts[i]] + hp.slice(exts[i].length);
+        }
       }
       return href;
     } catch (e) { return u; }
@@ -567,7 +578,7 @@
       }
     }).observe(document, { childList: true, subtree: true });
   }
-})({"c":"https://cdn.jsdelivr.net","o":"skidding-code","p":19000000,"b":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0278/games/block-blast/","r":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0278/","u":{"/games/block-blast/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0278/"},"x":{"game-cdn.poki.com/scripts/v2/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0278/_ext/game-cdn.poki.com/scripts/v2/","game-cdn.poki.com/scripts/4824a1fa5b32be634a3ff0bacb52b1c81d476ccd/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0278/_ext/game-cdn.poki.com/scripts/4824a1fa5b32be634a3ff0bacb52b1c81d476ccd/","a.poki-cdn.com/sdk/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0278/_ext/a.poki-cdn.com/sdk/","a.poki-cdn.com/prebid/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0278/_ext/a.poki-cdn.com/prebid/","cdn.jsdelivr.net/gh/prebid/currency-file@1/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0255/_ext/cdn.jsdelivr.net/gh/prebid/currency-file@1/","a.poki-cdn.com/fonts/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0278/_ext/a.poki-cdn.com/fonts/","a.poki-cdn.com/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0278/_ext/a.poki-cdn.com/","a.poki-cdn.com/ay/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0278/_ext/a.poki-cdn.com/ay/","a.poki-cdn.com/images/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0278/_ext/a.poki-cdn.com/images/","a.poki-cdn.com/playtest/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0278/_ext/a.poki-cdn.com/playtest/","a.poki-cdn.com/img/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0278/_ext/a.poki-cdn.com/img/","game-cdn.poki.com/loaders/v2/unity/static/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0278/_ext/game-cdn.poki.com/loaders/v2/unity/static/","game-cdn.poki.com/loaders/v3/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0278/_ext/game-cdn.poki.com/loaders/v3/"},"s":{}});</script>
+})({"c":"https://cdn.jsdelivr.net","o":"skidding-code","p":19000000,"b":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0278/games/block-blast/","r":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0278/","u":{"/games/block-blast/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0278/","/_ext/game-cdn.poki.com/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0278/","/_ext/a.poki-cdn.com/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0278/","/_ext/cdn.jsdelivr.net/gh/prebid/currency-file@1/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0255/"},"x":{"game-cdn.poki.com/scripts/v2/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0278/_ext/game-cdn.poki.com/scripts/v2/","game-cdn.poki.com/scripts/4824a1fa5b32be634a3ff0bacb52b1c81d476ccd/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0278/_ext/game-cdn.poki.com/scripts/4824a1fa5b32be634a3ff0bacb52b1c81d476ccd/","a.poki-cdn.com/sdk/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0278/_ext/a.poki-cdn.com/sdk/","a.poki-cdn.com/prebid/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0278/_ext/a.poki-cdn.com/prebid/","cdn.jsdelivr.net/gh/prebid/currency-file@1/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0255/_ext/cdn.jsdelivr.net/gh/prebid/currency-file@1/","a.poki-cdn.com/fonts/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0278/_ext/a.poki-cdn.com/fonts/","a.poki-cdn.com/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0278/_ext/a.poki-cdn.com/","a.poki-cdn.com/ay/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0278/_ext/a.poki-cdn.com/ay/","a.poki-cdn.com/images/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0278/_ext/a.poki-cdn.com/images/","a.poki-cdn.com/playtest/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0278/_ext/a.poki-cdn.com/playtest/","a.poki-cdn.com/img/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0278/_ext/a.poki-cdn.com/img/","game-cdn.poki.com/loaders/v2/unity/static/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0278/_ext/game-cdn.poki.com/loaders/v2/unity/static/","game-cdn.poki.com/loaders/v3/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0278/_ext/game-cdn.poki.com/loaders/v3/"},"s":{}});</script>
 
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
@@ -835,7 +846,7 @@
 	}
 	</style>
   <script src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0278/_ext/game-cdn.poki.com/scripts/v2/poki-sdk.js"></script>
-  <script type="text/javascript" src="GameAnalytics.js"></script>
+  <script type="text/javascript" src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0278/games/block-blast/GameAnalytics.js"></script>
 
 </head>
  <body>
@@ -855,7 +866,7 @@
    <div class="buttons-background">
    </div>
   </div> <!-- -->
-  <script id="engine-loader" type="text/javascript" src="dmloader.js"></script>
+  <script id="engine-loader" type="text/javascript" src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0278/games/block-blast/dmloader.js"></script>
   <script id="engine-setup" type="text/javascript"></script>
   <script id="custom-progress-bar" type="text/javascript">
 		ProgressView.addProgress = function(canvas) {
@@ -863,7 +874,7 @@
 			`
 				<div class="loading-screen-container" id="loading-screen-container">
        				<div class="main-container">
-       				    <img src="game_logo.png" class="logo">
+       				    <img src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0278/games/block-blast/game_logo.png" class="logo">
 						<div class="message" id="percentage" style="margin-top: 6px;">0%</div>
        				    <div class="loading-bar">
        				        <div class="block"></div>
@@ -876,7 +887,7 @@
        				    <div class="message" id="message"></div>
        				</div>
 				
-       				<img src="oplay_logo.png" class="logo-small" style="width: 100%; max-width: 160px; height: auto;">
+       				<img src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0278/games/block-blast/oplay_logo.png" class="logo-small" style="width: 100%; max-width: 160px; height: auto;">
     			</div>
 			`)
 

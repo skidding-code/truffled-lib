@@ -68,7 +68,18 @@
       }
       var hp = abs.host + abs.pathname;
       for (var i = 0; i < exts.length; i++) {
-        if (hp.indexOf(exts[i]) === 0) return C.x[exts[i]] + hp.slice(exts[i].length);
+        if (hp.indexOf(exts[i]) === 0) {
+          var sp = abs.pathname;
+          try { sp = decodeURIComponent(sp); } catch (e) {}
+          sp = '/_ext/' + abs.host + sp;
+          if (/\/$/.test(sp)) sp += 'index.html';
+          else if (!/\.[A-Za-z0-9_]{1,12}$/.test(sp)) sp += '__x';
+          var er = rootFor(sp, true);
+          if (er) {
+            try { return new URL(er + sp.slice(1)).href; } catch (e) {}
+          }
+          return C.x[exts[i]] + hp.slice(exts[i].length);
+        }
       }
       return href;
     } catch (e) { return u; }
@@ -571,7 +582,7 @@
       }
     }).observe(document, { childList: true, subtree: true });
   }
-})({"c":"https://cdn.jsdelivr.net","o":"skidding-code","p":19000000,"b":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0204/gamefile/","r":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0204/","u":{"/gamefile/acww.html":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0204/"},"x":{"cdn.jsdelivr.net/gh/bubbls/ugss@4cee1f0ea2fbd85800ca8d90804abe42ce8dfb33/Animal%20Crossing%20-%20Wild%20World%20(USA)%20(Rev%201)/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0205/_ext/cdn.jsdelivr.net/gh/bubbls/ugss@4cee1f0ea2fbd85800ca8d90804abe42ce8dfb33/Animal Crossing - Wild World (USA) (Rev 1)/","cdn.jsdelivr.net/gh/genizy/emu@master/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0205/_ext/cdn.jsdelivr.net/gh/genizy/emu@master/","cdn.jsdelivr.net/gh/bubbls/ugss@4cee1f0ea2fbd85800ca8d90804abe42ce8dfb33/Animal%20Crossing%20-%20Wild%20World%20%28USA%29%20%28Rev%201%29/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0205/_ext/cdn.jsdelivr.net/gh/bubbls/ugss@4cee1f0ea2fbd85800ca8d90804abe42ce8dfb33/Animal Crossing - Wild World (USA) (Rev 1)/","cdn.jsdelivr.net/gh/genizy/emu@master/src/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0205/_ext/cdn.jsdelivr.net/gh/genizy/emu@master/src/","cdn.jsdelivr.net/gh/genizy/emu@master/compression/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0205/_ext/cdn.jsdelivr.net/gh/genizy/emu@master/compression/","cdn.jsdelivr.net/gh/genizy/emu@master/cores/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0205/_ext/cdn.jsdelivr.net/gh/genizy/emu@master/cores/","cdn.jsdelivr.net/gh/genizy/emu@master/cores/reports/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0205/_ext/cdn.jsdelivr.net/gh/genizy/emu@master/cores/reports/"},"s":{"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0205/_ext/cdn.jsdelivr.net/gh/bubbls/ugss@4cee1f0ea2fbd85800ca8d90804abe42ce8dfb33/Animal%20Crossing%20-%20Wild%20World%20(USA)%20(Rev%201)/Animal%20Crossing%20-%20Wild%20World%20(USA)%20(Rev%201).nds.part1":[2,"application/octet-stream",19922944]}});</script>
+})({"c":"https://cdn.jsdelivr.net","o":"skidding-code","p":19000000,"b":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0204/gamefile/","r":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0204/","u":{"/gamefile/acww.html":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0204/","/_ext/cdn.jsdelivr.net/gh/bubbls/ugss@4cee1f0ea2fbd85800ca8d90804abe42ce8dfb33/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0205/","/_ext/cdn.jsdelivr.net/gh/genizy/emu@master/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0205/"},"x":{"cdn.jsdelivr.net/gh/bubbls/ugss@4cee1f0ea2fbd85800ca8d90804abe42ce8dfb33/Animal%20Crossing%20-%20Wild%20World%20(USA)%20(Rev%201)/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0205/_ext/cdn.jsdelivr.net/gh/bubbls/ugss@4cee1f0ea2fbd85800ca8d90804abe42ce8dfb33/Animal Crossing - Wild World (USA) (Rev 1)/","cdn.jsdelivr.net/gh/genizy/emu@master/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0205/_ext/cdn.jsdelivr.net/gh/genizy/emu@master/","cdn.jsdelivr.net/gh/bubbls/ugss@4cee1f0ea2fbd85800ca8d90804abe42ce8dfb33/Animal%20Crossing%20-%20Wild%20World%20%28USA%29%20%28Rev%201%29/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0205/_ext/cdn.jsdelivr.net/gh/bubbls/ugss@4cee1f0ea2fbd85800ca8d90804abe42ce8dfb33/Animal Crossing - Wild World (USA) (Rev 1)/","cdn.jsdelivr.net/gh/genizy/emu@master/src/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0205/_ext/cdn.jsdelivr.net/gh/genizy/emu@master/src/","cdn.jsdelivr.net/gh/genizy/emu@master/compression/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0205/_ext/cdn.jsdelivr.net/gh/genizy/emu@master/compression/","cdn.jsdelivr.net/gh/genizy/emu@master/cores/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0205/_ext/cdn.jsdelivr.net/gh/genizy/emu@master/cores/","cdn.jsdelivr.net/gh/genizy/emu@master/cores/reports/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0205/_ext/cdn.jsdelivr.net/gh/genizy/emu@master/cores/reports/"},"s":{"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0205/_ext/cdn.jsdelivr.net/gh/bubbls/ugss@4cee1f0ea2fbd85800ca8d90804abe42ce8dfb33/Animal%20Crossing%20-%20Wild%20World%20(USA)%20(Rev%201)/Animal%20Crossing%20-%20Wild%20World%20(USA)%20(Rev%201).nds.part1":[2,"application/octet-stream",19922944]}});</script>
     <script>
       window.gameconfig = {
         name: "Animal Crossing - Wild World (USA)",

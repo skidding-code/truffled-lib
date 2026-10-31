@@ -64,7 +64,18 @@
       }
       var hp = abs.host + abs.pathname;
       for (var i = 0; i < exts.length; i++) {
-        if (hp.indexOf(exts[i]) === 0) return C.x[exts[i]] + hp.slice(exts[i].length);
+        if (hp.indexOf(exts[i]) === 0) {
+          var sp = abs.pathname;
+          try { sp = decodeURIComponent(sp); } catch (e) {}
+          sp = '/_ext/' + abs.host + sp;
+          if (/\/$/.test(sp)) sp += 'index.html';
+          else if (!/\.[A-Za-z0-9_]{1,12}$/.test(sp)) sp += '__x';
+          var er = rootFor(sp, true);
+          if (er) {
+            try { return new URL(er + sp.slice(1)).href; } catch (e) {}
+          }
+          return C.x[exts[i]] + hp.slice(exts[i].length);
+        }
       }
       return href;
     } catch (e) { return u; }
@@ -567,7 +578,7 @@
       }
     }).observe(document, { childList: true, subtree: true });
   }
-})({"c":"https://cdn.jsdelivr.net","o":"skidding-code","p":19000000,"b":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1047/games/ltf3/","r":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1047/","u":{"/games/ltf3/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1047/","/games/ksp/StreamingAssets/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1033/","/games/ksp/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1031/"},"x":{"server.cpmstar.com/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0577/_ext/server.cpmstar.com/"},"s":{"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1047/games/ltf3/ltf3.swf":[2,"application/octet-stream",20406324]}});</script>
+})({"c":"https://cdn.jsdelivr.net","o":"skidding-code","p":19000000,"b":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1047/games/ltf3/","r":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1047/","u":{"/games/ltf3/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1047/","/games/ksp/StreamingAssets/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1033/","/games/ksp/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1031/","/_ext/server.cpmstar.com/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0577/"},"x":{"server.cpmstar.com/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0577/_ext/server.cpmstar.com/"},"s":{"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1047/games/ltf3/ltf3.swf":[2,"application/octet-stream",20406324]}});</script>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -593,7 +604,7 @@
 
 </head>
 <embed>
-    <embed src="./ltf3.swf" type="application/x-shockwave-flash" id="game">
+    <embed src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1047/games/ltf3/ltf3.swf" type="application/x-shockwave-flash" id="game">
 </body>
 </html>
 <script>

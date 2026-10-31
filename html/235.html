@@ -64,7 +64,18 @@
       }
       var hp = abs.host + abs.pathname;
       for (var i = 0; i < exts.length; i++) {
-        if (hp.indexOf(exts[i]) === 0) return C.x[exts[i]] + hp.slice(exts[i].length);
+        if (hp.indexOf(exts[i]) === 0) {
+          var sp = abs.pathname;
+          try { sp = decodeURIComponent(sp); } catch (e) {}
+          sp = '/_ext/' + abs.host + sp;
+          if (/\/$/.test(sp)) sp += 'index.html';
+          else if (!/\.[A-Za-z0-9_]{1,12}$/.test(sp)) sp += '__x';
+          var er = rootFor(sp, true);
+          if (er) {
+            try { return new URL(er + sp.slice(1)).href; } catch (e) {}
+          }
+          return C.x[exts[i]] + hp.slice(exts[i].length);
+        }
       }
       return href;
     } catch (e) { return u; }
@@ -658,8 +669,8 @@ body {
 	z-index: 1;
 }
 		</style>
-		<link id="-gd-engine-icon" rel="icon" type="image/png" href="Fused 240.icon.png" />
-<link rel="apple-touch-icon" href="Fused 240.apple-touch-icon.png"/>
+		<link id="-gd-engine-icon" rel="icon" type="image/png" href="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0791/games/fused240/Fused%20240.icon.png" />
+<link rel="apple-touch-icon" href="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0791/games/fused240/Fused%20240.apple-touch-icon.png"/>
 
 </head>
 	<body>
@@ -677,7 +688,7 @@ body {
 			<div id="status-notice"></div>
 		</div>
 
-		<script src="Fused 240.js"></script>
+		<script src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0791/games/fused240/Fused%20240.js"></script>
 		<script>
 const GODOT_CONFIG = {"args":[],"canvasResizePolicy":2,"ensureCrossOriginIsolationHeaders":true,"executable":"Fused 240","experimentalVK":false,"fileSizes":{"Fused 240.pck":235238304,"Fused 240.wasm":52126319},"focusCanvas":true,"gdextensionLibs":[]};
 const GODOT_THREADS_ENABLED = false;

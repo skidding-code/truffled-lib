@@ -64,7 +64,18 @@
       }
       var hp = abs.host + abs.pathname;
       for (var i = 0; i < exts.length; i++) {
-        if (hp.indexOf(exts[i]) === 0) return C.x[exts[i]] + hp.slice(exts[i].length);
+        if (hp.indexOf(exts[i]) === 0) {
+          var sp = abs.pathname;
+          try { sp = decodeURIComponent(sp); } catch (e) {}
+          sp = '/_ext/' + abs.host + sp;
+          if (/\/$/.test(sp)) sp += 'index.html';
+          else if (!/\.[A-Za-z0-9_]{1,12}$/.test(sp)) sp += '__x';
+          var er = rootFor(sp, true);
+          if (er) {
+            try { return new URL(er + sp.slice(1)).href; } catch (e) {}
+          }
+          return C.x[exts[i]] + hp.slice(exts[i].length);
+        }
       }
       return href;
     } catch (e) { return u; }
@@ -680,8 +691,8 @@
 			visibility: visible;
 		}
 	</style>
-<link id='-gd-engine-icon' rel='icon' type='image/png' href='Paint Gal Adventures.icon.png' />
-<link rel='apple-touch-icon' href='Paint Gal Adventures.apple-touch-icon.png'/>
+<link id='-gd-engine-icon' rel='icon' type='image/png' href='https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1213/games/paintbog/Paint%20Gal%20Adventures.icon.png' />
+<link rel='apple-touch-icon' href='https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1213/games/paintbog/Paint%20Gal%20Adventures.apple-touch-icon.png'/>
 
 </head>
 <body>
@@ -704,7 +715,7 @@
 		<div id='status-notice' class='godot' style='display: none;'></div>
 	</div>
 
-	<script type='text/javascript' src='Paint Gal Adventures.js'></script>
+	<script type='text/javascript' src='https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1213/games/paintbog/Paint%20Gal%20Adventures.js'></script>
 	<script type='text/javascript'>//<![CDATA[
 
 		const GODOT_CONFIG = {"args":[],"canvasResizePolicy":2,"executable":"Paint Gal Adventures","experimentalVK":false,"fileSizes":{"Paint Gal Adventures.pck":86498048,"Paint Gal Adventures.wasm":25658069},"focusCanvas":true,"gdnativeLibs":[]};

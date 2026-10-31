@@ -62,7 +62,18 @@
       }
       var hp = abs.host + abs.pathname;
       for (var i = 0; i < exts.length; i++) {
-        if (hp.indexOf(exts[i]) === 0) return C.x[exts[i]] + hp.slice(exts[i].length);
+        if (hp.indexOf(exts[i]) === 0) {
+          var sp = abs.pathname;
+          try { sp = decodeURIComponent(sp); } catch (e) {}
+          sp = '/_ext/' + abs.host + sp;
+          if (/\/$/.test(sp)) sp += 'index.html';
+          else if (!/\.[A-Za-z0-9_]{1,12}$/.test(sp)) sp += '__x';
+          var er = rootFor(sp, true);
+          if (er) {
+            try { return new URL(er + sp.slice(1)).href; } catch (e) {}
+          }
+          return C.x[exts[i]] + hp.slice(exts[i].length);
+        }
       }
       return href;
     } catch (e) { return u; }
@@ -565,7 +576,7 @@
       }
     }).observe(document, { childList: true, subtree: true });
   }
-})({"c":"https://cdn.jsdelivr.net","o":"skidding-code","p":19000000,"b":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1678/gamefile/","r":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1678/","u":{"/gamefile/tube.html":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1678/","/gamefile/touhou5.html":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1674/"},"x":{"cdn.jsdelivr.net/gh/greggman/webgl-helpers@06e3d45373af0f3ce8f58b472b61835d9678d23a/examples/unity/TemplateData/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1678/_ext/cdn.jsdelivr.net/gh/greggman/webgl-helpers@06e3d45373af0f3ce8f58b472b61835d9678d23a/examples/unity/TemplateData/","cdn.jsdelivr.net/gh/Ven0mYT/tube-jumpers-ven0m@d7e473d1bbb19c421a23516ef2202bda21e8c3f0/js/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1678/_ext/cdn.jsdelivr.net/gh/Ven0mYT/tube-jumpers-ven0m@d7e473d1bbb19c421a23516ef2202bda21e8c3f0/js/","cdn.jsdelivr.net/gh/Ven0mYT/tube-jumpers-ven0m@d7e473d1bbb19c421a23516ef2202bda21e8c3f0/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1678/_ext/cdn.jsdelivr.net/gh/Ven0mYT/tube-jumpers-ven0m@d7e473d1bbb19c421a23516ef2202bda21e8c3f0/","cdn.jsdelivr.net/gh/Ven0mYT/tube-jumpers-ven0m@d7e473d1bbb19c421a23516ef2202bda21e8c3f0/unity/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1678/_ext/cdn.jsdelivr.net/gh/Ven0mYT/tube-jumpers-ven0m@d7e473d1bbb19c421a23516ef2202bda21e8c3f0/unity/"},"s":{}});</script>
+})({"c":"https://cdn.jsdelivr.net","o":"skidding-code","p":19000000,"b":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1678/gamefile/","r":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1678/","u":{"/gamefile/tube.html":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1678/","/gamefile/touhou5.html":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1674/","/_ext/cdn.jsdelivr.net/gh/greggman/webgl-helpers@06e3d45373af0f3ce8f58b472b61835d9678d23a/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1678/","/_ext/cdn.jsdelivr.net/gh/Ven0mYT/tube-jumpers-ven0m@d7e473d1bbb19c421a23516ef2202bda21e8c3f0/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1678/"},"x":{"cdn.jsdelivr.net/gh/greggman/webgl-helpers@06e3d45373af0f3ce8f58b472b61835d9678d23a/examples/unity/TemplateData/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1678/_ext/cdn.jsdelivr.net/gh/greggman/webgl-helpers@06e3d45373af0f3ce8f58b472b61835d9678d23a/examples/unity/TemplateData/","cdn.jsdelivr.net/gh/Ven0mYT/tube-jumpers-ven0m@d7e473d1bbb19c421a23516ef2202bda21e8c3f0/js/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1678/_ext/cdn.jsdelivr.net/gh/Ven0mYT/tube-jumpers-ven0m@d7e473d1bbb19c421a23516ef2202bda21e8c3f0/js/","cdn.jsdelivr.net/gh/Ven0mYT/tube-jumpers-ven0m@d7e473d1bbb19c421a23516ef2202bda21e8c3f0/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1678/_ext/cdn.jsdelivr.net/gh/Ven0mYT/tube-jumpers-ven0m@d7e473d1bbb19c421a23516ef2202bda21e8c3f0/","cdn.jsdelivr.net/gh/Ven0mYT/tube-jumpers-ven0m@d7e473d1bbb19c421a23516ef2202bda21e8c3f0/unity/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1678/_ext/cdn.jsdelivr.net/gh/Ven0mYT/tube-jumpers-ven0m@d7e473d1bbb19c421a23516ef2202bda21e8c3f0/unity/"},"s":{}});</script>
 
 
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1678/_ext/cdn.jsdelivr.net/gh/greggman/webgl-helpers@06e3d45373af0f3ce8f58b472b61835d9678d23a/examples/unity/TemplateData/style.css">

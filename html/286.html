@@ -65,7 +65,18 @@
       }
       var hp = abs.host + abs.pathname;
       for (var i = 0; i < exts.length; i++) {
-        if (hp.indexOf(exts[i]) === 0) return C.x[exts[i]] + hp.slice(exts[i].length);
+        if (hp.indexOf(exts[i]) === 0) {
+          var sp = abs.pathname;
+          try { sp = decodeURIComponent(sp); } catch (e) {}
+          sp = '/_ext/' + abs.host + sp;
+          if (/\/$/.test(sp)) sp += 'index.html';
+          else if (!/\.[A-Za-z0-9_]{1,12}$/.test(sp)) sp += '__x';
+          var er = rootFor(sp, true);
+          if (er) {
+            try { return new URL(er + sp.slice(1)).href; } catch (e) {}
+          }
+          return C.x[exts[i]] + hp.slice(exts[i].length);
+        }
       }
       return href;
     } catch (e) { return u; }
@@ -569,9 +580,9 @@
     }).observe(document, { childList: true, subtree: true });
   }
 })({"c":"https://cdn.jsdelivr.net","o":"skidding-code","p":19000000,"b":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1020/games/idle-breakout/","r":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1020/","u":{"/games/idle-breakout/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1020/","/games/ironlung/Build/built.data":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1021/","/games/ironlung/Build/built.framework.js":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1021/","/games/ironlung/Build/built.loader.js":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1021/","/games/ironlung/Build/built.wasm":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1022/","/games/ironlung/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1022/","/js/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0001/"},"x":{},"s":{"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1021/games/ironlung/Build/built.data":[2,"application/octet-stream",31237535],"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1022/games/ironlung/Build/built.wasm":[2,"application/wasm",34585805]}});</script>
-    <link rel="icon" sizes="192x192" href="img/favicon.png" />
-    <link rel="shortcut icon" href="img/favicon.png" type="image/x-icon" />
-    <link rel="apple-touch-icon" href="img/favicon.png" type="image/x-icon" />
+    <link rel="icon" sizes="192x192" href="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1020/games/idle-breakout/img/favicon.png" />
+    <link rel="shortcut icon" href="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1020/games/idle-breakout/img/favicon.png" type="image/x-icon" />
+    <link rel="apple-touch-icon" href="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1020/games/idle-breakout/img/favicon.png" type="image/x-icon" />
 
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta http-equiv="pragma" content="no-cache" />
@@ -639,7 +650,7 @@
     </div>
 
     <!-- Run the game code -->
-    <script type="text/javascript" src="html5game/Coding_BreakOut1.js"></script>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1020/games/idle-breakout/html5game/Coding_BreakOut1.js"></script>
     <script>
       window.onload = GameMaker_Init;
     </script>

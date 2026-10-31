@@ -64,7 +64,18 @@
       }
       var hp = abs.host + abs.pathname;
       for (var i = 0; i < exts.length; i++) {
-        if (hp.indexOf(exts[i]) === 0) return C.x[exts[i]] + hp.slice(exts[i].length);
+        if (hp.indexOf(exts[i]) === 0) {
+          var sp = abs.pathname;
+          try { sp = decodeURIComponent(sp); } catch (e) {}
+          sp = '/_ext/' + abs.host + sp;
+          if (/\/$/.test(sp)) sp += 'index.html';
+          else if (!/\.[A-Za-z0-9_]{1,12}$/.test(sp)) sp += '__x';
+          var er = rootFor(sp, true);
+          if (er) {
+            try { return new URL(er + sp.slice(1)).href; } catch (e) {}
+          }
+          return C.x[exts[i]] + hp.slice(exts[i].length);
+        }
       }
       return href;
     } catch (e) { return u; }
@@ -580,9 +591,9 @@
 	<meta property="og:description" content="An HTML5 port of Cary Huang's BFDIA 5b.">
 	<meta name="theme-color" content="#c92b20">
 	<meta name="twitter:card" content="summary_large_image">
-	<link rel="shortcut icon" type="image/x-icon" href="./visuals/blocks/b0001.svg" />
-	<link rel="stylesheet" href="style.css" type="text/css"/>
-	<script type="text/javascript" src="5b.js"></script>
+	<link rel="shortcut icon" type="image/x-icon" href="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0273/games/bfdia%205b/visuals/blocks/b0001.svg" />
+	<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0273/games/bfdia%205b/style.css" type="text/css"/>
+	<script type="text/javascript" src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0273/games/bfdia%205b/5b.js"></script>
 
 </head>
 

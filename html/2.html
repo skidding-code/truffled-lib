@@ -63,7 +63,18 @@
       }
       var hp = abs.host + abs.pathname;
       for (var i = 0; i < exts.length; i++) {
-        if (hp.indexOf(exts[i]) === 0) return C.x[exts[i]] + hp.slice(exts[i].length);
+        if (hp.indexOf(exts[i]) === 0) {
+          var sp = abs.pathname;
+          try { sp = decodeURIComponent(sp); } catch (e) {}
+          sp = '/_ext/' + abs.host + sp;
+          if (/\/$/.test(sp)) sp += 'index.html';
+          else if (!/\.[A-Za-z0-9_]{1,12}$/.test(sp)) sp += '__x';
+          var er = rootFor(sp, true);
+          if (er) {
+            try { return new URL(er + sp.slice(1)).href; } catch (e) {}
+          }
+          return C.x[exts[i]] + hp.slice(exts[i].length);
+        }
       }
       return href;
     } catch (e) { return u; }
@@ -566,7 +577,7 @@
       }
     }).observe(document, { childList: true, subtree: true });
   }
-})({"c":"https://cdn.jsdelivr.net","o":"skidding-code","p":19000000,"b":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0001/gamefile/","r":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0001/","u":{"/gamefile/1v1.html":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0001/"},"x":{"cdn.jsdelivr.net/gh/n-101-1/1@main/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0001/_ext/cdn.jsdelivr.net/gh/n-101-1/1@main/"},"s":{"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0001/_ext/cdn.jsdelivr.net/gh/n-101-1/1@main/2.7.data.unityweb":[2,"application/octet-stream",19605512]}});</script>
+})({"c":"https://cdn.jsdelivr.net","o":"skidding-code","p":19000000,"b":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0001/gamefile/","r":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0001/","u":{"/gamefile/1v1.html":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0001/","/_ext/cdn.jsdelivr.net/gh/n-101-1/1@main/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0001/"},"x":{"cdn.jsdelivr.net/gh/n-101-1/1@main/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0001/_ext/cdn.jsdelivr.net/gh/n-101-1/1@main/"},"s":{"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0001/_ext/cdn.jsdelivr.net/gh/n-101-1/1@main/2.7.data.unityweb":[2,"application/octet-stream",19605512]}});</script>
 
       <meta charset="utf-8">
       <meta http-equiv="Content-Type" content="text/html; charset=utf-8">

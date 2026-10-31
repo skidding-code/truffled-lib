@@ -65,7 +65,18 @@
       }
       var hp = abs.host + abs.pathname;
       for (var i = 0; i < exts.length; i++) {
-        if (hp.indexOf(exts[i]) === 0) return C.x[exts[i]] + hp.slice(exts[i].length);
+        if (hp.indexOf(exts[i]) === 0) {
+          var sp = abs.pathname;
+          try { sp = decodeURIComponent(sp); } catch (e) {}
+          sp = '/_ext/' + abs.host + sp;
+          if (/\/$/.test(sp)) sp += 'index.html';
+          else if (!/\.[A-Za-z0-9_]{1,12}$/.test(sp)) sp += '__x';
+          var er = rootFor(sp, true);
+          if (er) {
+            try { return new URL(er + sp.slice(1)).href; } catch (e) {}
+          }
+          return C.x[exts[i]] + hp.slice(exts[i].length);
+        }
       }
       return href;
     } catch (e) { return u; }
@@ -573,7 +584,7 @@
     <meta charset="utf-8">
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <title>Duck Life Space | Math Playground</title>
-    <script src="Build/UnityLoader.js" type="78997c257f6d8be4f53a66a1-text/javascript"></script>
+    <script src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0579/games/ducklife6/Build/UnityLoader.js" type="78997c257f6d8be4f53a66a1-text/javascript"></script>
     <script type="78997c257f6d8be4f53a66a1-text/javascript">
       var gameInstance = UnityLoader.instantiate("gameContainer", "Build/WebGL5MP.json");
     </script>

@@ -64,7 +64,18 @@
       }
       var hp = abs.host + abs.pathname;
       for (var i = 0; i < exts.length; i++) {
-        if (hp.indexOf(exts[i]) === 0) return C.x[exts[i]] + hp.slice(exts[i].length);
+        if (hp.indexOf(exts[i]) === 0) {
+          var sp = abs.pathname;
+          try { sp = decodeURIComponent(sp); } catch (e) {}
+          sp = '/_ext/' + abs.host + sp;
+          if (/\/$/.test(sp)) sp += 'index.html';
+          else if (!/\.[A-Za-z0-9_]{1,12}$/.test(sp)) sp += '__x';
+          var er = rootFor(sp, true);
+          if (er) {
+            try { return new URL(er + sp.slice(1)).href; } catch (e) {}
+          }
+          return C.x[exts[i]] + hp.slice(exts[i].length);
+        }
       }
       return href;
     } catch (e) { return u; }
@@ -681,7 +692,7 @@ body, html {
 	visibility: visible;
 }
 		</style>
-		<link id='-gd-engine-icon' rel='icon' type='image/png' href='index.icon.png' />
+		<link id='-gd-engine-icon' rel='icon' type='image/png' href='https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1196/games/nodebuster/index.icon.png' />
 <link rel='apple-touch-icon' href='index.apple-touch-icon.png'/>
 
 </head>
@@ -707,7 +718,7 @@ body, html {
 			<div id="status-notice" class="godot" style="display: none;"></div>
 		</div>
 
-		<script src="index.js"></script>
+		<script src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1196/games/nodebuster/index.js"></script>
 		<script>
 const GODOT_CONFIG = {"args":[],"canvasResizePolicy":2,"executable":"index","experimentalVK":false,"fileSizes":{"index.pck":30830032,"index.wasm":35376909},"focusCanvas":true,"gdextensionLibs":[]};
 const engine = new Engine(GODOT_CONFIG);

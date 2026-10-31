@@ -71,7 +71,18 @@
       }
       var hp = abs.host + abs.pathname;
       for (var i = 0; i < exts.length; i++) {
-        if (hp.indexOf(exts[i]) === 0) return C.x[exts[i]] + hp.slice(exts[i].length);
+        if (hp.indexOf(exts[i]) === 0) {
+          var sp = abs.pathname;
+          try { sp = decodeURIComponent(sp); } catch (e) {}
+          sp = '/_ext/' + abs.host + sp;
+          if (/\/$/.test(sp)) sp += 'index.html';
+          else if (!/\.[A-Za-z0-9_]{1,12}$/.test(sp)) sp += '__x';
+          var er = rootFor(sp, true);
+          if (er) {
+            try { return new URL(er + sp.slice(1)).href; } catch (e) {}
+          }
+          return C.x[exts[i]] + hp.slice(exts[i].length);
+        }
       }
       return href;
     } catch (e) { return u; }
@@ -574,7 +585,7 @@
       }
     }).observe(document, { childList: true, subtree: true });
   }
-})({"c":"https://cdn.jsdelivr.net","o":"skidding-code","p":19000000,"b":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0532/_ext/cdn.jsdelivr.net/gh/bubbls/UGS-Assets@bba3c3c4e71662c9d41dea31e564fa9952c123af/doge%20miner%202/","r":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0532/","u":{"/gamefile/dm2.html":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0532/"},"x":{"cdn.jsdelivr.net/gh/bubbls/UGS-Assets@bba3c3c4e71662c9d41dea31e564fa9952c123af/doge%20miner%202/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0532/_ext/cdn.jsdelivr.net/gh/bubbls/UGS-Assets@bba3c3c4e71662c9d41dea31e564fa9952c123af/doge miner 2/","cdn.jsdelivr.net/gh/bubbls/UGS-Assets@bba3c3c4e71662c9d41dea31e564fa9952c123af/doge%20miner%202/play/img/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0532/_ext/cdn.jsdelivr.net/gh/bubbls/UGS-Assets@bba3c3c4e71662c9d41dea31e564fa9952c123af/doge miner 2/play/img/","cdn.jsdelivr.net/gh/bubbls/UGS-Assets@bba3c3c4e71662c9d41dea31e564fa9952c123af/doge%20miner%202/js/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0532/_ext/cdn.jsdelivr.net/gh/bubbls/UGS-Assets@bba3c3c4e71662c9d41dea31e564fa9952c123af/doge miner 2/js/","cdn.jsdelivr.net/gh/bubbls/UGS-Assets@bba3c3c4e71662c9d41dea31e564fa9952c123af/doge%20miner%202/img/sprites/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0532/_ext/cdn.jsdelivr.net/gh/bubbls/UGS-Assets@bba3c3c4e71662c9d41dea31e564fa9952c123af/doge miner 2/img/sprites/","cdn.jsdelivr.net/gh/bubbls/UGS-Assets@bba3c3c4e71662c9d41dea31e564fa9952c123af/doge%20miner%202/assets/imageGame/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0532/_ext/cdn.jsdelivr.net/gh/bubbls/UGS-Assets@bba3c3c4e71662c9d41dea31e564fa9952c123af/doge miner 2/assets/imageGame/","cdn.jsdelivr.net/gh/bubbls/UGS-Assets@bba3c3c4e71662c9d41dea31e564fa9952c123af/doge%20miner%202/assets/imageLogo/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0532/_ext/cdn.jsdelivr.net/gh/bubbls/UGS-Assets@bba3c3c4e71662c9d41dea31e564fa9952c123af/doge miner 2/assets/imageLogo/","cdn.jsdelivr.net/gh/bubbls/UGS-Assets@bba3c3c4e71662c9d41dea31e564fa9952c123af/doge%20miner%202/css/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0532/_ext/cdn.jsdelivr.net/gh/bubbls/UGS-Assets@bba3c3c4e71662c9d41dea31e564fa9952c123af/doge miner 2/css/","cdn.jsdelivr.net/gh/bubbls/UGS-Assets@bba3c3c4e71662c9d41dea31e564fa9952c123af/doge%20miner%202/img/bg/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0532/_ext/cdn.jsdelivr.net/gh/bubbls/UGS-Assets@bba3c3c4e71662c9d41dea31e564fa9952c123af/doge miner 2/img/bg/"},"s":{}});</script>
+})({"c":"https://cdn.jsdelivr.net","o":"skidding-code","p":19000000,"b":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0532/_ext/cdn.jsdelivr.net/gh/bubbls/UGS-Assets@bba3c3c4e71662c9d41dea31e564fa9952c123af/doge%20miner%202/","r":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0532/","u":{"/gamefile/dm2.html":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0532/","/_ext/cdn.jsdelivr.net/gh/bubbls/UGS-Assets@bba3c3c4e71662c9d41dea31e564fa9952c123af/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0532/"},"x":{"cdn.jsdelivr.net/gh/bubbls/UGS-Assets@bba3c3c4e71662c9d41dea31e564fa9952c123af/doge%20miner%202/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0532/_ext/cdn.jsdelivr.net/gh/bubbls/UGS-Assets@bba3c3c4e71662c9d41dea31e564fa9952c123af/doge miner 2/","cdn.jsdelivr.net/gh/bubbls/UGS-Assets@bba3c3c4e71662c9d41dea31e564fa9952c123af/doge%20miner%202/play/img/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0532/_ext/cdn.jsdelivr.net/gh/bubbls/UGS-Assets@bba3c3c4e71662c9d41dea31e564fa9952c123af/doge miner 2/play/img/","cdn.jsdelivr.net/gh/bubbls/UGS-Assets@bba3c3c4e71662c9d41dea31e564fa9952c123af/doge%20miner%202/js/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0532/_ext/cdn.jsdelivr.net/gh/bubbls/UGS-Assets@bba3c3c4e71662c9d41dea31e564fa9952c123af/doge miner 2/js/","cdn.jsdelivr.net/gh/bubbls/UGS-Assets@bba3c3c4e71662c9d41dea31e564fa9952c123af/doge%20miner%202/img/sprites/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0532/_ext/cdn.jsdelivr.net/gh/bubbls/UGS-Assets@bba3c3c4e71662c9d41dea31e564fa9952c123af/doge miner 2/img/sprites/","cdn.jsdelivr.net/gh/bubbls/UGS-Assets@bba3c3c4e71662c9d41dea31e564fa9952c123af/doge%20miner%202/assets/imageGame/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0532/_ext/cdn.jsdelivr.net/gh/bubbls/UGS-Assets@bba3c3c4e71662c9d41dea31e564fa9952c123af/doge miner 2/assets/imageGame/","cdn.jsdelivr.net/gh/bubbls/UGS-Assets@bba3c3c4e71662c9d41dea31e564fa9952c123af/doge%20miner%202/assets/imageLogo/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0532/_ext/cdn.jsdelivr.net/gh/bubbls/UGS-Assets@bba3c3c4e71662c9d41dea31e564fa9952c123af/doge miner 2/assets/imageLogo/","cdn.jsdelivr.net/gh/bubbls/UGS-Assets@bba3c3c4e71662c9d41dea31e564fa9952c123af/doge%20miner%202/css/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0532/_ext/cdn.jsdelivr.net/gh/bubbls/UGS-Assets@bba3c3c4e71662c9d41dea31e564fa9952c123af/doge miner 2/css/","cdn.jsdelivr.net/gh/bubbls/UGS-Assets@bba3c3c4e71662c9d41dea31e564fa9952c123af/doge%20miner%202/img/bg/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0532/_ext/cdn.jsdelivr.net/gh/bubbls/UGS-Assets@bba3c3c4e71662c9d41dea31e564fa9952c123af/doge miner 2/img/bg/"},"s":{}});</script>
     <!-- Google tag (gtag.js) -->
 
     <meta charset="utf-8">
@@ -611,9 +622,9 @@
     <link rel="preconnect" href="https://adservice.google.com" crossorigin="anonymous">
     <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin="anonymous">
     <link rel="preconnect" href="https://ssl.gstatic.com" crossorigin="anonymous">
-    <link rel="preconnect" href="js/null.js?https://www.google-analytics.com" crossorigin="anonymous">
+    <link rel="preconnect" href="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0532/_ext/cdn.jsdelivr.net/gh/bubbls/UGS-Assets@bba3c3c4e71662c9d41dea31e564fa9952c123af/doge miner 2/js/null.js" crossorigin="anonymous">
     <link rel="preconnect" href="https://apis.google.com" crossorigin="anonymous">
-    <link rel="preconnect" href="js/null.js?https://www.googletagmanager.com" crossorigin="anonymous">
+    <link rel="preconnect" href="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0532/_ext/cdn.jsdelivr.net/gh/bubbls/UGS-Assets@bba3c3c4e71662c9d41dea31e564fa9952c123af/doge miner 2/js/null.js" crossorigin="anonymous">
     <link rel="preconnect" href="https://dogeminer.se" crossorigin="anonymous">
     <!-- <script async src="https://www.googletagmanager.com/gtag/js?id=G-F85K501LBG"></script>
     <script>
@@ -1816,7 +1827,7 @@
                     </span>
             </p>
             <div id="first-loading-spinner">
-                <object type="image/svg+xml" id="dogeloadsvg" data="dogeloader.svg" class="dogeloadersvg"></object>
+                <object type="image/svg+xml" id="dogeloadsvg" data="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0532/_ext/cdn.jsdelivr.net/gh/bubbls/UGS-Assets@bba3c3c4e71662c9d41dea31e564fa9952c123af/doge miner 2/dogeloader.svg" class="dogeloadersvg"></object>
                 <script>
                     function blink(blinker, lft, rght) {
                         setTimeout(() => {
@@ -1876,7 +1887,7 @@
                         </p>
                         <p style="margin-top:0">
                             <a href="https://www.patreon.com/bePatron?u=16777253" rel="noopener" target="_blank" title="Dogeminer on Patreon" class="ptreon">
-                                <img alt="Patreon icon small" src="./play/img/ptreon_blue.png">
+                                <img alt="Patreon icon small" src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0532/_ext/cdn.jsdelivr.net/gh/bubbls/UGS-Assets@bba3c3c4e71662c9d41dea31e564fa9952c123af/doge miner 2/play/img/ptreon_blue.png">
                             </a>
                         </p>
                         <p style="line-height:12px">
@@ -1890,21 +1901,21 @@
                     <p style="line-height:12px;margin-bottom:0;font-weight:800;font-size:12px" class="trimmable">Chat on the Discord or follow other media: </p>
                     <p>
                         <a href="https://dogeminer2.com/discord" rel="noopener" title="Dogeminer on Discord (This is where the fun begins)" target="_blank" class="discord">
-                            <img alt="Discord icon small" src="./play/img/disc_orig.png" width="120" height="33">
+                            <img alt="Discord icon small" src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0532/_ext/cdn.jsdelivr.net/gh/bubbls/UGS-Assets@bba3c3c4e71662c9d41dea31e564fa9952c123af/doge miner 2/play/img/disc_orig.png" width="120" height="33">
                         </a>
                     </p>
                     <p class="small-social-icons">
                         <a title="Dogeminer Official Twitter" rel="noopener" href="https://twitter.com/DogeminerGames" target="_blank">
-                            <img alt="twitter icon small" src="./play/img/twitter_square.png" width="35" height="35">
+                            <img alt="twitter icon small" src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0532/_ext/cdn.jsdelivr.net/gh/bubbls/UGS-Assets@bba3c3c4e71662c9d41dea31e564fa9952c123af/doge miner 2/play/img/twitter_square.png" width="35" height="35">
                         </a>
                         <a title="Our subreddit" href="https://www.reddit.com/r/DogeMiner/" target="_blank" rel="noopener nofollow">
-                            <img alt="reddit icon small" src="./play/img/reddit_square.png" width="35" height="35">
+                            <img alt="reddit icon small" src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0532/_ext/cdn.jsdelivr.net/gh/bubbls/UGS-Assets@bba3c3c4e71662c9d41dea31e564fa9952c123af/doge miner 2/play/img/reddit_square.png" width="35" height="35">
                         </a>
                         <a title="Dogeminer on Facebook" href="https://www.facebook.com/dogeminer/" rel="noopener nofollow" target="_blank">
-                            <img alt="fb icon small" src="./play/img/fb_square.png" width="35" height="35">
+                            <img alt="fb icon small" src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0532/_ext/cdn.jsdelivr.net/gh/bubbls/UGS-Assets@bba3c3c4e71662c9d41dea31e564fa9952c123af/doge miner 2/play/img/fb_square.png" width="35" height="35">
                         </a>
                         <a title="Our Steam Community Group" rel="noopener" href="https://steamcommunity.com/groups/dogeminergame" target="_blank">
-                            <img alt="steam logo small" src="./play/img/steam_group.png" width="40" height="40" style="margin-bottom:0">
+                            <img alt="steam logo small" src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0532/_ext/cdn.jsdelivr.net/gh/bubbls/UGS-Assets@bba3c3c4e71662c9d41dea31e564fa9952c123af/doge miner 2/play/img/steam_group.png" width="40" height="40" style="margin-bottom:0">
                         </a>
                     </p>
                     <hr style="border:0;height:1px;width:100%;background-image:linear-gradient(to right,rgba(0,0,0,0),rgb(19 135 208),rgba(0,0,0,0))">
@@ -2073,7 +2084,7 @@
             }), !1
         }
     </script>
-    <script type="text/javascript" src="play.b65807b2dcf795a26844.js"></script>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0532/_ext/cdn.jsdelivr.net/gh/bubbls/UGS-Assets@bba3c3c4e71662c9d41dea31e564fa9952c123af/doge miner 2/play.b65807b2dcf795a26844.js"></script>
     <!-- <script defer src="https://static.cloudflareinsights.com/beacon.min.js/v652eace1692a40cfa3763df669d7439c1639079717194" integrity="sha512-Gi7xpJR8tSkrpF7aordPZQlW2DLtzUlZcumS8dMQjwDHEnw9I7ZLyiOj/6tZStRBGtGgN6ceN6cMH8z7etPGlw==" data-cf-beacon='{"rayId":"70476a1cba4876e3","token":"abc273b5804a49bbadd508d1138a0993","version":"2021.12.0","si":100}'
         crossorigin="anonymous"></script> -->
     <!-- Code injected by live-server -->

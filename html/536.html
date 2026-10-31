@@ -64,7 +64,18 @@
       }
       var hp = abs.host + abs.pathname;
       for (var i = 0; i < exts.length; i++) {
-        if (hp.indexOf(exts[i]) === 0) return C.x[exts[i]] + hp.slice(exts[i].length);
+        if (hp.indexOf(exts[i]) === 0) {
+          var sp = abs.pathname;
+          try { sp = decodeURIComponent(sp); } catch (e) {}
+          sp = '/_ext/' + abs.host + sp;
+          if (/\/$/.test(sp)) sp += 'index.html';
+          else if (!/\.[A-Za-z0-9_]{1,12}$/.test(sp)) sp += '__x';
+          var er = rootFor(sp, true);
+          if (er) {
+            try { return new URL(er + sp.slice(1)).href; } catch (e) {}
+          }
+          return C.x[exts[i]] + hp.slice(exts[i].length);
+        }
       }
       return href;
     } catch (e) { return u; }
@@ -652,6 +663,6 @@ window.smsIsolation = (async () => {
 })();
 </script>
 <script src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1564/games/sms/zip.js"></script>
-<script src="app.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1562/games/sms/app.js"></script>
 </body>
 </html>

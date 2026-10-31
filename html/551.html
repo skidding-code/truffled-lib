@@ -65,7 +65,18 @@
       }
       var hp = abs.host + abs.pathname;
       for (var i = 0; i < exts.length; i++) {
-        if (hp.indexOf(exts[i]) === 0) return C.x[exts[i]] + hp.slice(exts[i].length);
+        if (hp.indexOf(exts[i]) === 0) {
+          var sp = abs.pathname;
+          try { sp = decodeURIComponent(sp); } catch (e) {}
+          sp = '/_ext/' + abs.host + sp;
+          if (/\/$/.test(sp)) sp += 'index.html';
+          else if (!/\.[A-Za-z0-9_]{1,12}$/.test(sp)) sp += '__x';
+          var er = rootFor(sp, true);
+          if (er) {
+            try { return new URL(er + sp.slice(1)).href; } catch (e) {}
+          }
+          return C.x[exts[i]] + hp.slice(exts[i].length);
+        }
       }
       return href;
     } catch (e) { return u; }
@@ -568,7 +579,7 @@
       }
     }).observe(document, { childList: true, subtree: true });
   }
-})({"c":"https://cdn.jsdelivr.net","o":"skidding-code","p":19000000,"b":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1605/games/ten-basket/","r":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1605/","u":{"/games/ten-basket/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1605/","/extra/data/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0469/","/games/psp/tja/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1572/"},"x":{"www.silvergames.com/js/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1605/_ext/www.silvergames.com/js/","cdn.emulatorjs.org/stable/data/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0470/_ext/cdn.emulatorjs.org/stable/data/","cdn.emulatorjs.org/stable/data/localization/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0470/_ext/cdn.emulatorjs.org/stable/data/localization/","cdn.emulatorjs.org/stable/data/cores/reports/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0470/_ext/cdn.emulatorjs.org/stable/data/cores/reports/","cdn.emulatorjs.org/stable/data/cores/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0470/_ext/cdn.emulatorjs.org/stable/data/cores/","cdn.emulatorjs.org/stable/data/compression/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0470/_ext/cdn.emulatorjs.org/stable/data/compression/"},"s":{}});</script>
+})({"c":"https://cdn.jsdelivr.net","o":"skidding-code","p":19000000,"b":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1605/games/ten-basket/","r":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1605/","u":{"/games/ten-basket/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1605/","/extra/data/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0469/","/games/psp/tja/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1572/","/_ext/www.silvergames.com/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1605/","/_ext/cdn.emulatorjs.org/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0470/"},"x":{"www.silvergames.com/js/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1605/_ext/www.silvergames.com/js/","cdn.emulatorjs.org/stable/data/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0470/_ext/cdn.emulatorjs.org/stable/data/","cdn.emulatorjs.org/stable/data/localization/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0470/_ext/cdn.emulatorjs.org/stable/data/localization/","cdn.emulatorjs.org/stable/data/cores/reports/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0470/_ext/cdn.emulatorjs.org/stable/data/cores/reports/","cdn.emulatorjs.org/stable/data/cores/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0470/_ext/cdn.emulatorjs.org/stable/data/cores/","cdn.emulatorjs.org/stable/data/compression/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0470/_ext/cdn.emulatorjs.org/stable/data/compression/"},"s":{}});</script>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0, minimal-ui" />
         <meta name="format-detection" content="telephone=no">
@@ -578,9 +589,9 @@
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black" />
         <meta name="apple-mobile-web-app-title" content="Ten Basket">
-        <link rel="stylesheet" href="style.css" type="text/css" />
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1605/games/ten-basket/style.css" type="text/css" />
         <title>Ten Basket - Silvergames</title><meta name="robots" content="noindex">
-        <script src="game.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1605/games/ten-basket/game.min.js"></script>
 
 </head>
     <body>

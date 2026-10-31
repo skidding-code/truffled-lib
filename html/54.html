@@ -64,7 +64,18 @@
       }
       var hp = abs.host + abs.pathname;
       for (var i = 0; i < exts.length; i++) {
-        if (hp.indexOf(exts[i]) === 0) return C.x[exts[i]] + hp.slice(exts[i].length);
+        if (hp.indexOf(exts[i]) === 0) {
+          var sp = abs.pathname;
+          try { sp = decodeURIComponent(sp); } catch (e) {}
+          sp = '/_ext/' + abs.host + sp;
+          if (/\/$/.test(sp)) sp += 'index.html';
+          else if (!/\.[A-Za-z0-9_]{1,12}$/.test(sp)) sp += '__x';
+          var er = rootFor(sp, true);
+          if (er) {
+            try { return new URL(er + sp.slice(1)).href; } catch (e) {}
+          }
+          return C.x[exts[i]] + hp.slice(exts[i].length);
+        }
       }
       return href;
     } catch (e) { return u; }
@@ -567,7 +578,7 @@
       }
     }).observe(document, { childList: true, subtree: true });
   }
-})({"c":"https://cdn.jsdelivr.net","o":"skidding-code","p":19000000,"b":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0255/games/basketballstars/","r":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0255/","u":{"/games/basketballstars/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0255/","/js/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0001/"},"x":{"cdn.rawgit.com/photonstorm/phaser-ce/master/filters/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0255/_ext/cdn.rawgit.com/photonstorm/phaser-ce/master/filters/","cdn.jsdelivr.net/gh/photonstorm/phaser-ce@master/filters/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0255/_ext/cdn.jsdelivr.net/gh/photonstorm/phaser-ce@master/filters/"},"s":{}});</script>
+})({"c":"https://cdn.jsdelivr.net","o":"skidding-code","p":19000000,"b":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0255/games/basketballstars/","r":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0255/","u":{"/games/basketballstars/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0255/","/js/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0001/","/_ext/cdn.rawgit.com/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0255/","/_ext/cdn.jsdelivr.net/gh/photonstorm/phaser-ce@master/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0255/"},"x":{"cdn.rawgit.com/photonstorm/phaser-ce/master/filters/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0255/_ext/cdn.rawgit.com/photonstorm/phaser-ce/master/filters/","cdn.jsdelivr.net/gh/photonstorm/phaser-ce@master/filters/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0255/_ext/cdn.jsdelivr.net/gh/photonstorm/phaser-ce@master/filters/"},"s":{}});</script>
 
 <script src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0001/js/all.min.js"></script>
 
@@ -575,7 +586,7 @@
         <meta charset="utf-8" />
         <meta http-equiv="x-ua-compatible" content="ie=edge" />
         <meta name="viewport" content="initial-scale=1, maximum-scale=1, user-scalable=no, shrink-to-fit=no" />
-        <link rel="stylesheet" href="assets/css/app.css" type="text/css" />
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0255/games/basketballstars/assets/css/app.css" type="text/css" />
         <title>Basketball Stars</title>
 
         <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -586,13 +597,13 @@
         <div id="orientation"></div>
         <div id="loader">Loading ...</div>
         <script type="text/javascript" src="https://imasdk.googleapis.com/js/sdkloader/ima3.js"></script>
-        <script type="text/javascript" src="assets/box2dweb/nape.min.js">
+        <script type="text/javascript" src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0255/games/basketballstars/assets/box2dweb/nape.min.js">
             var nape ="nape.min.js" ;
         </script>
-        <script type="text/javascript" src="assets/box2dweb/nape-debug-draw.min.js"></script>
-        <script type="text/javascript" src="assets/box2dweb/jquery-3.1.1.min.js"></script>
-        <script type="text/javascript" src="assets/box2dweb/easeljs-0.8.2.combined.js"></script>
-        <script type="text/javascript" src="assets/box2dweb/bluebird.min.js"></script>
+        <script type="text/javascript" src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0255/games/basketballstars/assets/box2dweb/nape-debug-draw.min.js"></script>
+        <script type="text/javascript" src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0255/games/basketballstars/assets/box2dweb/jquery-3.1.1.min.js"></script>
+        <script type="text/javascript" src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0255/games/basketballstars/assets/box2dweb/easeljs-0.8.2.combined.js"></script>
+        <script type="text/javascript" src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0255/games/basketballstars/assets/box2dweb/bluebird.min.js"></script>
         <script type="text/javascript">
             var useEvents = typeof Event === "function";
 
@@ -646,7 +657,7 @@
                 fjs.parentNode.insertBefore(js, fjs);
             })(document, "script", "gamedistribution-jssdk");
         </script>
-        <script type="text/javascript" src="assets/basketball_legends_2019.min.js"></script>
+        <script type="text/javascript" src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0255/games/basketballstars/assets/basketball_legends_2019.min.js"></script>
     </body>
 </html>
 

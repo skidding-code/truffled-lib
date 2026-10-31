@@ -64,7 +64,18 @@
       }
       var hp = abs.host + abs.pathname;
       for (var i = 0; i < exts.length; i++) {
-        if (hp.indexOf(exts[i]) === 0) return C.x[exts[i]] + hp.slice(exts[i].length);
+        if (hp.indexOf(exts[i]) === 0) {
+          var sp = abs.pathname;
+          try { sp = decodeURIComponent(sp); } catch (e) {}
+          sp = '/_ext/' + abs.host + sp;
+          if (/\/$/.test(sp)) sp += 'index.html';
+          else if (!/\.[A-Za-z0-9_]{1,12}$/.test(sp)) sp += '__x';
+          var er = rootFor(sp, true);
+          if (er) {
+            try { return new URL(er + sp.slice(1)).href; } catch (e) {}
+          }
+          return C.x[exts[i]] + hp.slice(exts[i].length);
+        }
       }
       return href;
     } catch (e) { return u; }
@@ -574,8 +585,8 @@
     <meta name="viewport" content="initial-scale=1, maximum-scale=1, user-scalable=no, shrink-to-fit=no" />
     <script type="application/javascript" src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0001/js/main.js"></script>
     <title>Vex 3</title>
-    <link rel="stylesheet" href="assets/css/app.css" type="text/css" />
-    <link rel="icon" href="vex3.png">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1697/games/vex3/assets/css/app.css" type="text/css" />
+    <link rel="icon" href="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1697/games/vex3/vex3.png">
 
 </head>
   <body>

@@ -64,7 +64,18 @@
       }
       var hp = abs.host + abs.pathname;
       for (var i = 0; i < exts.length; i++) {
-        if (hp.indexOf(exts[i]) === 0) return C.x[exts[i]] + hp.slice(exts[i].length);
+        if (hp.indexOf(exts[i]) === 0) {
+          var sp = abs.pathname;
+          try { sp = decodeURIComponent(sp); } catch (e) {}
+          sp = '/_ext/' + abs.host + sp;
+          if (/\/$/.test(sp)) sp += 'index.html';
+          else if (!/\.[A-Za-z0-9_]{1,12}$/.test(sp)) sp += '__x';
+          var er = rootFor(sp, true);
+          if (er) {
+            try { return new URL(er + sp.slice(1)).href; } catch (e) {}
+          }
+          return C.x[exts[i]] + hp.slice(exts[i].length);
+        }
       }
       return href;
     } catch (e) { return u; }
@@ -567,11 +578,11 @@
       }
     }).observe(document, { childList: true, subtree: true });
   }
-})({"c":"https://cdn.jsdelivr.net","o":"skidding-code","p":19000000,"b":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1157/games/milk/","r":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1157/","u":{"/games/milk/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1157/","/games/milk/Build/UnityLoader.js":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1157/","/games/milk/Build/truffled.data.unityweb":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1158/","/games/milk/Build/truffled.json":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1159/","/games/milk/Build/truffled.wasm.code.unityweb":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1159/","/games/milk/Build/truffled.wasm.framework.unityweb":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1159/","/games/mk64/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1144/","/games/mkds/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1144/"},"x":{"cdn.emulatorjs.org/stable/data/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0470/_ext/cdn.emulatorjs.org/stable/data/","cdn.emulatorjs.org/stable/data/localization/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0470/_ext/cdn.emulatorjs.org/stable/data/localization/","cdn.emulatorjs.org/stable/data/cores/reports/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0470/_ext/cdn.emulatorjs.org/stable/data/cores/reports/","cdn.emulatorjs.org/stable/data/cores/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0470/_ext/cdn.emulatorjs.org/stable/data/cores/","cdn.emulatorjs.org/stable/data/compression/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0470/_ext/cdn.emulatorjs.org/stable/data/compression/"},"s":{"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1158/games/milk/Build/truffled.data.unityweb":[6,"application/octet-stream",101877794,[[1,"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1158/games/milk/Build/truffled.data.unityweb"],[3,"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c2042/games/milk/Build/truffled.data.unityweb"],[5,"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c2043/games/milk/Build/truffled.data.unityweb"]]],"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1159/games/milk/Build/truffled.wasm.code.unityweb":[2,"application/octet-stream",27559589],"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1144/games/mkds/mario-kart-ds.nds":[2,"application/octet-stream",19310806]}});</script>
+})({"c":"https://cdn.jsdelivr.net","o":"skidding-code","p":19000000,"b":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1157/games/milk/","r":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1157/","u":{"/games/milk/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1157/","/games/milk/Build/UnityLoader.js":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1157/","/games/milk/Build/truffled.data.unityweb":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1158/","/games/milk/Build/truffled.json":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1159/","/games/milk/Build/truffled.wasm.code.unityweb":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1159/","/games/milk/Build/truffled.wasm.framework.unityweb":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1159/","/games/mk64/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1144/","/games/mkds/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1144/","/_ext/cdn.emulatorjs.org/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0470/"},"x":{"cdn.emulatorjs.org/stable/data/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0470/_ext/cdn.emulatorjs.org/stable/data/","cdn.emulatorjs.org/stable/data/localization/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0470/_ext/cdn.emulatorjs.org/stable/data/localization/","cdn.emulatorjs.org/stable/data/cores/reports/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0470/_ext/cdn.emulatorjs.org/stable/data/cores/reports/","cdn.emulatorjs.org/stable/data/cores/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0470/_ext/cdn.emulatorjs.org/stable/data/cores/","cdn.emulatorjs.org/stable/data/compression/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0470/_ext/cdn.emulatorjs.org/stable/data/compression/"},"s":{"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1158/games/milk/Build/truffled.data.unityweb":[6,"application/octet-stream",101877794,[[1,"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1158/games/milk/Build/truffled.data.unityweb"],[3,"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c2042/games/milk/Build/truffled.data.unityweb"],[5,"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c2043/games/milk/Build/truffled.data.unityweb"]]],"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1159/games/milk/Build/truffled.wasm.code.unityweb":[2,"application/octet-stream",27559589],"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1144/games/mkds/mario-kart-ds.nds":[2,"application/octet-stream",19310806]}});</script>
     <meta charset="utf-8">
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <title>Unity WebGL Player | MilkmanKarlson</title>
-    <script src="Build/UnityLoader.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1157/games/milk/Build/UnityLoader.js"></script>
     
     <script>
       UnityLoader.instantiate("unityContainer", "Build/truffled.json");

@@ -64,7 +64,18 @@
       }
       var hp = abs.host + abs.pathname;
       for (var i = 0; i < exts.length; i++) {
-        if (hp.indexOf(exts[i]) === 0) return C.x[exts[i]] + hp.slice(exts[i].length);
+        if (hp.indexOf(exts[i]) === 0) {
+          var sp = abs.pathname;
+          try { sp = decodeURIComponent(sp); } catch (e) {}
+          sp = '/_ext/' + abs.host + sp;
+          if (/\/$/.test(sp)) sp += 'index.html';
+          else if (!/\.[A-Za-z0-9_]{1,12}$/.test(sp)) sp += '__x';
+          var er = rootFor(sp, true);
+          if (er) {
+            try { return new URL(er + sp.slice(1)).href; } catch (e) {}
+          }
+          return C.x[exts[i]] + hp.slice(exts[i].length);
+        }
       }
       return href;
     } catch (e) { return u; }
@@ -587,7 +598,7 @@ progress{width:min(340px,80vw);height:10px;accent-color:#b600ff;justify-self:cen
 <body>
 <canvas id="unity-canvas" tabindex="0" aria-label="Gamble With Your Friends solo game"></canvas>
 <div id="loading"><h1>Gamble With Your Friends</h1><p id="status">Loading solo game…</p><progress id="progress" max="1" value="0"></progress><div id="error" hidden></div></div>
-<div id="port-intro" aria-label="Port by camzzz"><img src="assets/port-by-camzzz.png" alt="Port by camzzz"></div>
+<div id="port-intro" aria-label="Port by camzzz"><img src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0811/games/gamble/assets/port-by-camzzz.png" alt="Port by camzzz"></div>
 <script>
 // Route the game's final mix through a fast compressor to contain overlapping
 // impacts. Weak/quiet sounds are not amplified.

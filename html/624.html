@@ -64,7 +64,18 @@
       }
       var hp = abs.host + abs.pathname;
       for (var i = 0; i < exts.length; i++) {
-        if (hp.indexOf(exts[i]) === 0) return C.x[exts[i]] + hp.slice(exts[i].length);
+        if (hp.indexOf(exts[i]) === 0) {
+          var sp = abs.pathname;
+          try { sp = decodeURIComponent(sp); } catch (e) {}
+          sp = '/_ext/' + abs.host + sp;
+          if (/\/$/.test(sp)) sp += 'index.html';
+          else if (!/\.[A-Za-z0-9_]{1,12}$/.test(sp)) sp += '__x';
+          var er = rootFor(sp, true);
+          if (er) {
+            try { return new URL(er + sp.slice(1)).href; } catch (e) {}
+          }
+          return C.x[exts[i]] + hp.slice(exts[i].length);
+        }
       }
       return href;
     } catch (e) { return u; }
@@ -567,7 +578,7 @@
       }
     }).observe(document, { childList: true, subtree: true });
   }
-})({"c":"https://cdn.jsdelivr.net","o":"skidding-code","p":19000000,"b":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1715/games/YOMIHustle/","r":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1715/","u":{"/games/YOMIHustle/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1715/","/gamefile/twhg.html":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1712/"},"x":{"cdn.jsdelivr.net/gh/u-cvlassrom-y/google@main/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0640/_ext/cdn.jsdelivr.net/gh/u-cvlassrom-y/google@main/","cdn.jsdelivr.net/gh/vjspranav/FlashGames@c4afbfe9dd12f23ef93e19d7f3d298105448f349/games/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1712/_ext/cdn.jsdelivr.net/gh/vjspranav/FlashGames@c4afbfe9dd12f23ef93e19d7f3d298105448f349/games/"},"s":{}});</script>
+})({"c":"https://cdn.jsdelivr.net","o":"skidding-code","p":19000000,"b":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1715/games/YOMIHustle/","r":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1715/","u":{"/games/YOMIHustle/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1715/","/gamefile/twhg.html":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1712/","/_ext/cdn.jsdelivr.net/gh/u-cvlassrom-y/google@main/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0640/","/_ext/cdn.jsdelivr.net/gh/vjspranav/FlashGames@c4afbfe9dd12f23ef93e19d7f3d298105448f349/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1712/"},"x":{"cdn.jsdelivr.net/gh/u-cvlassrom-y/google@main/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0640/_ext/cdn.jsdelivr.net/gh/u-cvlassrom-y/google@main/","cdn.jsdelivr.net/gh/vjspranav/FlashGames@c4afbfe9dd12f23ef93e19d7f3d298105448f349/games/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1712/_ext/cdn.jsdelivr.net/gh/vjspranav/FlashGames@c4afbfe9dd12f23ef93e19d7f3d298105448f349/games/"},"s":{}});</script>
 	<meta charset='utf-8' />
   
 	<meta name='viewport' content='width=device-width, user-scalable=no' />
@@ -680,8 +691,8 @@
 			visibility: visible;
 		}
 	</style>
-<link id='-gd-engine-icon' rel='icon' type='image/png' href='index.icon.png' />
-<link rel='apple-touch-icon' href='index.apple-touch-icon.png'/>
+<link id='-gd-engine-icon' rel='icon' type='image/png' href='https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1715/games/YOMIHustle/index.icon.png' />
+<link rel='apple-touch-icon' href='https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1715/games/YOMIHustle/index.apple-touch-icon.png'/>
 
 </head>
 <body>
@@ -704,8 +715,8 @@
 		<div id='status-notice' class='godot' style='display: none;'></div>
 	</div>
 
-	<script src='multiplayer.js'></script>
-	<script type='text/javascript' src='index.js'></script>
+	<script src='https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1715/games/YOMIHustle/multiplayer.js'></script>
+	<script type='text/javascript' src='https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1715/games/YOMIHustle/index.js'></script>
 	<script type='text/javascript'>//<![CDATA[
 
 		const GODOT_CONFIG = {"args":[],"canvasResizePolicy":2,"executable":"index","experimentalVK":false,"fileSizes":{"index.pck":18756992,"index.wasm":13789463},"focusCanvas":true,"gdnativeLibs":[]};

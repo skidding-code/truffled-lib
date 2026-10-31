@@ -64,7 +64,18 @@
       }
       var hp = abs.host + abs.pathname;
       for (var i = 0; i < exts.length; i++) {
-        if (hp.indexOf(exts[i]) === 0) return C.x[exts[i]] + hp.slice(exts[i].length);
+        if (hp.indexOf(exts[i]) === 0) {
+          var sp = abs.pathname;
+          try { sp = decodeURIComponent(sp); } catch (e) {}
+          sp = '/_ext/' + abs.host + sp;
+          if (/\/$/.test(sp)) sp += 'index.html';
+          else if (!/\.[A-Za-z0-9_]{1,12}$/.test(sp)) sp += '__x';
+          var er = rootFor(sp, true);
+          if (er) {
+            try { return new URL(er + sp.slice(1)).href; } catch (e) {}
+          }
+          return C.x[exts[i]] + hp.slice(exts[i].length);
+        }
       }
       return href;
     } catch (e) { return u; }
@@ -577,21 +588,21 @@
 
     <meta name="theme-color" content="#000000" />
 
-    <link rel="manifest" href="./manifest.json" />
+    <link rel="manifest" href="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0791/games/fruitninja/manifest.json" />
     <script src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0001/js/main.js"></script>
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="application-name" content="Fruit Ninja" />
     <meta name="apple-mobile-web-app-title" content="Fruit Ninja" />
     <meta name="msapplication-starturl" content="./" />
-    <script type="text/javascript" src="h5Sdk.js"></script>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0791/games/fruitninja/h5Sdk.js"></script>
     <script src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0001/js/main.js"></script>
 
     <title>Fruit Ninja</title>
     <style>
       @font-face {
         font-family: gangofchinese;
-        src: url('assets/font/gangofchinese.ttf');
+        src: url('https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0791/games/fruitninja/assets/font/gangofchinese.ttf');
       }
 
       body{
@@ -649,7 +660,7 @@
       }
 
     </style>
-    <!-- <link rel="stylesheet" type="text/css" href="css/styles.css"> -->
+    <!-- <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0791/games/fruitninja/css/styles.css"> -->
 
     <noscript>Please enable javascript to continue using this application.</noscript>
 
@@ -673,6 +684,6 @@
         <div id="phaser-canvas"></div>
     </div>        
     <!-- <div id="phaser-game"></div> -->
-  <script type="text/javascript" src="vendors.fb6f2f7c51aa86f87ee3.bundle.js"></script><script type="text/javascript" src="main.bb79cf245c33f6bf6733.bundle.js"></script><style id="injectStyles">html, body{ background: none !important; }</style>
+  <script type="text/javascript" src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0791/games/fruitninja/vendors.fb6f2f7c51aa86f87ee3.bundle.js"></script><script type="text/javascript" src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0791/games/fruitninja/main.bb79cf245c33f6bf6733.bundle.js"></script><style id="injectStyles">html, body{ background: none !important; }</style>
 </body>
 </html>

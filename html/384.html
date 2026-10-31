@@ -64,7 +64,18 @@
       }
       var hp = abs.host + abs.pathname;
       for (var i = 0; i < exts.length; i++) {
-        if (hp.indexOf(exts[i]) === 0) return C.x[exts[i]] + hp.slice(exts[i].length);
+        if (hp.indexOf(exts[i]) === 0) {
+          var sp = abs.pathname;
+          try { sp = decodeURIComponent(sp); } catch (e) {}
+          sp = '/_ext/' + abs.host + sp;
+          if (/\/$/.test(sp)) sp += 'index.html';
+          else if (!/\.[A-Za-z0-9_]{1,12}$/.test(sp)) sp += '__x';
+          var er = rootFor(sp, true);
+          if (er) {
+            try { return new URL(er + sp.slice(1)).href; } catch (e) {}
+          }
+          return C.x[exts[i]] + hp.slice(exts[i].length);
+        }
       }
       return href;
     } catch (e) { return u; }
@@ -567,14 +578,14 @@
       }
     }).observe(document, { childList: true, subtree: true });
   }
-})({"c":"https://cdn.jsdelivr.net","o":"skidding-code","p":19000000,"b":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1212/games/pacman/","r":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1212/","u":{"/games/pacman/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1212/","/extra/data/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0469/","/gamefile/OMORI.html":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1196/","/games/nsmb/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1195/","/games/worldmachine/OneShot World Machine Edition/content/panoramas/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1206/"},"x":{"ep2.adtrafficquality.google/sodar/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0209/_ext/ep2.adtrafficquality.google/sodar/","ep2.adtrafficquality.google/sodar/sodar2/257/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0209/_ext/ep2.adtrafficquality.google/sodar/sodar2/257/","cdn.emulatorjs.org/stable/data/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0470/_ext/cdn.emulatorjs.org/stable/data/","cdn.emulatorjs.org/stable/data/localization/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0470/_ext/cdn.emulatorjs.org/stable/data/localization/","cdn.emulatorjs.org/stable/data/cores/reports/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0470/_ext/cdn.emulatorjs.org/stable/data/cores/reports/","cdn.emulatorjs.org/stable/data/cores/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0470/_ext/cdn.emulatorjs.org/stable/data/cores/","cdn.emulatorjs.org/stable/data/compression/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0470/_ext/cdn.emulatorjs.org/stable/data/compression/"},"s":{"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1195/games/nsmb/nsmb.nds":[2,"application/octet-stream",33554432]}});</script>
+})({"c":"https://cdn.jsdelivr.net","o":"skidding-code","p":19000000,"b":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1212/games/pacman/","r":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1212/","u":{"/games/pacman/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1212/","/extra/data/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0469/","/gamefile/OMORI.html":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1196/","/games/nsmb/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1195/","/games/worldmachine/OneShot World Machine Edition/content/panoramas/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1206/","/_ext/ep2.adtrafficquality.google/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0209/","/_ext/cdn.emulatorjs.org/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0470/"},"x":{"ep2.adtrafficquality.google/sodar/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0209/_ext/ep2.adtrafficquality.google/sodar/","ep2.adtrafficquality.google/sodar/sodar2/257/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0209/_ext/ep2.adtrafficquality.google/sodar/sodar2/257/","cdn.emulatorjs.org/stable/data/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0470/_ext/cdn.emulatorjs.org/stable/data/","cdn.emulatorjs.org/stable/data/localization/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0470/_ext/cdn.emulatorjs.org/stable/data/localization/","cdn.emulatorjs.org/stable/data/cores/reports/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0470/_ext/cdn.emulatorjs.org/stable/data/cores/reports/","cdn.emulatorjs.org/stable/data/cores/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0470/_ext/cdn.emulatorjs.org/stable/data/cores/","cdn.emulatorjs.org/stable/data/compression/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0470/_ext/cdn.emulatorjs.org/stable/data/compression/"},"s":{"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1195/games/nsmb/nsmb.nds":[2,"application/octet-stream",33554432]}});</script>
     <!-- Google tag (gtag.js) -->
 
     </script><script async src="https://arc.io/widget.min.js#AhhMHcMM"></script><script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7257238324060789" crossorigin="anonymous"></script>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, user-scalable=no">
         <title>jsPacman | JavaScript Ms. Pac-Man Remake</title>
-    <link rel="shortcut icon" href="favicon.png"><!-- Google tag (gtag.js) -->
+    <link rel="shortcut icon" href="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1212/games/pacman/favicon.png"><!-- Google tag (gtag.js) -->
 P6V3QXEWMB"></script>
 <script>
   window.dataLayer = window.dataLayer || [];
@@ -595,5 +606,5 @@ P6V3QXEWMB"></script>
         <h2 style="position: absolute; left: -1000px;">Play Online Ms. Pac-Man</h2>
         <div class="js-pacman-playground with-border">
         </div>
-    <script type="text/javascript" src="bundle.js"></script></body>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1212/games/pacman/bundle.js"></script></body>
 </html>

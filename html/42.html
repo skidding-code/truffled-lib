@@ -65,7 +65,18 @@
       }
       var hp = abs.host + abs.pathname;
       for (var i = 0; i < exts.length; i++) {
-        if (hp.indexOf(exts[i]) === 0) return C.x[exts[i]] + hp.slice(exts[i].length);
+        if (hp.indexOf(exts[i]) === 0) {
+          var sp = abs.pathname;
+          try { sp = decodeURIComponent(sp); } catch (e) {}
+          sp = '/_ext/' + abs.host + sp;
+          if (/\/$/.test(sp)) sp += 'index.html';
+          else if (!/\.[A-Za-z0-9_]{1,12}$/.test(sp)) sp += '__x';
+          var er = rootFor(sp, true);
+          if (er) {
+            try { return new URL(er + sp.slice(1)).href; } catch (e) {}
+          }
+          return C.x[exts[i]] + hp.slice(exts[i].length);
+        }
       }
       return href;
     } catch (e) { return u; }
@@ -575,9 +586,9 @@
   <title>Balatro</title>
 
   <!-- Load custom style sheet -->
-  <link rel="stylesheet" type="text/css" href="theme/love.css">
+  <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0237/games/balatro/theme/love.css">
 
-  <script src="consolewrapper.js"></script>
+  <script src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0237/games/balatro/consolewrapper.js"></script>
   <script src="../balatro-seed-clipboard.js"></script>
 
 </head>
@@ -693,8 +704,8 @@
       Love(Module);
     }
   </script>
-  <script type="text/javascript" src="game.js"></script>
-  <script async type="text/javascript" src="love.js" onload="applicationLoad(this)"></script>
+  <script type="text/javascript" src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0237/games/balatro/game.js"></script>
+  <script async type="text/javascript" src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0237/games/balatro/love.js" onload="applicationLoad(this)"></script>
   <!-- <footer>
       <p>Built with <a href="https://github.com/Davidobot/love.js">love.js</a> <button onclick="goFullScreen();">Go Fullscreen</button><br>Hint: Reload the page if screen is blank</p>
     </footer> -->

@@ -64,7 +64,18 @@
       }
       var hp = abs.host + abs.pathname;
       for (var i = 0; i < exts.length; i++) {
-        if (hp.indexOf(exts[i]) === 0) return C.x[exts[i]] + hp.slice(exts[i].length);
+        if (hp.indexOf(exts[i]) === 0) {
+          var sp = abs.pathname;
+          try { sp = decodeURIComponent(sp); } catch (e) {}
+          sp = '/_ext/' + abs.host + sp;
+          if (/\/$/.test(sp)) sp += 'index.html';
+          else if (!/\.[A-Za-z0-9_]{1,12}$/.test(sp)) sp += '__x';
+          var er = rootFor(sp, true);
+          if (er) {
+            try { return new URL(er + sp.slice(1)).href; } catch (e) {}
+          }
+          return C.x[exts[i]] + hp.slice(exts[i].length);
+        }
       }
       return href;
     } catch (e) { return u; }
@@ -567,7 +578,7 @@
       }
     }).observe(document, { childList: true, subtree: true });
   }
-})({"c":"https://cdn.jsdelivr.net","o":"skidding-code","p":19000000,"b":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1612/games/psp/tboir/","r":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1612/","u":{"/games/psp/tboir/index.html":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1612/","/extra/data/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0469/","/gamefile/monk.html":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1564/","/games/psp/tboir/loader.js":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1612/","/games/psp/tboir/tboirpsp0301.iso":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1613/"},"x":{"cdn.emulatorjs.org/stable/data/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0470/_ext/cdn.emulatorjs.org/stable/data/","cdn.emulatorjs.org/stable/data/localization/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0470/_ext/cdn.emulatorjs.org/stable/data/localization/","cdn.emulatorjs.org/stable/data/cores/reports/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0470/_ext/cdn.emulatorjs.org/stable/data/cores/reports/","cdn.emulatorjs.org/stable/data/cores/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0470/_ext/cdn.emulatorjs.org/stable/data/cores/","cdn.emulatorjs.org/stable/data/compression/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0470/_ext/cdn.emulatorjs.org/stable/data/compression/"},"s":{"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1613/games/psp/tboir/tboirpsp0301.iso":[8,"application/octet-stream",134742016,[[1,"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1613/games/psp/tboir/tboirpsp0301.iso"],[3,"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c2256/games/psp/tboir/tboirpsp0301.iso"],[5,"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c2257/games/psp/tboir/tboirpsp0301.iso"],[7,"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c2258/games/psp/tboir/tboirpsp0301.iso"]]]}});</script>
+})({"c":"https://cdn.jsdelivr.net","o":"skidding-code","p":19000000,"b":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1612/games/psp/tboir/","r":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1612/","u":{"/games/psp/tboir/index.html":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1612/","/extra/data/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0469/","/gamefile/monk.html":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1564/","/games/psp/tboir/loader.js":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1612/","/games/psp/tboir/tboirpsp0301.iso":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1613/","/_ext/cdn.emulatorjs.org/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0470/"},"x":{"cdn.emulatorjs.org/stable/data/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0470/_ext/cdn.emulatorjs.org/stable/data/","cdn.emulatorjs.org/stable/data/localization/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0470/_ext/cdn.emulatorjs.org/stable/data/localization/","cdn.emulatorjs.org/stable/data/cores/reports/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0470/_ext/cdn.emulatorjs.org/stable/data/cores/reports/","cdn.emulatorjs.org/stable/data/cores/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0470/_ext/cdn.emulatorjs.org/stable/data/cores/","cdn.emulatorjs.org/stable/data/compression/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0470/_ext/cdn.emulatorjs.org/stable/data/compression/"},"s":{"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1613/games/psp/tboir/tboirpsp0301.iso":[8,"application/octet-stream",134742016,[[1,"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1613/games/psp/tboir/tboirpsp0301.iso"],[3,"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c2256/games/psp/tboir/tboirpsp0301.iso"],[5,"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c2257/games/psp/tboir/tboirpsp0301.iso"],[7,"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c2258/games/psp/tboir/tboirpsp0301.iso"]]]}});</script>
     <meta charset="UTF-8" />
     <meta
       name="viewport"
@@ -653,6 +664,6 @@
         ppsspp_texture_replacement: "disabled",
       };
     </script>
-    <script src="loader.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1612/games/psp/tboir/loader.js"></script>
   </body>
 </html>

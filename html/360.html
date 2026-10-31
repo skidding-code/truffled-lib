@@ -64,7 +64,18 @@
       }
       var hp = abs.host + abs.pathname;
       for (var i = 0; i < exts.length; i++) {
-        if (hp.indexOf(exts[i]) === 0) return C.x[exts[i]] + hp.slice(exts[i].length);
+        if (hp.indexOf(exts[i]) === 0) {
+          var sp = abs.pathname;
+          try { sp = decodeURIComponent(sp); } catch (e) {}
+          sp = '/_ext/' + abs.host + sp;
+          if (/\/$/.test(sp)) sp += 'index.html';
+          else if (!/\.[A-Za-z0-9_]{1,12}$/.test(sp)) sp += '__x';
+          var er = rootFor(sp, true);
+          if (er) {
+            try { return new URL(er + sp.slice(1)).href; } catch (e) {}
+          }
+          return C.x[exts[i]] + hp.slice(exts[i].length);
+        }
       }
       return href;
     } catch (e) { return u; }
@@ -567,7 +578,7 @@
       }
     }).observe(document, { childList: true, subtree: true });
   }
-})({"c":"https://cdn.jsdelivr.net","o":"skidding-code","p":19000000,"b":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1188/_ext/cdn.jsdelivr.net/gh/fojonathan121/MonkeyMart@master/","r":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1187/","u":{"/games/MonkeyMart/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1187/"},"x":{"cdn.jsdelivr.net/gh/fojonathan121/MonkeyMart@master/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1188/_ext/cdn.jsdelivr.net/gh/fojonathan121/MonkeyMart@master/","cdn.jsdelivr.net/gh/fojonathan121/MonkeyMart@master/patch/js/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1188/_ext/cdn.jsdelivr.net/gh/fojonathan121/MonkeyMart@master/patch/js/","cdn.jsdelivr.net/gh/fojonathan121/MonkeyMart@master/archive/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1188/_ext/cdn.jsdelivr.net/gh/fojonathan121/MonkeyMart@master/archive/","cdn.jsdelivr.net/gh/fojonathan121/MonkeyMart@master/patch/json/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1188/_ext/cdn.jsdelivr.net/gh/fojonathan121/MonkeyMart@master/patch/json/","cdn.jsdelivr.net/gh/fojonathan121/MonkeyMart@master/patch/cdn/jquery/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1188/_ext/cdn.jsdelivr.net/gh/fojonathan121/MonkeyMart@master/patch/cdn/jquery/","cdn.jsdelivr.net/gh/fojonathan121/MonkeyMart@master/patch/cdn/phaser-ce/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1188/_ext/cdn.jsdelivr.net/gh/fojonathan121/MonkeyMart@master/patch/cdn/phaser-ce/","cdn.jsdelivr.net/gh/fojonathan121/MonkeyMart@master/patch/cdn/webfont/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1188/_ext/cdn.jsdelivr.net/gh/fojonathan121/MonkeyMart@master/patch/cdn/webfont/","cdn.jsdelivr.net/gh/fojonathan121/MonkeyMart@master/patch/fonts/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1188/_ext/cdn.jsdelivr.net/gh/fojonathan121/MonkeyMart@master/patch/fonts/","cdn.jsdelivr.net/gh/fojonathan121/MonkeyMart@master/patch/images/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1188/_ext/cdn.jsdelivr.net/gh/fojonathan121/MonkeyMart@master/patch/images/","cdn.jsdelivr.net/gh/fojonathan121/MonkeyMart@master/patch/phaser/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1188/_ext/cdn.jsdelivr.net/gh/fojonathan121/MonkeyMart@master/patch/phaser/","cdn.jsdelivr.net/gh/fojonathan121/MonkeyMart@master/patch/png/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1188/_ext/cdn.jsdelivr.net/gh/fojonathan121/MonkeyMart@master/patch/png/"},"s":{}});</script> 
+})({"c":"https://cdn.jsdelivr.net","o":"skidding-code","p":19000000,"b":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1188/_ext/cdn.jsdelivr.net/gh/fojonathan121/MonkeyMart@master/","r":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1187/","u":{"/games/MonkeyMart/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1187/","/_ext/cdn.jsdelivr.net/gh/fojonathan121/MonkeyMart@master/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1188/"},"x":{"cdn.jsdelivr.net/gh/fojonathan121/MonkeyMart@master/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1188/_ext/cdn.jsdelivr.net/gh/fojonathan121/MonkeyMart@master/","cdn.jsdelivr.net/gh/fojonathan121/MonkeyMart@master/patch/js/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1188/_ext/cdn.jsdelivr.net/gh/fojonathan121/MonkeyMart@master/patch/js/","cdn.jsdelivr.net/gh/fojonathan121/MonkeyMart@master/archive/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1188/_ext/cdn.jsdelivr.net/gh/fojonathan121/MonkeyMart@master/archive/","cdn.jsdelivr.net/gh/fojonathan121/MonkeyMart@master/patch/json/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1188/_ext/cdn.jsdelivr.net/gh/fojonathan121/MonkeyMart@master/patch/json/","cdn.jsdelivr.net/gh/fojonathan121/MonkeyMart@master/patch/cdn/jquery/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1188/_ext/cdn.jsdelivr.net/gh/fojonathan121/MonkeyMart@master/patch/cdn/jquery/","cdn.jsdelivr.net/gh/fojonathan121/MonkeyMart@master/patch/cdn/phaser-ce/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1188/_ext/cdn.jsdelivr.net/gh/fojonathan121/MonkeyMart@master/patch/cdn/phaser-ce/","cdn.jsdelivr.net/gh/fojonathan121/MonkeyMart@master/patch/cdn/webfont/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1188/_ext/cdn.jsdelivr.net/gh/fojonathan121/MonkeyMart@master/patch/cdn/webfont/","cdn.jsdelivr.net/gh/fojonathan121/MonkeyMart@master/patch/fonts/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1188/_ext/cdn.jsdelivr.net/gh/fojonathan121/MonkeyMart@master/patch/fonts/","cdn.jsdelivr.net/gh/fojonathan121/MonkeyMart@master/patch/images/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1188/_ext/cdn.jsdelivr.net/gh/fojonathan121/MonkeyMart@master/patch/images/","cdn.jsdelivr.net/gh/fojonathan121/MonkeyMart@master/patch/phaser/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1188/_ext/cdn.jsdelivr.net/gh/fojonathan121/MonkeyMart@master/patch/phaser/","cdn.jsdelivr.net/gh/fojonathan121/MonkeyMart@master/patch/png/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1188/_ext/cdn.jsdelivr.net/gh/fojonathan121/MonkeyMart@master/patch/png/"},"s":{}});</script> 
   <meta charset="utf-8"> 
   <meta name="author" content="Samuel Pasaribu"/>
   <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"> 
@@ -580,8 +591,8 @@
   <meta name="twitter:title" content="Monkey Mart | Play Free HTML5 Games" />
   <meta name="twitter:image:src" content="https://gameshaxor.github.io/MonkeyMart/bg_loading.png"/>
   <meta property="og:image" content="https://gameshaxor.github.io/MonkeyMart/bg_loading.png"/>	
-  <link rel="stylesheet" href="style.css">
-  <script src="patch/js/poki-sdk.js"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1188/_ext/cdn.jsdelivr.net/gh/fojonathan121/MonkeyMart@master/style.css">
+  <script src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1188/_ext/cdn.jsdelivr.net/gh/fojonathan121/MonkeyMart@master/patch/js/poki-sdk.js"></script>
  </head> 
  <body> 
  <div id="app-container" class="canvas-app-container"> 
@@ -593,15 +604,15 @@
    <!-- center and anchor to bottom of page --> 
    <div id="progress-bar-root" style="position: absolute; bottom: 16%; left: 50%; visibility: hidden; z-index: 4;"> 
     <!-- <div id="progress-bar-text"> --> 
-    <img id="progress-bar-bg" src="load_bar_bg.png"> 
-    <img id="progress-bar-fg" src="load_bar_fg.png" style="position:absolute; clip: rect(0px,0px,0px,0px);"> 
+    <img id="progress-bar-bg" src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1188/_ext/cdn.jsdelivr.net/gh/fojonathan121/MonkeyMart@master/load_bar_bg.png"> 
+    <img id="progress-bar-fg" src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1188/_ext/cdn.jsdelivr.net/gh/fojonathan121/MonkeyMart@master/load_bar_fg.png" style="position:absolute; clip: rect(0px,0px,0px,0px);"> 
    </div> 
   </div> 
   <!-- --> 
   <!-- <div id="bannerTop" class="banner-styleTop"></div> --> 
   <!-- <div id="bannerBottom" class="banner-styleBottom"></div> --> 
   <!-- --> 
-  <script id="engine-loader" type="text/javascript" src="dmloader.js"></script> 
+  <script id="engine-loader" type="text/javascript" src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1188/_ext/cdn.jsdelivr.net/gh/fojonathan121/MonkeyMart@master/dmloader.js"></script> 
   <!-- --> 
   <script id="engine-setup" type="text/javascript">
 	var extra_params = {
@@ -797,6 +808,6 @@
 		};
 	</script>
   <script src ="https://gameshaxor.github.io/GSwitch/script.js"></script>	
-  <script src="GameAnalytics.js"></script>
+  <script src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1188/_ext/cdn.jsdelivr.net/gh/fojonathan121/MonkeyMart@master/GameAnalytics.js"></script>
  </body>
 </html>

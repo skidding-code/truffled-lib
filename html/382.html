@@ -64,7 +64,18 @@
       }
       var hp = abs.host + abs.pathname;
       for (var i = 0; i < exts.length; i++) {
-        if (hp.indexOf(exts[i]) === 0) return C.x[exts[i]] + hp.slice(exts[i].length);
+        if (hp.indexOf(exts[i]) === 0) {
+          var sp = abs.pathname;
+          try { sp = decodeURIComponent(sp); } catch (e) {}
+          sp = '/_ext/' + abs.host + sp;
+          if (/\/$/.test(sp)) sp += 'index.html';
+          else if (!/\.[A-Za-z0-9_]{1,12}$/.test(sp)) sp += '__x';
+          var er = rootFor(sp, true);
+          if (er) {
+            try { return new URL(er + sp.slice(1)).href; } catch (e) {}
+          }
+          return C.x[exts[i]] + hp.slice(exts[i].length);
+        }
       }
       return href;
     } catch (e) { return u; }
@@ -574,13 +585,13 @@
 
 <meta name="generator" content="Construct 3">
 
-	<link rel="manifest" href="appmanifest.json">
-	<link rel="apple-touch-icon" sizes="128x128" href="icons/icon-128.png">
-	<link rel="apple-touch-icon" sizes="256x256" href="icons/icon-256.png">
-	<link rel="apple-touch-icon" sizes="512x512" href="icons/icon-512.png">
-	<link rel="icon" type="image/png" href="icons/icon-512.png">
+	<link rel="manifest" href="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1212/games/OvO2/appmanifest.json">
+	<link rel="apple-touch-icon" sizes="128x128" href="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1212/games/OvO2/icons/icon-128.png">
+	<link rel="apple-touch-icon" sizes="256x256" href="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1212/games/OvO2/icons/icon-256.png">
+	<link rel="apple-touch-icon" sizes="512x512" href="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1212/games/OvO2/icons/icon-512.png">
+	<link rel="icon" type="image/png" href="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1212/games/OvO2/icons/icon-512.png">
 
-<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1212/games/OvO2/style.css">
 
 </head>
 <body style="overflow:hidden;">
@@ -593,10 +604,10 @@
 			<p class="notSupportedMessage">This content was developed in Construct 3. <a href="https://www.construct.net/en">Create games online</a></p>
 		</div>
 	</noscript>
-	<script src="scripts/supportcheck.js"></script>
-	<script src="scripts/offlineclient.js"></script>
-	<script src="scripts/main.js"></script>
-	<!-- <script src="scripts/register-sw.js"></script> -->
+	<script src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1212/games/OvO2/scripts/supportcheck.js"></script>
+	<script src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1212/games/OvO2/scripts/offlineclient.js"></script>
+	<script src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1212/games/OvO2/scripts/main.js"></script>
+	<!-- <script src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1212/games/OvO2/scripts/register-sw.js"></script> -->
 
 </body>
 </html>

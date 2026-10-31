@@ -65,7 +65,18 @@
       }
       var hp = abs.host + abs.pathname;
       for (var i = 0; i < exts.length; i++) {
-        if (hp.indexOf(exts[i]) === 0) return C.x[exts[i]] + hp.slice(exts[i].length);
+        if (hp.indexOf(exts[i]) === 0) {
+          var sp = abs.pathname;
+          try { sp = decodeURIComponent(sp); } catch (e) {}
+          sp = '/_ext/' + abs.host + sp;
+          if (/\/$/.test(sp)) sp += 'index.html';
+          else if (!/\.[A-Za-z0-9_]{1,12}$/.test(sp)) sp += '__x';
+          var er = rootFor(sp, true);
+          if (er) {
+            try { return new URL(er + sp.slice(1)).href; } catch (e) {}
+          }
+          return C.x[exts[i]] + hp.slice(exts[i].length);
+        }
       }
       return href;
     } catch (e) { return u; }
@@ -568,11 +579,11 @@
       }
     }).observe(document, { childList: true, subtree: true });
   }
-})({"c":"https://cdn.jsdelivr.net","o":"skidding-code","p":19000000,"b":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1572/games/tattletail/","r":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1572/","u":{"/games/tattletail/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1572/","/extra/data/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0469/","/gamefile/monk.html":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1564/","/games/psp/tja/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1572/","/games/tattletail/Build/UnityLoader.js":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1572/","/games/tattletail/Build/WebGL.data.unityweb":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1573/","/games/tattletail/Build/WebGL.json":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1574/","/games/tattletail/Build/WebGL.wasm.code.unityweb":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1574/","/games/tattletail/Build/WebGL.wasm.framework.unityweb":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1574/"},"x":{"cdn.emulatorjs.org/stable/data/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0470/_ext/cdn.emulatorjs.org/stable/data/","cdn.emulatorjs.org/stable/data/localization/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0470/_ext/cdn.emulatorjs.org/stable/data/localization/","cdn.emulatorjs.org/stable/data/cores/reports/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0470/_ext/cdn.emulatorjs.org/stable/data/cores/reports/","cdn.emulatorjs.org/stable/data/cores/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0470/_ext/cdn.emulatorjs.org/stable/data/cores/","cdn.emulatorjs.org/stable/data/compression/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0470/_ext/cdn.emulatorjs.org/stable/data/compression/"},"s":{"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1573/games/tattletail/Build/WebGL.data.unityweb":[4,"application/octet-stream",64248986,[[1,"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1573/games/tattletail/Build/WebGL.data.unityweb"],[3,"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c2248/games/tattletail/Build/WebGL.data.unityweb"]]]}});</script>
+})({"c":"https://cdn.jsdelivr.net","o":"skidding-code","p":19000000,"b":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1572/games/tattletail/","r":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1572/","u":{"/games/tattletail/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1572/","/extra/data/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0469/","/gamefile/monk.html":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1564/","/games/psp/tja/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1572/","/games/tattletail/Build/UnityLoader.js":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1572/","/games/tattletail/Build/WebGL.data.unityweb":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1573/","/games/tattletail/Build/WebGL.json":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1574/","/games/tattletail/Build/WebGL.wasm.code.unityweb":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1574/","/games/tattletail/Build/WebGL.wasm.framework.unityweb":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1574/","/_ext/cdn.emulatorjs.org/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0470/"},"x":{"cdn.emulatorjs.org/stable/data/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0470/_ext/cdn.emulatorjs.org/stable/data/","cdn.emulatorjs.org/stable/data/localization/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0470/_ext/cdn.emulatorjs.org/stable/data/localization/","cdn.emulatorjs.org/stable/data/cores/reports/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0470/_ext/cdn.emulatorjs.org/stable/data/cores/reports/","cdn.emulatorjs.org/stable/data/cores/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0470/_ext/cdn.emulatorjs.org/stable/data/cores/","cdn.emulatorjs.org/stable/data/compression/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0470/_ext/cdn.emulatorjs.org/stable/data/compression/"},"s":{"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1573/games/tattletail/Build/WebGL.data.unityweb":[4,"application/octet-stream",64248986,[[1,"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1573/games/tattletail/Build/WebGL.data.unityweb"],[3,"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c2248/games/tattletail/Build/WebGL.data.unityweb"]]]}});</script>
   <meta charset="utf-8">
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
   <title>Tattletail</title>
-  <script src="Build/UnityLoader.js"></script>
+  <script src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1572/games/tattletail/Build/UnityLoader.js"></script>
         <script>
         window.onload = function() {
             alert("Made by Snubby. Thanks to him we have Tattletail <3");

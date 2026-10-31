@@ -64,7 +64,18 @@
       }
       var hp = abs.host + abs.pathname;
       for (var i = 0; i < exts.length; i++) {
-        if (hp.indexOf(exts[i]) === 0) return C.x[exts[i]] + hp.slice(exts[i].length);
+        if (hp.indexOf(exts[i]) === 0) {
+          var sp = abs.pathname;
+          try { sp = decodeURIComponent(sp); } catch (e) {}
+          sp = '/_ext/' + abs.host + sp;
+          if (/\/$/.test(sp)) sp += 'index.html';
+          else if (!/\.[A-Za-z0-9_]{1,12}$/.test(sp)) sp += '__x';
+          var er = rootFor(sp, true);
+          if (er) {
+            try { return new URL(er + sp.slice(1)).href; } catch (e) {}
+          }
+          return C.x[exts[i]] + hp.slice(exts[i].length);
+        }
       }
       return href;
     } catch (e) { return u; }
@@ -567,7 +578,7 @@
       }
     }).observe(document, { childList: true, subtree: true });
   }
-})({"c":"https://cdn.jsdelivr.net","o":"skidding-code","p":19000000,"b":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0238/games/bday/","r":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0238/","u":{"/games/bday/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0238/"},"x":{"cdn.jsdelivr.net/gh/woahhcrackers/BirthdayBashWeb@main/Build/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0240/_ext/cdn.jsdelivr.net/gh/woahhcrackers/BirthdayBashWeb@main/Build/"},"s":{"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0239/_ext/cdn.jsdelivr.net/gh/woahhcrackers/BirthdayBashWeb@main/Build/BirthdayBashWeb.data.001":[2,"application/octet-stream",19922944]}});</script>
+})({"c":"https://cdn.jsdelivr.net","o":"skidding-code","p":19000000,"b":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0238/games/bday/","r":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0238/","u":{"/games/bday/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0238/","/_ext/cdn.jsdelivr.net/gh/woahhcrackers/BirthdayBashWeb@main/Build/BirthdayBashWeb.data.001":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0239/","/_ext/cdn.jsdelivr.net/gh/woahhcrackers/BirthdayBashWeb@main/Build/BirthdayBashWeb.data.002":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0239/","/_ext/cdn.jsdelivr.net/gh/woahhcrackers/BirthdayBashWeb@main/Build/BirthdayBashWeb.wasm":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0240/","/_ext/cdn.jsdelivr.net/gh/woahhcrackers/BirthdayBashWeb@main/Build/BirthdayBashWeb.loader.js":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0240/","/_ext/cdn.jsdelivr.net/gh/woahhcrackers/BirthdayBashWeb@main/Build/BirthdayBashWeb.framework.js":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0240/"},"x":{"cdn.jsdelivr.net/gh/woahhcrackers/BirthdayBashWeb@main/Build/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0240/_ext/cdn.jsdelivr.net/gh/woahhcrackers/BirthdayBashWeb@main/Build/"},"s":{"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0239/_ext/cdn.jsdelivr.net/gh/woahhcrackers/BirthdayBashWeb@main/Build/BirthdayBashWeb.data.001":[2,"application/octet-stream",19922944]}});</script>
 
     <meta charset="utf-8">
     <title>Unity WebGL Player | birthday bash</title>

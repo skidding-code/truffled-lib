@@ -64,7 +64,18 @@
       }
       var hp = abs.host + abs.pathname;
       for (var i = 0; i < exts.length; i++) {
-        if (hp.indexOf(exts[i]) === 0) return C.x[exts[i]] + hp.slice(exts[i].length);
+        if (hp.indexOf(exts[i]) === 0) {
+          var sp = abs.pathname;
+          try { sp = decodeURIComponent(sp); } catch (e) {}
+          sp = '/_ext/' + abs.host + sp;
+          if (/\/$/.test(sp)) sp += 'index.html';
+          else if (!/\.[A-Za-z0-9_]{1,12}$/.test(sp)) sp += '__x';
+          var er = rootFor(sp, true);
+          if (er) {
+            try { return new URL(er + sp.slice(1)).href; } catch (e) {}
+          }
+          return C.x[exts[i]] + hp.slice(exts[i].length);
+        }
       }
       return href;
     } catch (e) { return u; }
@@ -567,7 +578,7 @@
       }
     }).observe(document, { childList: true, subtree: true });
   }
-})({"c":"https://cdn.jsdelivr.net","o":"skidding-code","p":19000000,"b":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0273/games/bhf/","r":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0273/","u":{"/games/bhf/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0273/"},"x":{"cdn.jsdelivr.net/gh/mynamescrax/gamesforaetheris@main/blackholefishing/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0278/_ext/cdn.jsdelivr.net/gh/mynamescrax/gamesforaetheris@main/blackholefishing/"},"s":{}});</script>
+})({"c":"https://cdn.jsdelivr.net","o":"skidding-code","p":19000000,"b":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0273/games/bhf/","r":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0273/","u":{"/games/bhf/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0273/","/_ext/cdn.jsdelivr.net/gh/mynamescrax/gamesforaetheris@main/blackholefishing/index.wasm.part01":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0274/","/_ext/cdn.jsdelivr.net/gh/mynamescrax/gamesforaetheris@main/blackholefishing/index.pck.part01":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0274/","/_ext/cdn.jsdelivr.net/gh/mynamescrax/gamesforaetheris@main/blackholefishing/index.wasm.part02":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0274/","/_ext/cdn.jsdelivr.net/gh/mynamescrax/gamesforaetheris@main/blackholefishing/index.wasm.part03":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0275/","/_ext/cdn.jsdelivr.net/gh/mynamescrax/gamesforaetheris@main/blackholefishing/index.pck.part02":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0275/","/_ext/cdn.jsdelivr.net/gh/mynamescrax/gamesforaetheris@main/blackholefishing/index.pck.part03":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0275/","/_ext/cdn.jsdelivr.net/gh/mynamescrax/gamesforaetheris@main/blackholefishing/index.pck.part04":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0276/","/_ext/cdn.jsdelivr.net/gh/mynamescrax/gamesforaetheris@main/blackholefishing/index.pck.part05":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0276/","/_ext/cdn.jsdelivr.net/gh/mynamescrax/gamesforaetheris@main/blackholefishing/index.pck.part06":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0276/","/_ext/cdn.jsdelivr.net/gh/mynamescrax/gamesforaetheris@main/blackholefishing/index.pck.part07":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0277/","/_ext/cdn.jsdelivr.net/gh/mynamescrax/gamesforaetheris@main/blackholefishing/index.pck.part08":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0277/","/_ext/cdn.jsdelivr.net/gh/mynamescrax/gamesforaetheris@main/blackholefishing/index.pck.part09":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0277/","/_ext/cdn.jsdelivr.net/gh/mynamescrax/gamesforaetheris@main/blackholefishing/index.pck.part10":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0278/","/_ext/cdn.jsdelivr.net/gh/mynamescrax/gamesforaetheris@main/blackholefishing/index.apple-touch-icon.png":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0278/","/_ext/cdn.jsdelivr.net/gh/mynamescrax/gamesforaetheris@main/blackholefishing/index.apple-touch-icon.png.import":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0278/","/_ext/cdn.jsdelivr.net/gh/mynamescrax/gamesforaetheris@main/blackholefishing/index.audio.position.worklet.js":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0278/","/_ext/cdn.jsdelivr.net/gh/mynamescrax/gamesforaetheris@main/blackholefishing/index.audio.worklet.js":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0278/","/_ext/cdn.jsdelivr.net/gh/mynamescrax/gamesforaetheris@main/blackholefishing/index.html":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0278/","/_ext/cdn.jsdelivr.net/gh/mynamescrax/gamesforaetheris@main/blackholefishing/index.icon.png":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0278/","/_ext/cdn.jsdelivr.net/gh/mynamescrax/gamesforaetheris@main/blackholefishing/index.icon.png.import":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0278/","/_ext/cdn.jsdelivr.net/gh/mynamescrax/gamesforaetheris@main/blackholefishing/index.js":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0278/","/_ext/cdn.jsdelivr.net/gh/mynamescrax/gamesforaetheris@main/blackholefishing/index.png":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0278/","/_ext/cdn.jsdelivr.net/gh/mynamescrax/gamesforaetheris@main/blackholefishing/index.png.import":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0278/","/_ext/cdn.jsdelivr.net/gh/mynamescrax/gamesforaetheris@main/blackholefishing/single.html":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0278/"},"x":{"cdn.jsdelivr.net/gh/mynamescrax/gamesforaetheris@main/blackholefishing/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0278/_ext/cdn.jsdelivr.net/gh/mynamescrax/gamesforaetheris@main/blackholefishing/"},"s":{}});</script>
 		<meta charset="utf-8">
 		<meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0">
 		<title>Black Hole Fishing</title>
@@ -657,8 +668,8 @@ body {
 	z-index: 1;
 }
 		</style>
-		<link id="-gd-engine-icon" rel="icon" type="image/png" href="index.icon.png" />
-<link rel="apple-touch-icon" href="index.apple-touch-icon.png"/>
+		<link id="-gd-engine-icon" rel="icon" type="image/png" href="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0273/games/bhf/index.icon.png" />
+<link rel="apple-touch-icon" href="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0273/games/bhf/index.apple-touch-icon.png"/>
 
 	</head>
 	
@@ -672,7 +683,7 @@ body {
 		</noscript>
 
 		<div id="status">
-			<img id="status-splash" class="show-image--true fullsize--false use-filter--true" src="index.png" alt="">
+			<img id="status-splash" class="show-image--true fullsize--false use-filter--true" src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0273/games/bhf/index.png" alt="">
 			<progress id="status-progress"></progress>
 			<div id="status-notice"></div>
 		</div>
@@ -732,7 +743,7 @@ const SPLIT_FILES = {
 	};
 }());
 		</script>
-		<script src="index.js"></script>
+		<script src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0273/games/bhf/index.js"></script>
 		<script>
 const GODOT_CONFIG = {"args":[],"canvasResizePolicy":2,"emscriptenPoolSize":8,"ensureCrossOriginIsolationHeaders":true,"executable":"index","experimentalVK":false,"fileSizes":{"index.pck":115777908,"index.wasm":37896978},"focusCanvas":true,"gdextensionLibs":[],"godotPoolSize":4};
 const GODOT_THREADS_ENABLED = false;

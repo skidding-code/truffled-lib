@@ -64,7 +64,18 @@
       }
       var hp = abs.host + abs.pathname;
       for (var i = 0; i < exts.length; i++) {
-        if (hp.indexOf(exts[i]) === 0) return C.x[exts[i]] + hp.slice(exts[i].length);
+        if (hp.indexOf(exts[i]) === 0) {
+          var sp = abs.pathname;
+          try { sp = decodeURIComponent(sp); } catch (e) {}
+          sp = '/_ext/' + abs.host + sp;
+          if (/\/$/.test(sp)) sp += 'index.html';
+          else if (!/\.[A-Za-z0-9_]{1,12}$/.test(sp)) sp += '__x';
+          var er = rootFor(sp, true);
+          if (er) {
+            try { return new URL(er + sp.slice(1)).href; } catch (e) {}
+          }
+          return C.x[exts[i]] + hp.slice(exts[i].length);
+        }
       }
       return href;
     } catch (e) { return u; }
@@ -574,7 +585,7 @@
 <title>Pikmin Native</title>
 <!-- Hosts that can't send COOP/COEP headers (GitHub Pages): a service worker adds them (one reload on
      the first visit). Does nothing when the server already sends them (native/web/serve.py). -->
-<script src="coi-serviceworker.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1287/games/pikmin/coi-serviceworker.js"></script>
 <style>
   :root { --bg: #0d1410; --panel: #18231c; --text: #e6efe8; --muted: #9fb3a5; --accent: #e8483a; --line: #2c3b31; }
   html, body { margin: 0; height: 100%; background: var(--bg); color: var(--text);

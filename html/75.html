@@ -64,7 +64,18 @@
       }
       var hp = abs.host + abs.pathname;
       for (var i = 0; i < exts.length; i++) {
-        if (hp.indexOf(exts[i]) === 0) return C.x[exts[i]] + hp.slice(exts[i].length);
+        if (hp.indexOf(exts[i]) === 0) {
+          var sp = abs.pathname;
+          try { sp = decodeURIComponent(sp); } catch (e) {}
+          sp = '/_ext/' + abs.host + sp;
+          if (/\/$/.test(sp)) sp += 'index.html';
+          else if (!/\.[A-Za-z0-9_]{1,12}$/.test(sp)) sp += '__x';
+          var er = rootFor(sp, true);
+          if (er) {
+            try { return new URL(er + sp.slice(1)).href; } catch (e) {}
+          }
+          return C.x[exts[i]] + hp.slice(exts[i].length);
+        }
       }
       return href;
     } catch (e) { return u; }
@@ -573,7 +584,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width">
     <title>Bloxors | 3kh0</title>
-    <link rel="shortcut icon" type="image/ico" href="favicon.ico">
+    <link rel="shortcut icon" type="image/ico" href="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0286/games/bloxors/favicon.ico">
     <script>
       window.RufflePlayer = window.RufflePlayer || {};
       window.RufflePlayer.config = {
@@ -613,7 +624,7 @@
           player.load("bloxors.swf");
       });
     </script>
-    <script src="ruffle/ruffle.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0286/games/bloxors/ruffle/ruffle.js"></script>
     <script src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0001/js/main.js"></script>
     </center>
   </body>

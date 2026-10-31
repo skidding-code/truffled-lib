@@ -65,7 +65,18 @@
       }
       var hp = abs.host + abs.pathname;
       for (var i = 0; i < exts.length; i++) {
-        if (hp.indexOf(exts[i]) === 0) return C.x[exts[i]] + hp.slice(exts[i].length);
+        if (hp.indexOf(exts[i]) === 0) {
+          var sp = abs.pathname;
+          try { sp = decodeURIComponent(sp); } catch (e) {}
+          sp = '/_ext/' + abs.host + sp;
+          if (/\/$/.test(sp)) sp += 'index.html';
+          else if (!/\.[A-Za-z0-9_]{1,12}$/.test(sp)) sp += '__x';
+          var er = rootFor(sp, true);
+          if (er) {
+            try { return new URL(er + sp.slice(1)).href; } catch (e) {}
+          }
+          return C.x[exts[i]] + hp.slice(exts[i].length);
+        }
       }
       return href;
     } catch (e) { return u; }
@@ -568,11 +579,11 @@
       }
     }).observe(document, { childList: true, subtree: true });
   }
-})({"c":"https://cdn.jsdelivr.net","o":"skidding-code","p":19000000,"b":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0932/_ext/cdn.jsdelivr.net/gh/Pixelsuft/hl@main/","r":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0932/","u":{"/gamefile/hlof.html":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0932/","/games/funmayhem2/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0931/","/games/hl-main/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0932/"},"x":{"cdn.jsdelivr.net/gh/Pixelsuft/hl@main/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0932/_ext/cdn.jsdelivr.net/gh/Pixelsuft/hl@main/","cdn.jsdelivr.net/gh/Pixelsuft/hl@main/opposing_force_en_out/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0938/_ext/cdn.jsdelivr.net/gh/Pixelsuft/hl@main/opposing_force_en_out/"},"s":{}});</script>
+})({"c":"https://cdn.jsdelivr.net","o":"skidding-code","p":19000000,"b":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0932/_ext/cdn.jsdelivr.net/gh/Pixelsuft/hl@main/","r":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0932/","u":{"/gamefile/hlof.html":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0932/","/games/funmayhem2/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0931/","/games/hl-main/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0932/","/_ext/cdn.jsdelivr.net/gh/Pixelsuft/hl@main/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0932/","/_ext/cdn.jsdelivr.net/gh/Pixelsuft/hl@main/opposing_force_en_out/opposing_force_en-0.zip":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0933/","/_ext/cdn.jsdelivr.net/gh/Pixelsuft/hl@main/opposing_force_en_out/opposing_force_en-1.zip":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0933/","/_ext/cdn.jsdelivr.net/gh/Pixelsuft/hl@main/opposing_force_en_out/opposing_force_en-2.zip":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0933/","/_ext/cdn.jsdelivr.net/gh/Pixelsuft/hl@main/opposing_force_en_out/opposing_force_en-3.zip":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0933/","/_ext/cdn.jsdelivr.net/gh/Pixelsuft/hl@main/opposing_force_en_out/opposing_force_en-4.zip":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0934/","/_ext/cdn.jsdelivr.net/gh/Pixelsuft/hl@main/opposing_force_en_out/opposing_force_en-5.zip":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0934/","/_ext/cdn.jsdelivr.net/gh/Pixelsuft/hl@main/opposing_force_en_out/opposing_force_en-6.zip":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0934/","/_ext/cdn.jsdelivr.net/gh/Pixelsuft/hl@main/opposing_force_en_out/opposing_force_en-7.zip":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0934/","/_ext/cdn.jsdelivr.net/gh/Pixelsuft/hl@main/opposing_force_en_out/opposing_force_en-8.zip":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0935/","/_ext/cdn.jsdelivr.net/gh/Pixelsuft/hl@main/opposing_force_en_out/opposing_force_en-9.zip":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0935/","/_ext/cdn.jsdelivr.net/gh/Pixelsuft/hl@main/opposing_force_en_out/opposing_force_en-10.zip":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0935/","/_ext/cdn.jsdelivr.net/gh/Pixelsuft/hl@main/opposing_force_en_out/opposing_force_en-11.zip":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0935/","/_ext/cdn.jsdelivr.net/gh/Pixelsuft/hl@main/opposing_force_en_out/opposing_force_en-12.zip":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0936/","/_ext/cdn.jsdelivr.net/gh/Pixelsuft/hl@main/opposing_force_en_out/opposing_force_en-13.zip":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0936/","/_ext/cdn.jsdelivr.net/gh/Pixelsuft/hl@main/opposing_force_en_out/opposing_force_en-14.zip":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0936/","/_ext/cdn.jsdelivr.net/gh/Pixelsuft/hl@main/opposing_force_en_out/opposing_force_en-15.zip":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0936/","/_ext/cdn.jsdelivr.net/gh/Pixelsuft/hl@main/opposing_force_en_out/opposing_force_en-16.zip":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0937/","/_ext/cdn.jsdelivr.net/gh/Pixelsuft/hl@main/opposing_force_en_out/opposing_force_en-17.zip":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0937/","/_ext/cdn.jsdelivr.net/gh/Pixelsuft/hl@main/opposing_force_en_out/opposing_force_en-18.zip":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0937/","/_ext/cdn.jsdelivr.net/gh/Pixelsuft/hl@main/opposing_force_en_out/opposing_force_en-19.zip":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0937/","/_ext/cdn.jsdelivr.net/gh/Pixelsuft/hl@main/opposing_force_en_out/opposing_force_en-20.zip":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0938/","/_ext/cdn.jsdelivr.net/gh/Pixelsuft/hl@main/opposing_force_en_out/opposing_force_en-21.zip":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0938/"},"x":{"cdn.jsdelivr.net/gh/Pixelsuft/hl@main/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0932/_ext/cdn.jsdelivr.net/gh/Pixelsuft/hl@main/","cdn.jsdelivr.net/gh/Pixelsuft/hl@main/opposing_force_en_out/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0938/_ext/cdn.jsdelivr.net/gh/Pixelsuft/hl@main/opposing_force_en_out/"},"s":{}});</script>
 
 	<meta charset="utf-8">
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-	<link rel="shortcut icon" type="image/x-icon" href="favicon.ico">
+	<link rel="shortcut icon" type="image/x-icon" href="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0932/_ext/cdn.jsdelivr.net/gh/Pixelsuft/hl@main/favicon.ico">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 	<meta name="MobileOptimized" content="640" />
 	<meta name="HandheldFriendly" content="true" />
@@ -639,7 +650,7 @@
 		/* the canvas *must not* have any border or padding, or mouse coords will be wrong */
 		canvas.emscripten {
 			border: 0px none;
-			background-image: url(xd.png);
+			background-image: url(https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0932/_ext/cdn.jsdelivr.net/gh/Pixelsuft/hl@main/xd.png);
 			box-shadow: #ffa600 0px 0px 9px 4px;
 		}
 
@@ -875,13 +886,13 @@
 		<div id='linksPlaceholder' style=display:none>Download archives to load locally next time:</div><br>
 	</form>
 
-	<script type='text/javascript' src='browserfs.min.js'></script>
+	<script type='text/javascript' src='https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0932/_ext/cdn.jsdelivr.net/gh/Pixelsuft/hl@main/browserfs.min.js'></script>
 	<script type='text/javascript'>
 		var zipMods = [];
 		var pkgMods = [];
 	</script>
 
-	<script type='text/javascript' src='mods.js'></script>
+	<script type='text/javascript' src='https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0932/_ext/cdn.jsdelivr.net/gh/Pixelsuft/hl@main/mods.js'></script>
 
 	<script type='text/javascript'>
 		var show_again = true;

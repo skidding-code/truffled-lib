@@ -64,7 +64,18 @@
       }
       var hp = abs.host + abs.pathname;
       for (var i = 0; i < exts.length; i++) {
-        if (hp.indexOf(exts[i]) === 0) return C.x[exts[i]] + hp.slice(exts[i].length);
+        if (hp.indexOf(exts[i]) === 0) {
+          var sp = abs.pathname;
+          try { sp = decodeURIComponent(sp); } catch (e) {}
+          sp = '/_ext/' + abs.host + sp;
+          if (/\/$/.test(sp)) sp += 'index.html';
+          else if (!/\.[A-Za-z0-9_]{1,12}$/.test(sp)) sp += '__x';
+          var er = rootFor(sp, true);
+          if (er) {
+            try { return new URL(er + sp.slice(1)).href; } catch (e) {}
+          }
+          return C.x[exts[i]] + hp.slice(exts[i].length);
+        }
       }
       return href;
     } catch (e) { return u; }
@@ -570,11 +581,11 @@
 })({"c":"https://cdn.jsdelivr.net","o":"skidding-code","p":19000000,"b":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1529/games/solitaire/","r":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1529/","u":{"/games/solitaire/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1529/","/js/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0001/"},"x":{},"s":{}});</script>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link href="lib/os-gui/layout.css" rel="stylesheet" type="text/css">
-    <link href="lib/os-gui/windows-98.css" rel="stylesheet" type="text/css">
-    <link href="src/solitaire.css" rel="stylesheet" type="text/css">
-    <link rel="icon" href="img/solitaire-16x16.png" sizes="16x16" type="image/png">
-    <link rel="icon" href="img/solitaire-32x32.png" sizes="32x32" type="image/png">
+    <link href="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1529/games/solitaire/lib/os-gui/layout.css" rel="stylesheet" type="text/css">
+    <link href="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1529/games/solitaire/lib/os-gui/windows-98.css" rel="stylesheet" type="text/css">
+    <link href="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1529/games/solitaire/src/solitaire.css" rel="stylesheet" type="text/css">
+    <link rel="icon" href="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1529/games/solitaire/img/solitaire-16x16.png" sizes="16x16" type="image/png">
+    <link rel="icon" href="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1529/games/solitaire/img/solitaire-32x32.png" sizes="32x32" type="image/png">
     <title>Solitaire</title>
 
 </head>
@@ -589,13 +600,13 @@
             <div id="js-board" class="board-deck"></div>
         </div>
     </div>
-    <script src="lib/jquery.min.js"></script>
-    <script src="lib/os-gui/MenuBar.js"></script>
-    <script src="lib/os-gui/$Window.js"></script>
-    <script src="src/msgbox.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1529/games/solitaire/lib/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1529/games/solitaire/lib/os-gui/MenuBar.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1529/games/solitaire/lib/os-gui/$Window.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1529/games/solitaire/src/msgbox.js"></script>
     <script>defaultMessageBoxTitle = "Solitaire";</script>
-    <script src="src/menus.js"></script>
-    <script src="src/index.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1529/games/solitaire/src/menus.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1529/games/solitaire/src/index.js"></script>
 
     <script type="application/javascript" src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0001/js/main.js"></script>
 </body>

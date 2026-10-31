@@ -64,7 +64,18 @@
       }
       var hp = abs.host + abs.pathname;
       for (var i = 0; i < exts.length; i++) {
-        if (hp.indexOf(exts[i]) === 0) return C.x[exts[i]] + hp.slice(exts[i].length);
+        if (hp.indexOf(exts[i]) === 0) {
+          var sp = abs.pathname;
+          try { sp = decodeURIComponent(sp); } catch (e) {}
+          sp = '/_ext/' + abs.host + sp;
+          if (/\/$/.test(sp)) sp += 'index.html';
+          else if (!/\.[A-Za-z0-9_]{1,12}$/.test(sp)) sp += '__x';
+          var er = rootFor(sp, true);
+          if (er) {
+            try { return new URL(er + sp.slice(1)).href; } catch (e) {}
+          }
+          return C.x[exts[i]] + hp.slice(exts[i].length);
+        }
       }
       return href;
     } catch (e) { return u; }
@@ -567,7 +578,7 @@
       }
     }).observe(document, { childList: true, subtree: true });
   }
-})({"c":"https://cdn.jsdelivr.net","o":"skidding-code","p":19000000,"b":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0577/games/ducklife3/","r":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0577/","u":{"/games/ducklife3/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0577/","/js/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0001/"},"x":{"server.cpmstar.com/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0577/_ext/server.cpmstar.com/"},"s":{}});</script>
+})({"c":"https://cdn.jsdelivr.net","o":"skidding-code","p":19000000,"b":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0577/games/ducklife3/","r":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0577/","u":{"/games/ducklife3/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0577/","/js/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0001/","/_ext/server.cpmstar.com/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0577/"},"x":{"server.cpmstar.com/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0577/_ext/server.cpmstar.com/"},"s":{}});</script>
     <!-- Google tag (gtag.js) -->
 B8H2K339H7"></script>
     <script>
@@ -579,7 +590,7 @@ B8H2K339H7"></script>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width">
     <title>Duck Life 3 | 3kh0</title>
-    <link rel="shortcut icon" type="image/ico" href="favicon.ico">
+    <link rel="shortcut icon" type="image/ico" href="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0577/games/ducklife3/favicon.ico">
     <script>
       window.RufflePlayer = window.RufflePlayer || {};
       window.RufflePlayer.config = {
@@ -606,7 +617,7 @@ B8H2K339H7"></script>
 </head>
   <body style="background-color:black;">
     <center>
-      <img src="title.png" style="padding:5px;width:500px;">
+      <img src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0577/games/ducklife3/title.png" style="padding:5px;width:500px;">
       <div id="container" style="border: #ccc 3px solid;height:600px;width:937px;"></div>
     <script>
       window.RufflePlayer = window.RufflePlayer || {};
@@ -620,7 +631,7 @@ B8H2K339H7"></script>
           player.load("ducklife3evolution.swf");
       });
     </script>
-    <script src="ruffle/ruffle.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0577/games/ducklife3/ruffle/ruffle.js"></script>
     </center>
     <script type="application/javascript" src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0001/js/main.js"></script>
   </body>

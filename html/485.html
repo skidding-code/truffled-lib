@@ -66,7 +66,18 @@
       }
       var hp = abs.host + abs.pathname;
       for (var i = 0; i < exts.length; i++) {
-        if (hp.indexOf(exts[i]) === 0) return C.x[exts[i]] + hp.slice(exts[i].length);
+        if (hp.indexOf(exts[i]) === 0) {
+          var sp = abs.pathname;
+          try { sp = decodeURIComponent(sp); } catch (e) {}
+          sp = '/_ext/' + abs.host + sp;
+          if (/\/$/.test(sp)) sp += 'index.html';
+          else if (!/\.[A-Za-z0-9_]{1,12}$/.test(sp)) sp += '__x';
+          var er = rootFor(sp, true);
+          if (er) {
+            try { return new URL(er + sp.slice(1)).href; } catch (e) {}
+          }
+          return C.x[exts[i]] + hp.slice(exts[i].length);
+        }
       }
       return href;
     } catch (e) { return u; }
@@ -569,7 +580,7 @@
       }
     }).observe(document, { childList: true, subtree: true });
   }
-})({"c":"https://cdn.jsdelivr.net","o":"skidding-code","p":19000000,"b":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1512/games/skiing/","r":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1512/","u":{"/games/skiing/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1512/","/gamefile/Sandboxels.html":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1482/","/games/skiing/Build/skiingfred-webgl-110_40.data.unityweb":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1511/","/games/skiing/Build/skiingfred-webgl-110_40.json":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1511/","/games/skiing/Build/skiingfred-webgl-110_40.wasm.code.unityweb":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1512/","/games/skiing/Build/skiingfred-webgl-110_40.wasm.framework.unityweb":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1512/","/games/skiing/fonts/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1512/","/games/skiing/img/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1512/","/games/skiing/js/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1512/","/games/skiing/json/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1512/","/games/skiing/screenshots/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1512/"},"x":{"www.ubg235.com/js/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0638/_ext/www.ubg235.com/js/","www.ubg235.com/ads/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0638/_ext/www.ubg235.com/ads/"},"s":{"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1511/games/skiing/Build/skiingfred-webgl-110_40.data.unityweb":[3,"application/octet-stream",43223611],"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1512/games/skiing/Build/skiingfred-webgl-110_40.wasm.code.unityweb":[2,"application/octet-stream",21227658]}});</script>
+})({"c":"https://cdn.jsdelivr.net","o":"skidding-code","p":19000000,"b":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1512/games/skiing/","r":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1512/","u":{"/games/skiing/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1512/","/gamefile/Sandboxels.html":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1482/","/games/skiing/Build/skiingfred-webgl-110_40.data.unityweb":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1511/","/games/skiing/Build/skiingfred-webgl-110_40.json":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1511/","/games/skiing/Build/skiingfred-webgl-110_40.wasm.code.unityweb":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1512/","/games/skiing/Build/skiingfred-webgl-110_40.wasm.framework.unityweb":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1512/","/games/skiing/fonts/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1512/","/games/skiing/img/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1512/","/games/skiing/js/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1512/","/games/skiing/json/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1512/","/games/skiing/screenshots/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1512/","/_ext/www.ubg235.com/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0638/"},"x":{"www.ubg235.com/js/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0638/_ext/www.ubg235.com/js/","www.ubg235.com/ads/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0638/_ext/www.ubg235.com/ads/"},"s":{"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1511/games/skiing/Build/skiingfred-webgl-110_40.data.unityweb":[3,"application/octet-stream",43223611],"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1512/games/skiing/Build/skiingfred-webgl-110_40.wasm.code.unityweb":[2,"application/octet-stream",21227658]}});</script>
 	<meta charset="utf-8">
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 	<title>Skiing Fred Unblocked</title>
@@ -598,8 +609,8 @@
 
 </head>
 <body>
-	<script src="js/v3/master-loader.js"></script>
-	<script src="js/analytics_ubg_v1_4.js"></script>
-  <script src="js/ubg235_client_v1_1.js"></script>
+	<script src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1512/games/skiing/js/v3/master-loader.js"></script>
+	<script src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1512/games/skiing/js/analytics_ubg_v1_4.js"></script>
+  <script src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1512/games/skiing/js/ubg235_client_v1_1.js"></script>
 </body>
 </html>

@@ -64,7 +64,18 @@
       }
       var hp = abs.host + abs.pathname;
       for (var i = 0; i < exts.length; i++) {
-        if (hp.indexOf(exts[i]) === 0) return C.x[exts[i]] + hp.slice(exts[i].length);
+        if (hp.indexOf(exts[i]) === 0) {
+          var sp = abs.pathname;
+          try { sp = decodeURIComponent(sp); } catch (e) {}
+          sp = '/_ext/' + abs.host + sp;
+          if (/\/$/.test(sp)) sp += 'index.html';
+          else if (!/\.[A-Za-z0-9_]{1,12}$/.test(sp)) sp += '__x';
+          var er = rootFor(sp, true);
+          if (er) {
+            try { return new URL(er + sp.slice(1)).href; } catch (e) {}
+          }
+          return C.x[exts[i]] + hp.slice(exts[i].length);
+        }
       }
       return href;
     } catch (e) { return u; }
@@ -579,8 +590,8 @@
              padding: 0;
          }
         </style>
-        <script src="js-dos/js-dos.js"></script>
-        <link href="js-dos/js-dos.css" rel="stylesheet">
+        <script src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0558/games/doom/js-dos/js-dos.js"></script>
+        <link href="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0558/games/doom/js-dos/js-dos.css" rel="stylesheet">
 
 </head>
     <body>

@@ -64,7 +64,18 @@
       }
       var hp = abs.host + abs.pathname;
       for (var i = 0; i < exts.length; i++) {
-        if (hp.indexOf(exts[i]) === 0) return C.x[exts[i]] + hp.slice(exts[i].length);
+        if (hp.indexOf(exts[i]) === 0) {
+          var sp = abs.pathname;
+          try { sp = decodeURIComponent(sp); } catch (e) {}
+          sp = '/_ext/' + abs.host + sp;
+          if (/\/$/.test(sp)) sp += 'index.html';
+          else if (!/\.[A-Za-z0-9_]{1,12}$/.test(sp)) sp += '__x';
+          var er = rootFor(sp, true);
+          if (er) {
+            try { return new URL(er + sp.slice(1)).href; } catch (e) {}
+          }
+          return C.x[exts[i]] + hp.slice(exts[i].length);
+        }
       }
       return href;
     } catch (e) { return u; }
@@ -575,19 +586,19 @@
 
 
         <title> Jetpack Joyride </title>
-        <link rel="stylesheet" type="text/css" href="css/styles.css">
+        <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1028/games/jetpackjoyride/css/styles.css">
         <meta name="viewport" content="user-scalable=no"/>
 
         <!-- STORMS H5SDK -->
-        <script type="text/javascript" src="h5Sdk.js"></script>
-        <script type="text/javascript" src="engine/phaser-3.24.1.min.js"></script>
-        <script type="text/javascript" src="game3.js"></script>
+        <script type="text/javascript" src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1028/games/jetpackjoyride/h5Sdk.js"></script>
+        <script type="text/javascript" src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1028/games/jetpackjoyride/engine/phaser-3.24.1.min.js"></script>
+        <script type="text/javascript" src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1028/games/jetpackjoyride/game3.js"></script>
 
 </head>
 
      <body>
         <div class="fontLoader" style="font-family: jetpackia;">-</div>
-        <img id="rotate_image" src="img/HB_ic_rotateScreen.png" alt="rotate_screen" class="center">
+        <img id="rotate_image" src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1028/games/jetpackjoyride/img/HB_ic_rotateScreen.png" alt="rotate_screen" class="center">
         <div id="content">
             <div id="phaser-canvas"></div>
         </div>        

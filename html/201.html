@@ -67,7 +67,18 @@
       }
       var hp = abs.host + abs.pathname;
       for (var i = 0; i < exts.length; i++) {
-        if (hp.indexOf(exts[i]) === 0) return C.x[exts[i]] + hp.slice(exts[i].length);
+        if (hp.indexOf(exts[i]) === 0) {
+          var sp = abs.pathname;
+          try { sp = decodeURIComponent(sp); } catch (e) {}
+          sp = '/_ext/' + abs.host + sp;
+          if (/\/$/.test(sp)) sp += 'index.html';
+          else if (!/\.[A-Za-z0-9_]{1,12}$/.test(sp)) sp += '__x';
+          var er = rootFor(sp, true);
+          if (er) {
+            try { return new URL(er + sp.slice(1)).href; } catch (e) {}
+          }
+          return C.x[exts[i]] + hp.slice(exts[i].length);
+        }
       }
       return href;
     } catch (e) { return u; }
@@ -570,9 +581,9 @@
       }
     }).observe(document, { childList: true, subtree: true });
   }
-})({"c":"https://cdn.jsdelivr.net","o":"skidding-code","p":19000000,"b":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0689/_ext/cdn.jsdelivr.net/gh/genizy/fnaf@main/sl/","r":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0689/","u":{"/gamefile/fnafs.html":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0689/"},"x":{"cdn.jsdelivr.net/gh/genizy/fnaf@main/sl/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0689/_ext/cdn.jsdelivr.net/gh/genizy/fnaf@main/sl/","cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0529/_ext/cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/","cdnjs.cloudflare.com/ajax/libs/nipplejs/0.10.1/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0529/_ext/cdnjs.cloudflare.com/ajax/libs/nipplejs/0.10.1/","cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0529/_ext/cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/","cdnjs.cloudflare.com/ajax/libs/nipplejs/0.9.0/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0529/_ext/cdnjs.cloudflare.com/ajax/libs/nipplejs/0.9.0/","cdnjs.cloudflare.com/ajax/libs/jszip/3.3.0/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0529/_ext/cdnjs.cloudflare.com/ajax/libs/jszip/3.3.0/","cdnjs.cloudflare.com/ajax/libs/Sortable/1.10.1/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0529/_ext/cdnjs.cloudflare.com/ajax/libs/Sortable/1.10.1/","cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/fonts/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0529/_ext/cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/fonts/"},"s":{}});</script>
+})({"c":"https://cdn.jsdelivr.net","o":"skidding-code","p":19000000,"b":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0689/_ext/cdn.jsdelivr.net/gh/genizy/fnaf@main/sl/","r":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0689/","u":{"/gamefile/fnafs.html":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0689/","/_ext/cdn.jsdelivr.net/gh/genizy/fnaf@main/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0689/","/_ext/cdnjs.cloudflare.com/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0529/"},"x":{"cdn.jsdelivr.net/gh/genizy/fnaf@main/sl/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0689/_ext/cdn.jsdelivr.net/gh/genizy/fnaf@main/sl/","cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0529/_ext/cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/","cdnjs.cloudflare.com/ajax/libs/nipplejs/0.10.1/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0529/_ext/cdnjs.cloudflare.com/ajax/libs/nipplejs/0.10.1/","cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0529/_ext/cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/","cdnjs.cloudflare.com/ajax/libs/nipplejs/0.9.0/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0529/_ext/cdnjs.cloudflare.com/ajax/libs/nipplejs/0.9.0/","cdnjs.cloudflare.com/ajax/libs/jszip/3.3.0/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0529/_ext/cdnjs.cloudflare.com/ajax/libs/jszip/3.3.0/","cdnjs.cloudflare.com/ajax/libs/Sortable/1.10.1/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0529/_ext/cdnjs.cloudflare.com/ajax/libs/Sortable/1.10.1/","cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/fonts/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0529/_ext/cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/fonts/"},"s":{}});</script>
 	
-    <link rel="stylesheet" type="text/css" href="style.css"/>
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0689/_ext/cdn.jsdelivr.net/gh/genizy/fnaf@main/sl/style.css"/>
     <link rel="icon" type="image/x-icon" href="favicon.ico" />
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
     <meta name="viewport" content="initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, target-densitydpi=device-dpi" />
@@ -598,7 +609,7 @@
         </div>
     </div>
     <script src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0529/_ext/cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-    <script src="main.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0689/_ext/cdn.jsdelivr.net/gh/genizy/fnaf@main/sl/main.js"></script>
 </body>
 
 </html>

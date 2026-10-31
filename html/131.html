@@ -64,7 +64,18 @@
       }
       var hp = abs.host + abs.pathname;
       for (var i = 0; i < exts.length; i++) {
-        if (hp.indexOf(exts[i]) === 0) return C.x[exts[i]] + hp.slice(exts[i].length);
+        if (hp.indexOf(exts[i]) === 0) {
+          var sp = abs.pathname;
+          try { sp = decodeURIComponent(sp); } catch (e) {}
+          sp = '/_ext/' + abs.host + sp;
+          if (/\/$/.test(sp)) sp += 'index.html';
+          else if (!/\.[A-Za-z0-9_]{1,12}$/.test(sp)) sp += '__x';
+          var er = rootFor(sp, true);
+          if (er) {
+            try { return new URL(er + sp.slice(1)).href; } catch (e) {}
+          }
+          return C.x[exts[i]] + hp.slice(exts[i].length);
+        }
       }
       return href;
     } catch (e) { return u; }
@@ -658,8 +669,8 @@ body {
 	z-index: 1;
 }
 		</style>
-		<link id="-gd-engine-icon" rel="icon" type="image/png" href="TimelessRewind.icon.png" />
-<link rel="apple-touch-icon" href="TimelessRewind.apple-touch-icon.png"/>
+		<link id="-gd-engine-icon" rel="icon" type="image/png" href="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0505/games/deadtapesfinal/TimelessRewind.icon.png" />
+<link rel="apple-touch-icon" href="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0505/games/deadtapesfinal/TimelessRewind.apple-touch-icon.png"/>
 
 </head>
 	<body>
@@ -672,12 +683,12 @@ body {
 		</noscript>
 
 		<div id="status">
-			<img id="status-splash" class="show-image--false fullsize--true use-filter--false" src="TimelessRewind.png" alt="">
+			<img id="status-splash" class="show-image--false fullsize--true use-filter--false" src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0505/games/deadtapesfinal/TimelessRewind.png" alt="">
 			<progress id="status-progress"></progress>
 			<div id="status-notice"></div>
 		</div>
 
-		<script src="TimelessRewind.js"></script>
+		<script src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0505/games/deadtapesfinal/TimelessRewind.js"></script>
 		<script>
 const GODOT_CONFIG = {"args":[],"canvasResizePolicy":2,"ensureCrossOriginIsolationHeaders":true,"executable":"TimelessRewind","experimentalVK":false,"fileSizes":{"TimelessRewind.pck":595564464,"TimelessRewind.wasm":52126319},"focusCanvas":true,"gdextensionLibs":[]};
 const GODOT_THREADS_ENABLED = false;

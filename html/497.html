@@ -66,7 +66,18 @@
       }
       var hp = abs.host + abs.pathname;
       for (var i = 0; i < exts.length; i++) {
-        if (hp.indexOf(exts[i]) === 0) return C.x[exts[i]] + hp.slice(exts[i].length);
+        if (hp.indexOf(exts[i]) === 0) {
+          var sp = abs.pathname;
+          try { sp = decodeURIComponent(sp); } catch (e) {}
+          sp = '/_ext/' + abs.host + sp;
+          if (/\/$/.test(sp)) sp += 'index.html';
+          else if (!/\.[A-Za-z0-9_]{1,12}$/.test(sp)) sp += '__x';
+          var er = rootFor(sp, true);
+          if (er) {
+            try { return new URL(er + sp.slice(1)).href; } catch (e) {}
+          }
+          return C.x[exts[i]] + hp.slice(exts[i].length);
+        }
       }
       return href;
     } catch (e) { return u; }
@@ -569,11 +580,11 @@
       }
     }).observe(document, { childList: true, subtree: true });
   }
-})({"c":"https://cdn.jsdelivr.net","o":"skidding-code","p":19000000,"b":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1529/games/smashkarts/","r":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1529/","u":{"/games/smashkarts/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1529/"},"x":{"www.gstatic.com/firebasejs/9.9.3/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0215/_ext/www.gstatic.com/firebasejs/9.9.3/","hb.vntsm.com/v4/live/srv/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0255/_ext/hb.vntsm.com/v4/live/srv/","cdn.jsdelivr.net/gh/prebid/currency-file@1/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0255/_ext/cdn.jsdelivr.net/gh/prebid/currency-file@1/","d-code.liadm.com/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0255/_ext/d-code.liadm.com/","hb.vntsm.com/v4/live/vms/assets/libs/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0255/_ext/hb.vntsm.com/v4/live/vms/assets/libs/","cdn.hadronid.net/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1529/_ext/cdn.hadronid.net/","cdn.id5-sync.com/api/1.0/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1529/_ext/cdn.id5-sync.com/api/1.0/","secure.cdn.fastclick.net/js/pubcid/latest/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1529/_ext/secure.cdn.fastclick.net/js/pubcid/latest/","secure.cdn.fastclick.net/js/cnvr-launcher/latest/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1529/_ext/secure.cdn.fastclick.net/js/cnvr-launcher/latest/","fastlane.rubiconproject.com/a/api/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0255/_ext/fastlane.rubiconproject.com/a/api/","secure.cdn.fastclick.net/js/cnvr-coreid/latest/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1529/_ext/secure.cdn.fastclick.net/js/cnvr-coreid/latest/","cdn.smashkarts.io/house/or/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1529/_ext/cdn.smashkarts.io/house/or/","ep2.adtrafficquality.google/sodar/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0209/_ext/ep2.adtrafficquality.google/sodar/","ep2.adtrafficquality.google/sodar/sodar2/257/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0209/_ext/ep2.adtrafficquality.google/sodar/sodar2/257/","id5-sync.com/i/258/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1529/_ext/id5-sync.com/i/258/","elb.the-ozone-project.com/static/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0255/_ext/elb.the-ozone-project.com/static/","scripts.opti-digital.com/js/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0255/_ext/scripts.opti-digital.com/js/","acdn.adnxs.com/dmp/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0255/_ext/acdn.adnxs.com/dmp/","sdk.streamrail.com/cs-config/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0255/_ext/sdk.streamrail.com/cs-config/","ads.pubmatic.com/AdServer/js/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0255/_ext/ads.pubmatic.com/AdServer/js/","js-sec.indexww.com/um/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0255/_ext/js-sec.indexww.com/um/","eus.rubiconproject.com/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0255/_ext/eus.rubiconproject.com/","www.gstatic.com/docs/documents/images/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0215/_ext/www.gstatic.com/docs/documents/images/","www.gstatic.com/feedback/js/help/prod/service/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0215/_ext/www.gstatic.com/feedback/js/help/prod/service/","www.gstatic.com/charts/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0215/_ext/www.gstatic.com/charts/","www.gstatic.com/firebasejs/8.10.0/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0215/_ext/www.gstatic.com/firebasejs/8.10.0/","www.gstatic.com/firebasejs/10.9.0/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0215/_ext/www.gstatic.com/firebasejs/10.9.0/"},"s":{}});</script>
-	<script src="scripts/constants.js"></script>
+})({"c":"https://cdn.jsdelivr.net","o":"skidding-code","p":19000000,"b":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1529/games/smashkarts/","r":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1529/","u":{"/games/smashkarts/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1529/","/_ext/www.gstatic.com/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0215/","/_ext/hb.vntsm.com/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0255/","/_ext/cdn.jsdelivr.net/gh/prebid/currency-file@1/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0255/","/_ext/d-code.liadm.com/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0255/","/_ext/cdn.hadronid.net/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1529/","/_ext/cdn.id5-sync.com/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1529/","/_ext/secure.cdn.fastclick.net/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1529/","/_ext/fastlane.rubiconproject.com/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0255/","/_ext/cdn.smashkarts.io/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1529/","/_ext/ep2.adtrafficquality.google/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0209/","/_ext/id5-sync.com/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1529/","/_ext/elb.the-ozone-project.com/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0255/","/_ext/scripts.opti-digital.com/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0255/","/_ext/acdn.adnxs.com/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0255/","/_ext/sdk.streamrail.com/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0255/","/_ext/ads.pubmatic.com/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0255/","/_ext/js-sec.indexww.com/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0255/","/_ext/eus.rubiconproject.com/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0255/"},"x":{"www.gstatic.com/firebasejs/9.9.3/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0215/_ext/www.gstatic.com/firebasejs/9.9.3/","hb.vntsm.com/v4/live/srv/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0255/_ext/hb.vntsm.com/v4/live/srv/","cdn.jsdelivr.net/gh/prebid/currency-file@1/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0255/_ext/cdn.jsdelivr.net/gh/prebid/currency-file@1/","d-code.liadm.com/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0255/_ext/d-code.liadm.com/","hb.vntsm.com/v4/live/vms/assets/libs/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0255/_ext/hb.vntsm.com/v4/live/vms/assets/libs/","cdn.hadronid.net/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1529/_ext/cdn.hadronid.net/","cdn.id5-sync.com/api/1.0/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1529/_ext/cdn.id5-sync.com/api/1.0/","secure.cdn.fastclick.net/js/pubcid/latest/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1529/_ext/secure.cdn.fastclick.net/js/pubcid/latest/","secure.cdn.fastclick.net/js/cnvr-launcher/latest/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1529/_ext/secure.cdn.fastclick.net/js/cnvr-launcher/latest/","fastlane.rubiconproject.com/a/api/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0255/_ext/fastlane.rubiconproject.com/a/api/","secure.cdn.fastclick.net/js/cnvr-coreid/latest/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1529/_ext/secure.cdn.fastclick.net/js/cnvr-coreid/latest/","cdn.smashkarts.io/house/or/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1529/_ext/cdn.smashkarts.io/house/or/","ep2.adtrafficquality.google/sodar/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0209/_ext/ep2.adtrafficquality.google/sodar/","ep2.adtrafficquality.google/sodar/sodar2/257/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0209/_ext/ep2.adtrafficquality.google/sodar/sodar2/257/","id5-sync.com/i/258/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1529/_ext/id5-sync.com/i/258/","elb.the-ozone-project.com/static/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0255/_ext/elb.the-ozone-project.com/static/","scripts.opti-digital.com/js/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0255/_ext/scripts.opti-digital.com/js/","acdn.adnxs.com/dmp/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0255/_ext/acdn.adnxs.com/dmp/","sdk.streamrail.com/cs-config/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0255/_ext/sdk.streamrail.com/cs-config/","ads.pubmatic.com/AdServer/js/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0255/_ext/ads.pubmatic.com/AdServer/js/","js-sec.indexww.com/um/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0255/_ext/js-sec.indexww.com/um/","eus.rubiconproject.com/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0255/_ext/eus.rubiconproject.com/","www.gstatic.com/docs/documents/images/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0215/_ext/www.gstatic.com/docs/documents/images/","www.gstatic.com/feedback/js/help/prod/service/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0215/_ext/www.gstatic.com/feedback/js/help/prod/service/","www.gstatic.com/charts/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0215/_ext/www.gstatic.com/charts/","www.gstatic.com/firebasejs/8.10.0/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0215/_ext/www.gstatic.com/firebasejs/8.10.0/","www.gstatic.com/firebasejs/10.9.0/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0215/_ext/www.gstatic.com/firebasejs/10.9.0/"},"s":{}});</script>
+	<script src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1529/games/smashkarts/scripts/constants.js"></script>
 	
 	<meta charset="utf-8">
-	<link rel="icon" href="images/favicon.png" sizes="16x16">
+	<link rel="icon" href="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1529/games/smashkarts/images/favicon.png" sizes="16x16">
 	<!-- og: Open graph meta tags allow you to control what content shows up when a page is shared on Facebook -->
 	<meta property="og:site_name" content="SmashKarts.io">
 	<meta property="og:title" content="Smash Karts" />
@@ -602,15 +613,15 @@
 	<meta name="google-site-verification" content="Kb9JniKgGSfuiJM_DNO2-Va7cSC00GlcBzbDw1Lgw_4" />
 	<meta itemprop="image primaryImageOfPage" content="images/smashkarts.png" />
 
-	<link rel="manifest" href="manifest.json">
+	<link rel="manifest" href="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1529/games/smashkarts/manifest.json">
 
 	<meta name="apple-mobile-web-app-title" content="Smash Karts">
 	<meta name="apple-mobile-web-app-capable" content="yes">
 	<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-	<link rel="apple-touch-icon" href="images/icon-144.png">
+	<link rel="apple-touch-icon" href="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1529/games/smashkarts/images/icon-144.png">
 
-	<!-- <script type="text/javascript" src="xmlhttprequest-length-computable.js"></script> -->
-	<!--<script type="text/javascript" src="xmlhttprequest-length-computable.min.js"></script>
+	<!-- <script type="text/javascript" src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1529/games/smashkarts/xmlhttprequest-length-computable.js"></script> -->
+	<!--<script type="text/javascript" src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1529/games/smashkarts/xmlhttprequest-length-computable.min.js"></script>
 	<script type="text/javascript">
 		window.xmlHTTPRequestLengthComputable = {
 			CONTENT_ENCODING_MULTIPLE: 3.0
@@ -652,10 +663,10 @@
 		}
 	</script>
 	<title>Smash Karts</title>
-	<link rel="stylesheet" href="css/main.css" />
+	<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1529/games/smashkarts/css/main.css" />
 	<meta name="viewport" content="minimal-ui, user-scalable=no, initial-scale=1, maximum-scale=1, width=device-width, viewport-fit=cover" />
 
-	<script src="scripts/ads-init.js"></script>
+	<script src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1529/games/smashkarts/scripts/ads-init.js"></script>
 
 </head>
 
@@ -703,7 +714,7 @@
 			<div id="btmAdPlaceholder">
 				<div id="btmAdPlaceholderBg"></div>
 				<div id="btmAdBlockerContainer">
-					<img id="btmAdBlockerImg" src="images/turnoffadblock.png">
+					<img id="btmAdBlockerImg" src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1529/games/smashkarts/images/turnoffadblock.png">
 					<h1 id="btmAdBlockerText">Disable AdBlock for extra XP</h1>
 				</div>
 			</div>
@@ -719,7 +730,7 @@
 		<div id="rightAdPlaceholder">
 			<div id="rightAdPlaceholderBg"></div>
 			<div id="rightAdBlockerContainer">
-				<img id="rightAdBlockerImg" src="images/turnoffadblock.png">
+				<img id="rightAdBlockerImg" src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1529/games/smashkarts/images/turnoffadblock.png">
 				<h1 id="rightAdBlockerText">Disable AdBlock for extra XP</h1>
 			</div>
 		</div>
@@ -727,14 +738,14 @@
 	</div>
 </div>
 <div id="loader">
-	<img class="logo" src="images/smashkarts.png">
+	<img class="logo" src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1529/games/smashkarts/images/smashkarts.png">
 	<div class="spinner"></div>
 	<div class="progress">
 		<div class="full"></div>
 	</div>
 </div>
 <div id="rotate-landscape">
-	<img src="images/r.png" class="center">
+	<img src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1529/games/smashkarts/images/r.png" class="center">
 </div>
 
 <script src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0215/_ext/www.gstatic.com/firebasejs/9.9.3/firebase-app-compat.js"></script>
@@ -743,15 +754,15 @@
 <script src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0215/_ext/www.gstatic.com/firebasejs/9.9.3/firebase-analytics-compat.js"></script>
 <script src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0215/_ext/www.gstatic.com/firebasejs/9.9.3/firebase-functions-compat.js"></script>
 
-<script src="scripts/main.js"></script>
-<script src="scripts/auth.js"></script>
-<script src="scripts/shop.js"></script>
-<script src="scripts/cc.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1529/games/smashkarts/scripts/main.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1529/games/smashkarts/scripts/auth.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1529/games/smashkarts/scripts/shop.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1529/games/smashkarts/scripts/cc.js"></script>
  
-<script src="scripts/ads-common-logic.js"></script>
-<script src="scripts/ads-offcanvas-logic.js"></script>
-<script src="scripts/ads-positioning-logic.js"></script>
-<script src="scripts/ads-injector.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1529/games/smashkarts/scripts/ads-common-logic.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1529/games/smashkarts/scripts/ads-offcanvas-logic.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1529/games/smashkarts/scripts/ads-positioning-logic.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1529/games/smashkarts/scripts/ads-injector.js"></script>
 
 <script>
 	//Used for installing progressive web apps 

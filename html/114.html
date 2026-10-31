@@ -65,7 +65,18 @@
       }
       var hp = abs.host + abs.pathname;
       for (var i = 0; i < exts.length; i++) {
-        if (hp.indexOf(exts[i]) === 0) return C.x[exts[i]] + hp.slice(exts[i].length);
+        if (hp.indexOf(exts[i]) === 0) {
+          var sp = abs.pathname;
+          try { sp = decodeURIComponent(sp); } catch (e) {}
+          sp = '/_ext/' + abs.host + sp;
+          if (/\/$/.test(sp)) sp += 'index.html';
+          else if (!/\.[A-Za-z0-9_]{1,12}$/.test(sp)) sp += '__x';
+          var er = rootFor(sp, true);
+          if (er) {
+            try { return new URL(er + sp.slice(1)).href; } catch (e) {}
+          }
+          return C.x[exts[i]] + hp.slice(exts[i].length);
+        }
       }
       return href;
     } catch (e) { return u; }
@@ -665,9 +676,9 @@
             z-index: 1;
         }
     </style>
-    <link id="-gd-engine-icon" rel="icon" type="image/png" href="CrazyCattle3D.icon.png" />
-    <link rel="apple-touch-icon" href="CrazyCattle3D.apple-touch-icon.png" />
-    <link rel="manifest" href="CrazyCattle3D.manifest.json">
+    <link id="-gd-engine-icon" rel="icon" type="image/png" href="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0488/games/cattle3d/CrazyCattle3D.icon.png" />
+    <link rel="apple-touch-icon" href="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0488/games/cattle3d/CrazyCattle3D.apple-touch-icon.png" />
+    <link rel="manifest" href="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0488/games/cattle3d/CrazyCattle3D.manifest.json">
 
 </head>
 
@@ -686,7 +697,7 @@
         <div id="status-notice"></div>
     </div>
 
-    <script src="CrazyCattle3D.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0488/games/cattle3d/CrazyCattle3D.js"></script>
     <script>
         const GODOT_CONFIG = {
             "args": [],

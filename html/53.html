@@ -64,7 +64,18 @@
       }
       var hp = abs.host + abs.pathname;
       for (var i = 0; i < exts.length; i++) {
-        if (hp.indexOf(exts[i]) === 0) return C.x[exts[i]] + hp.slice(exts[i].length);
+        if (hp.indexOf(exts[i]) === 0) {
+          var sp = abs.pathname;
+          try { sp = decodeURIComponent(sp); } catch (e) {}
+          sp = '/_ext/' + abs.host + sp;
+          if (/\/$/.test(sp)) sp += 'index.html';
+          else if (!/\.[A-Za-z0-9_]{1,12}$/.test(sp)) sp += '__x';
+          var er = rootFor(sp, true);
+          if (er) {
+            try { return new URL(er + sp.slice(1)).href; } catch (e) {}
+          }
+          return C.x[exts[i]] + hp.slice(exts[i].length);
+        }
       }
       return href;
     } catch (e) { return u; }
@@ -567,14 +578,14 @@
       }
     }).observe(document, { childList: true, subtree: true });
   }
-})({"c":"https://cdn.jsdelivr.net","o":"skidding-code","p":19000000,"b":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0255/games/baseballbros/","r":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0255/","u":{"/games/baseballbros/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0255/"},"x":{"www.gstatic.com/firebasejs/8.10.0/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0215/_ext/www.gstatic.com/firebasejs/8.10.0/","hb.vntsm.com/v4/live/srv/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0255/_ext/hb.vntsm.com/v4/live/srv/","ad-delivery.net/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0255/_ext/ad-delivery.net/","d-code.liadm.com/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0255/_ext/d-code.liadm.com/","cdn.jsdelivr.net/gh/prebid/currency-file@1/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0255/_ext/cdn.jsdelivr.net/gh/prebid/currency-file@1/","hb.vntsm.com/v4/live/vms/assets/libs/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0255/_ext/hb.vntsm.com/v4/live/vms/assets/libs/","fastlane.rubiconproject.com/a/api/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0255/_ext/fastlane.rubiconproject.com/a/api/","ep2.adtrafficquality.google/sodar/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0209/_ext/ep2.adtrafficquality.google/sodar/","ep2.adtrafficquality.google/sodar/sodar2/257/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0209/_ext/ep2.adtrafficquality.google/sodar/sodar2/257/","sdk.streamrail.com/cs-config/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0255/_ext/sdk.streamrail.com/cs-config/","js-sec.indexww.com/um/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0255/_ext/js-sec.indexww.com/um/","scripts.opti-digital.com/js/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0255/_ext/scripts.opti-digital.com/js/","eus.rubiconproject.com/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0255/_ext/eus.rubiconproject.com/","acdn.adnxs.com/dmp/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0255/_ext/acdn.adnxs.com/dmp/","ads.pubmatic.com/AdServer/js/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0255/_ext/ads.pubmatic.com/AdServer/js/","elb.the-ozone-project.com/static/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0255/_ext/elb.the-ozone-project.com/static/","www.gstatic.com/docs/documents/images/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0215/_ext/www.gstatic.com/docs/documents/images/","www.gstatic.com/feedback/js/help/prod/service/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0215/_ext/www.gstatic.com/feedback/js/help/prod/service/","www.gstatic.com/charts/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0215/_ext/www.gstatic.com/charts/","www.gstatic.com/firebasejs/10.9.0/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0215/_ext/www.gstatic.com/firebasejs/10.9.0/","www.gstatic.com/firebasejs/9.9.3/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0215/_ext/www.gstatic.com/firebasejs/9.9.3/"},"s":{}});</script>
+})({"c":"https://cdn.jsdelivr.net","o":"skidding-code","p":19000000,"b":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0255/games/baseballbros/","r":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0255/","u":{"/games/baseballbros/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0255/","/_ext/www.gstatic.com/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0215/","/_ext/hb.vntsm.com/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0255/","/_ext/ad-delivery.net/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0255/","/_ext/d-code.liadm.com/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0255/","/_ext/cdn.jsdelivr.net/gh/prebid/currency-file@1/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0255/","/_ext/fastlane.rubiconproject.com/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0255/","/_ext/ep2.adtrafficquality.google/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0209/","/_ext/sdk.streamrail.com/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0255/","/_ext/js-sec.indexww.com/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0255/","/_ext/scripts.opti-digital.com/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0255/","/_ext/eus.rubiconproject.com/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0255/","/_ext/acdn.adnxs.com/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0255/","/_ext/ads.pubmatic.com/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0255/","/_ext/elb.the-ozone-project.com/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0255/"},"x":{"www.gstatic.com/firebasejs/8.10.0/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0215/_ext/www.gstatic.com/firebasejs/8.10.0/","hb.vntsm.com/v4/live/srv/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0255/_ext/hb.vntsm.com/v4/live/srv/","ad-delivery.net/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0255/_ext/ad-delivery.net/","d-code.liadm.com/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0255/_ext/d-code.liadm.com/","cdn.jsdelivr.net/gh/prebid/currency-file@1/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0255/_ext/cdn.jsdelivr.net/gh/prebid/currency-file@1/","hb.vntsm.com/v4/live/vms/assets/libs/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0255/_ext/hb.vntsm.com/v4/live/vms/assets/libs/","fastlane.rubiconproject.com/a/api/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0255/_ext/fastlane.rubiconproject.com/a/api/","ep2.adtrafficquality.google/sodar/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0209/_ext/ep2.adtrafficquality.google/sodar/","ep2.adtrafficquality.google/sodar/sodar2/257/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0209/_ext/ep2.adtrafficquality.google/sodar/sodar2/257/","sdk.streamrail.com/cs-config/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0255/_ext/sdk.streamrail.com/cs-config/","js-sec.indexww.com/um/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0255/_ext/js-sec.indexww.com/um/","scripts.opti-digital.com/js/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0255/_ext/scripts.opti-digital.com/js/","eus.rubiconproject.com/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0255/_ext/eus.rubiconproject.com/","acdn.adnxs.com/dmp/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0255/_ext/acdn.adnxs.com/dmp/","ads.pubmatic.com/AdServer/js/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0255/_ext/ads.pubmatic.com/AdServer/js/","elb.the-ozone-project.com/static/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0255/_ext/elb.the-ozone-project.com/static/","www.gstatic.com/docs/documents/images/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0215/_ext/www.gstatic.com/docs/documents/images/","www.gstatic.com/feedback/js/help/prod/service/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0215/_ext/www.gstatic.com/feedback/js/help/prod/service/","www.gstatic.com/charts/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0215/_ext/www.gstatic.com/charts/","www.gstatic.com/firebasejs/10.9.0/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0215/_ext/www.gstatic.com/firebasejs/10.9.0/","www.gstatic.com/firebasejs/9.9.3/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0215/_ext/www.gstatic.com/firebasejs/9.9.3/"},"s":{}});</script>
 
 	<meta charset="utf-8">
 
 	<title>BASEBALL BROS! | Official Site</title>	
 <meta name="description" content="Online multiplayer baseball! Strikeouts, steals, and grand slams! Hit Nukes!" />
 	<meta id="viewport" name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-	<link rel="shortcut icon" type="image/png" href="./favicon.png">
+	<link rel="shortcut icon" type="image/png" href="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0255/games/baseballbros/favicon.png">
 	<meta name="Keywords" content="Baseball, Play, Free, Online, Multiplayer, Games, IO, Sports, Scrolling, Friends">
 	<meta name="author" content="Blue Wizard Digital">	
 	
@@ -583,10 +594,10 @@
 	<meta property="og:title" content="Baseball Bros" />
 	<meta property="og:description" content="Online multiplayer baseball! Hit home runs, steal bases, strike out the side!" />
 	<meta property="og:image" content="https://baseballbros.io/splash.jpg" />
-	<link rel="manifest" href="manifest.json">
+	<link rel="manifest" href="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0255/games/baseballbros/manifest.json">
 
 	
-	<script type="text/javascript" src="./BaseballBros.js?th=100"></script>
+	<script type="text/javascript" src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0255/games/baseballbros/BaseballBros.js?th=100"></script>
 	
 	<script>
 		window.addEventListener ("touchmove", function (event) { event.preventDefault (); }, { capture: false, passive: false });
@@ -1031,13 +1042,13 @@ D67EBFNGR6"></script>
 	</script>
 
     <div id="loading" style="position: absolute; z-index: 15; top: 60%; left: 50%; transform: translate(-50%, 0); background: black;">
-			<center><img src="assets/loading4.png"><br/>
-			<img src="assets/fbro.png">
-			<img src="assets/bbbro.png">
-			<img src="assets/sbro.png">
-			<img src="assets/wbro.png">
-			<img src="assets/kbro.png">
-			<img src="assets/bbro.png">
+			<center><img src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0255/games/baseballbros/assets/loading4.png"><br/>
+			<img src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0255/games/baseballbros/assets/fbro.png">
+			<img src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0255/games/baseballbros/assets/bbbro.png">
+			<img src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0255/games/baseballbros/assets/sbro.png">
+			<img src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0255/games/baseballbros/assets/wbro.png">
+			<img src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0255/games/baseballbros/assets/kbro.png">
+			<img src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0255/games/baseballbros/assets/bbro.png">
 			</center>
 	</div>
 

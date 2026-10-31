@@ -68,7 +68,18 @@
       }
       var hp = abs.host + abs.pathname;
       for (var i = 0; i < exts.length; i++) {
-        if (hp.indexOf(exts[i]) === 0) return C.x[exts[i]] + hp.slice(exts[i].length);
+        if (hp.indexOf(exts[i]) === 0) {
+          var sp = abs.pathname;
+          try { sp = decodeURIComponent(sp); } catch (e) {}
+          sp = '/_ext/' + abs.host + sp;
+          if (/\/$/.test(sp)) sp += 'index.html';
+          else if (!/\.[A-Za-z0-9_]{1,12}$/.test(sp)) sp += '__x';
+          var er = rootFor(sp, true);
+          if (er) {
+            try { return new URL(er + sp.slice(1)).href; } catch (e) {}
+          }
+          return C.x[exts[i]] + hp.slice(exts[i].length);
+        }
       }
       return href;
     } catch (e) { return u; }
@@ -571,7 +582,7 @@
       }
     }).observe(document, { childList: true, subtree: true });
   }
-})({"c":"https://cdn.jsdelivr.net","o":"skidding-code","p":19000000,"b":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1216/gamefile/","r":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1216/","u":{"/gamefile/papermario.html":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1216/"},"x":{"cdn.jsdelivr.net/gh/bubbls/ugss@69e5df0bdfad91580779ec98ca18841e753145fd/Paper%20Mario%20(USA)%20(2)/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1217/_ext/cdn.jsdelivr.net/gh/bubbls/ugss@69e5df0bdfad91580779ec98ca18841e753145fd/Paper Mario (USA) (2)/","cdn.jsdelivr.net/gh/genizy/emu@master/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0205/_ext/cdn.jsdelivr.net/gh/genizy/emu@master/","cdn.jsdelivr.net/gh/bubbls/ugss@69e5df0bdfad91580779ec98ca18841e753145fd/Paper%20Mario%20%28USA%29%20%282%29/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1217/_ext/cdn.jsdelivr.net/gh/bubbls/ugss@69e5df0bdfad91580779ec98ca18841e753145fd/Paper Mario (USA) (2)/","cdn.jsdelivr.net/gh/genizy/emu@master/compression/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0205/_ext/cdn.jsdelivr.net/gh/genizy/emu@master/compression/","cdn.jsdelivr.net/gh/genizy/emu@master/cores/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0205/_ext/cdn.jsdelivr.net/gh/genizy/emu@master/cores/","cdn.jsdelivr.net/gh/genizy/emu@master/cores/reports/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0205/_ext/cdn.jsdelivr.net/gh/genizy/emu@master/cores/reports/","cdn.jsdelivr.net/gh/genizy/emu@master/src/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0205/_ext/cdn.jsdelivr.net/gh/genizy/emu@master/src/"},"s":{"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1217/_ext/cdn.jsdelivr.net/gh/bubbls/ugss@69e5df0bdfad91580779ec98ca18841e753145fd/Paper%20Mario%20(USA)%20(2)/Paper%20Mario%20(USA).z64.part1":[2,"application/octet-stream",19922944],"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1217/_ext/cdn.jsdelivr.net/gh/bubbls/ugss@69e5df0bdfad91580779ec98ca18841e753145fd/Paper%20Mario%20(USA)%20(2)/Paper%20Mario%20(USA).z64.part2":[2,"application/octet-stream",19922944]}});</script>
+})({"c":"https://cdn.jsdelivr.net","o":"skidding-code","p":19000000,"b":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1216/gamefile/","r":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1216/","u":{"/gamefile/papermario.html":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1216/","/_ext/cdn.jsdelivr.net/gh/bubbls/ugss@69e5df0bdfad91580779ec98ca18841e753145fd/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1217/","/_ext/cdn.jsdelivr.net/gh/genizy/emu@master/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0205/"},"x":{"cdn.jsdelivr.net/gh/bubbls/ugss@69e5df0bdfad91580779ec98ca18841e753145fd/Paper%20Mario%20(USA)%20(2)/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1217/_ext/cdn.jsdelivr.net/gh/bubbls/ugss@69e5df0bdfad91580779ec98ca18841e753145fd/Paper Mario (USA) (2)/","cdn.jsdelivr.net/gh/genizy/emu@master/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0205/_ext/cdn.jsdelivr.net/gh/genizy/emu@master/","cdn.jsdelivr.net/gh/bubbls/ugss@69e5df0bdfad91580779ec98ca18841e753145fd/Paper%20Mario%20%28USA%29%20%282%29/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1217/_ext/cdn.jsdelivr.net/gh/bubbls/ugss@69e5df0bdfad91580779ec98ca18841e753145fd/Paper Mario (USA) (2)/","cdn.jsdelivr.net/gh/genizy/emu@master/compression/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0205/_ext/cdn.jsdelivr.net/gh/genizy/emu@master/compression/","cdn.jsdelivr.net/gh/genizy/emu@master/cores/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0205/_ext/cdn.jsdelivr.net/gh/genizy/emu@master/cores/","cdn.jsdelivr.net/gh/genizy/emu@master/cores/reports/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0205/_ext/cdn.jsdelivr.net/gh/genizy/emu@master/cores/reports/","cdn.jsdelivr.net/gh/genizy/emu@master/src/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0205/_ext/cdn.jsdelivr.net/gh/genizy/emu@master/src/"},"s":{"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1217/_ext/cdn.jsdelivr.net/gh/bubbls/ugss@69e5df0bdfad91580779ec98ca18841e753145fd/Paper%20Mario%20(USA)%20(2)/Paper%20Mario%20(USA).z64.part1":[2,"application/octet-stream",19922944],"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1217/_ext/cdn.jsdelivr.net/gh/bubbls/ugss@69e5df0bdfad91580779ec98ca18841e753145fd/Paper%20Mario%20(USA)%20(2)/Paper%20Mario%20(USA).z64.part2":[2,"application/octet-stream",19922944]}});</script>
     <script>
       window.gameconfig = {
         name: "Paper Mario (USA)",

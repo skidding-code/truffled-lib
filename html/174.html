@@ -65,7 +65,18 @@
       }
       var hp = abs.host + abs.pathname;
       for (var i = 0; i < exts.length; i++) {
-        if (hp.indexOf(exts[i]) === 0) return C.x[exts[i]] + hp.slice(exts[i].length);
+        if (hp.indexOf(exts[i]) === 0) {
+          var sp = abs.pathname;
+          try { sp = decodeURIComponent(sp); } catch (e) {}
+          sp = '/_ext/' + abs.host + sp;
+          if (/\/$/.test(sp)) sp += 'index.html';
+          else if (!/\.[A-Za-z0-9_]{1,12}$/.test(sp)) sp += '__x';
+          var er = rootFor(sp, true);
+          if (er) {
+            try { return new URL(er + sp.slice(1)).href; } catch (e) {}
+          }
+          return C.x[exts[i]] + hp.slice(exts[i].length);
+        }
       }
       return href;
     } catch (e) { return u; }
@@ -568,7 +579,7 @@
       }
     }).observe(document, { childList: true, subtree: true });
   }
-})({"c":"https://cdn.jsdelivr.net","o":"skidding-code","p":19000000,"b":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0636/games/falling/","r":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0636/","u":{"/games/falling/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0636/","/games/falling/Build/superfallingfred-webgl-120_23.data.unityweb":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0637/","/games/falling/Build/superfallingfred-webgl-120_23.json":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0637/","/games/falling/Build/superfallingfred-webgl-120_23.wasm.code.unityweb":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0638/","/games/falling/Build/superfallingfred-webgl-120_23.wasm.framework.unityweb":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0638/","/games/falling/js/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0638/","/games/falling/patch/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0638/","/games/falling/screenshots/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0638/"},"x":{"www.ubg235.com/js/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0638/_ext/www.ubg235.com/js/","www.ubg235.com/ads/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0638/_ext/www.ubg235.com/ads/"},"s":{"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0637/games/falling/Build/superfallingfred-webgl-120_23.data.unityweb":[2,"application/octet-stream",31647650],"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0638/games/falling/Build/superfallingfred-webgl-120_23.wasm.code.unityweb":[2,"application/octet-stream",22095814]}});</script>
+})({"c":"https://cdn.jsdelivr.net","o":"skidding-code","p":19000000,"b":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0636/games/falling/","r":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0636/","u":{"/games/falling/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0636/","/games/falling/Build/superfallingfred-webgl-120_23.data.unityweb":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0637/","/games/falling/Build/superfallingfred-webgl-120_23.json":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0637/","/games/falling/Build/superfallingfred-webgl-120_23.wasm.code.unityweb":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0638/","/games/falling/Build/superfallingfred-webgl-120_23.wasm.framework.unityweb":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0638/","/games/falling/js/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0638/","/games/falling/patch/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0638/","/games/falling/screenshots/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0638/","/_ext/www.ubg235.com/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0638/"},"x":{"www.ubg235.com/js/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0638/_ext/www.ubg235.com/js/","www.ubg235.com/ads/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0638/_ext/www.ubg235.com/ads/"},"s":{"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0637/games/falling/Build/superfallingfred-webgl-120_23.data.unityweb":[2,"application/octet-stream",31647650],"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0638/games/falling/Build/superfallingfred-webgl-120_23.wasm.code.unityweb":[2,"application/octet-stream",22095814]}});</script>
 	<meta charset="utf-8">
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 	<title>Super Falling Fred Unblocked - ubg235 Poki</title>

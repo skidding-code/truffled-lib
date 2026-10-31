@@ -64,7 +64,18 @@
       }
       var hp = abs.host + abs.pathname;
       for (var i = 0; i < exts.length; i++) {
-        if (hp.indexOf(exts[i]) === 0) return C.x[exts[i]] + hp.slice(exts[i].length);
+        if (hp.indexOf(exts[i]) === 0) {
+          var sp = abs.pathname;
+          try { sp = decodeURIComponent(sp); } catch (e) {}
+          sp = '/_ext/' + abs.host + sp;
+          if (/\/$/.test(sp)) sp += 'index.html';
+          else if (!/\.[A-Za-z0-9_]{1,12}$/.test(sp)) sp += '__x';
+          var er = rootFor(sp, true);
+          if (er) {
+            try { return new URL(er + sp.slice(1)).href; } catch (e) {}
+          }
+          return C.x[exts[i]] + hp.slice(exts[i].length);
+        }
       }
       return href;
     } catch (e) { return u; }
@@ -567,7 +578,7 @@
       }
     }).observe(document, { childList: true, subtree: true });
   }
-})({"c":"https://cdn.jsdelivr.net","o":"skidding-code","p":19000000,"b":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1530/games/soccerbros/","r":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1530/","u":{"/games/soccerbros/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1530/","/games/sonic2/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1530/"},"x":{"www.gstatic.com/firebasejs/8.10.0/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0215/_ext/www.gstatic.com/firebasejs/8.10.0/","hb.vntsm.com/v4/live/srv/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0255/_ext/hb.vntsm.com/v4/live/srv/","cdn.jsdelivr.net/gh/prebid/currency-file@1/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0255/_ext/cdn.jsdelivr.net/gh/prebid/currency-file@1/","d-code.liadm.com/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0255/_ext/d-code.liadm.com/","hb.vntsm.com/v4/live/vms/assets/libs/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0255/_ext/hb.vntsm.com/v4/live/vms/assets/libs/","fastlane.rubiconproject.com/a/api/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0255/_ext/fastlane.rubiconproject.com/a/api/","ep2.adtrafficquality.google/sodar/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0209/_ext/ep2.adtrafficquality.google/sodar/","ep2.adtrafficquality.google/sodar/sodar2/257/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0209/_ext/ep2.adtrafficquality.google/sodar/sodar2/257/","js-sec.indexww.com/um/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0255/_ext/js-sec.indexww.com/um/","sdk.streamrail.com/cs-config/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0255/_ext/sdk.streamrail.com/cs-config/","acdn.adnxs.com/dmp/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0255/_ext/acdn.adnxs.com/dmp/","elb.the-ozone-project.com/static/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0255/_ext/elb.the-ozone-project.com/static/","ads.pubmatic.com/AdServer/js/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0255/_ext/ads.pubmatic.com/AdServer/js/","eus.rubiconproject.com/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0255/_ext/eus.rubiconproject.com/","scripts.opti-digital.com/js/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0255/_ext/scripts.opti-digital.com/js/","cdn.emulatorjs.org/stable/data/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0470/_ext/cdn.emulatorjs.org/stable/data/","www.gstatic.com/docs/documents/images/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0215/_ext/www.gstatic.com/docs/documents/images/","www.gstatic.com/feedback/js/help/prod/service/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0215/_ext/www.gstatic.com/feedback/js/help/prod/service/","www.gstatic.com/charts/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0215/_ext/www.gstatic.com/charts/","www.gstatic.com/firebasejs/10.9.0/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0215/_ext/www.gstatic.com/firebasejs/10.9.0/","cdn.emulatorjs.org/stable/data/localization/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0470/_ext/cdn.emulatorjs.org/stable/data/localization/","cdn.emulatorjs.org/stable/data/cores/reports/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0470/_ext/cdn.emulatorjs.org/stable/data/cores/reports/","cdn.emulatorjs.org/stable/data/cores/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0470/_ext/cdn.emulatorjs.org/stable/data/cores/","cdn.emulatorjs.org/stable/data/compression/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0470/_ext/cdn.emulatorjs.org/stable/data/compression/","www.gstatic.com/firebasejs/9.9.3/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0215/_ext/www.gstatic.com/firebasejs/9.9.3/"},"s":{}});</script>
+})({"c":"https://cdn.jsdelivr.net","o":"skidding-code","p":19000000,"b":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1530/games/soccerbros/","r":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1530/","u":{"/games/soccerbros/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1530/","/games/sonic2/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1530/","/_ext/www.gstatic.com/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0215/","/_ext/hb.vntsm.com/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0255/","/_ext/cdn.jsdelivr.net/gh/prebid/currency-file@1/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0255/","/_ext/d-code.liadm.com/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0255/","/_ext/fastlane.rubiconproject.com/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0255/","/_ext/ep2.adtrafficquality.google/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0209/","/_ext/js-sec.indexww.com/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0255/","/_ext/sdk.streamrail.com/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0255/","/_ext/acdn.adnxs.com/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0255/","/_ext/elb.the-ozone-project.com/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0255/","/_ext/ads.pubmatic.com/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0255/","/_ext/eus.rubiconproject.com/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0255/","/_ext/scripts.opti-digital.com/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0255/","/_ext/cdn.emulatorjs.org/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0470/"},"x":{"www.gstatic.com/firebasejs/8.10.0/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0215/_ext/www.gstatic.com/firebasejs/8.10.0/","hb.vntsm.com/v4/live/srv/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0255/_ext/hb.vntsm.com/v4/live/srv/","cdn.jsdelivr.net/gh/prebid/currency-file@1/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0255/_ext/cdn.jsdelivr.net/gh/prebid/currency-file@1/","d-code.liadm.com/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0255/_ext/d-code.liadm.com/","hb.vntsm.com/v4/live/vms/assets/libs/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0255/_ext/hb.vntsm.com/v4/live/vms/assets/libs/","fastlane.rubiconproject.com/a/api/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0255/_ext/fastlane.rubiconproject.com/a/api/","ep2.adtrafficquality.google/sodar/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0209/_ext/ep2.adtrafficquality.google/sodar/","ep2.adtrafficquality.google/sodar/sodar2/257/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0209/_ext/ep2.adtrafficquality.google/sodar/sodar2/257/","js-sec.indexww.com/um/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0255/_ext/js-sec.indexww.com/um/","sdk.streamrail.com/cs-config/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0255/_ext/sdk.streamrail.com/cs-config/","acdn.adnxs.com/dmp/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0255/_ext/acdn.adnxs.com/dmp/","elb.the-ozone-project.com/static/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0255/_ext/elb.the-ozone-project.com/static/","ads.pubmatic.com/AdServer/js/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0255/_ext/ads.pubmatic.com/AdServer/js/","eus.rubiconproject.com/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0255/_ext/eus.rubiconproject.com/","scripts.opti-digital.com/js/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0255/_ext/scripts.opti-digital.com/js/","cdn.emulatorjs.org/stable/data/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0470/_ext/cdn.emulatorjs.org/stable/data/","www.gstatic.com/docs/documents/images/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0215/_ext/www.gstatic.com/docs/documents/images/","www.gstatic.com/feedback/js/help/prod/service/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0215/_ext/www.gstatic.com/feedback/js/help/prod/service/","www.gstatic.com/charts/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0215/_ext/www.gstatic.com/charts/","www.gstatic.com/firebasejs/10.9.0/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0215/_ext/www.gstatic.com/firebasejs/10.9.0/","cdn.emulatorjs.org/stable/data/localization/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0470/_ext/cdn.emulatorjs.org/stable/data/localization/","cdn.emulatorjs.org/stable/data/cores/reports/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0470/_ext/cdn.emulatorjs.org/stable/data/cores/reports/","cdn.emulatorjs.org/stable/data/cores/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0470/_ext/cdn.emulatorjs.org/stable/data/cores/","cdn.emulatorjs.org/stable/data/compression/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0470/_ext/cdn.emulatorjs.org/stable/data/compression/","www.gstatic.com/firebasejs/9.9.3/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0215/_ext/www.gstatic.com/firebasejs/9.9.3/"},"s":{}});</script>
 	
 	<meta charset="utf-8">
 
@@ -575,7 +586,7 @@
 	
 	<meta name="description" content="Online multiplayer SOCCER! PUT THE BALL IN THE NET!" />
 	<meta id="viewport" name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-	<link rel="shortcut icon" type="image/png" href="./favicon.png">
+	<link rel="shortcut icon" type="image/png" href="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1530/games/soccerbros/favicon.png">
 	<meta name="Keywords" content="Soccer, Play, Free, Online, Multiplayer, Games, IO, Sports, Scrolling, Friends">
 	<meta name="author" content="Blue Wizard Digital">	
 	
@@ -584,10 +595,10 @@
 	<meta property="og:title" content="Soccer Bros" />
 	<meta property="og:description" content="Online multiplayer soccer! PUT THE BALL IN THE NET!" />
 	<meta property="og:image" content="https://soccerbros.gg/splash.jpg" />
-	<link rel="manifest" href="manifest.json">
+	<link rel="manifest" href="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1530/games/soccerbros/manifest.json">
 
 	
-	<script type="text/javascript" src="./SoccerBros.js?th=137"></script>
+	<script type="text/javascript" src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1530/games/soccerbros/SoccerBros.js?th=137"></script>
 	
 	<script>
 		window.addEventListener ("touchmove", function (event) { event.preventDefault (); }, { capture: false, passive: false });
@@ -937,11 +948,11 @@
 	</script>
 
 	<div id="loading" style="position: absolute; z-index: 15; top: 60%; left: 50%; transform: translate(-50%, 0); background: black;">
-			<center><img src="assets/loading4.png"><br/>
-			<img src="assets/fbro.png">
-			<img src="assets/sbro.png">
-			<img src="assets/wbro.png">
-			<img src="assets/bbro.png">
+			<center><img src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1530/games/soccerbros/assets/loading4.png"><br/>
+			<img src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1530/games/soccerbros/assets/fbro.png">
+			<img src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1530/games/soccerbros/assets/sbro.png">
+			<img src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1530/games/soccerbros/assets/wbro.png">
+			<img src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1530/games/soccerbros/assets/bbro.png">
 			</center>
 	</div>
 

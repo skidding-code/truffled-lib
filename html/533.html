@@ -62,7 +62,18 @@
       }
       var hp = abs.host + abs.pathname;
       for (var i = 0; i < exts.length; i++) {
-        if (hp.indexOf(exts[i]) === 0) return C.x[exts[i]] + hp.slice(exts[i].length);
+        if (hp.indexOf(exts[i]) === 0) {
+          var sp = abs.pathname;
+          try { sp = decodeURIComponent(sp); } catch (e) {}
+          sp = '/_ext/' + abs.host + sp;
+          if (/\/$/.test(sp)) sp += 'index.html';
+          else if (!/\.[A-Za-z0-9_]{1,12}$/.test(sp)) sp += '__x';
+          var er = rootFor(sp, true);
+          if (er) {
+            try { return new URL(er + sp.slice(1)).href; } catch (e) {}
+          }
+          return C.x[exts[i]] + hp.slice(exts[i].length);
+        }
       }
       return href;
     } catch (e) { return u; }
@@ -565,7 +576,7 @@
       }
     }).observe(document, { childList: true, subtree: true });
   }
-})({"c":"https://cdn.jsdelivr.net","o":"skidding-code","p":19000000,"b":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1560/gamefile/","r":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1560/","u":{"/gamefile/smb.html":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1560/"},"x":{"57264959-967300405472742195.preview.editmysite.com/uploads/b/11886820-385538800742658772/files/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1560/_ext/57264959-967300405472742195.preview.editmysite.com/uploads/b/11886820-385538800742658772/files/","57264959-967300405472742195.preview.editmysite.com/uploads/b/11886820-385538800742658772/files/Fonts/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1560/_ext/57264959-967300405472742195.preview.editmysite.com/uploads/b/11886820-385538800742658772/files/Fonts/","57264959-967300405472742195.preview.editmysite.com/uploads/b/11886820-385538800742658772/files/Sounds/Sounds/mp3/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1560/_ext/57264959-967300405472742195.preview.editmysite.com/uploads/b/11886820-385538800742658772/files/Sounds/Sounds/mp3/","57264959-967300405472742195.preview.editmysite.com/uploads/b/11886820-385538800742658772/files/Sounds/Themes/mp3/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1560/_ext/57264959-967300405472742195.preview.editmysite.com/uploads/b/11886820-385538800742658772/files/Sounds/Themes/mp3/"},"s":{}});</script><Module>
+})({"c":"https://cdn.jsdelivr.net","o":"skidding-code","p":19000000,"b":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1560/gamefile/","r":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1560/","u":{"/gamefile/smb.html":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1560/","/_ext/57264959-967300405472742195.preview.editmysite.com/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1560/"},"x":{"57264959-967300405472742195.preview.editmysite.com/uploads/b/11886820-385538800742658772/files/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1560/_ext/57264959-967300405472742195.preview.editmysite.com/uploads/b/11886820-385538800742658772/files/","57264959-967300405472742195.preview.editmysite.com/uploads/b/11886820-385538800742658772/files/Fonts/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1560/_ext/57264959-967300405472742195.preview.editmysite.com/uploads/b/11886820-385538800742658772/files/Fonts/","57264959-967300405472742195.preview.editmysite.com/uploads/b/11886820-385538800742658772/files/Sounds/Sounds/mp3/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1560/_ext/57264959-967300405472742195.preview.editmysite.com/uploads/b/11886820-385538800742658772/files/Sounds/Sounds/mp3/","57264959-967300405472742195.preview.editmysite.com/uploads/b/11886820-385538800742658772/files/Sounds/Themes/mp3/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1560/_ext/57264959-967300405472742195.preview.editmysite.com/uploads/b/11886820-385538800742658772/files/Sounds/Themes/mp3/"},"s":{}});</script><Module>
 
 
 <!-- Ultimate Game Stash file--> 

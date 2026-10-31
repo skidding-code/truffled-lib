@@ -63,7 +63,18 @@
       }
       var hp = abs.host + abs.pathname;
       for (var i = 0; i < exts.length; i++) {
-        if (hp.indexOf(exts[i]) === 0) return C.x[exts[i]] + hp.slice(exts[i].length);
+        if (hp.indexOf(exts[i]) === 0) {
+          var sp = abs.pathname;
+          try { sp = decodeURIComponent(sp); } catch (e) {}
+          sp = '/_ext/' + abs.host + sp;
+          if (/\/$/.test(sp)) sp += 'index.html';
+          else if (!/\.[A-Za-z0-9_]{1,12}$/.test(sp)) sp += '__x';
+          var er = rootFor(sp, true);
+          if (er) {
+            try { return new URL(er + sp.slice(1)).href; } catch (e) {}
+          }
+          return C.x[exts[i]] + hp.slice(exts[i].length);
+        }
       }
       return href;
     } catch (e) { return u; }
@@ -569,9 +580,9 @@
 })({"c":"https://cdn.jsdelivr.net","o":"skidding-code","p":19000000,"b":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1443/games/rooftop-snipers/","r":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1443/","u":{"/games/rooftop-snipers/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1443/","/js/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0001/"},"x":{},"s":{}});</script>
 
         <title>Rooftop Snipers</title>
-        <link rel="icon" sizes="192x192" href="img/thumb.png" />
-        <link rel="shortcut icon" href="img/thumb.png" type="image/x-icon" />
-        <link rel="apple-touch-icon" href="img/thumb.png" type="image/x-icon" />
+        <link rel="icon" sizes="192x192" href="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1443/games/rooftop-snipers/img/thumb.png" />
+        <link rel="shortcut icon" href="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1443/games/rooftop-snipers/img/thumb.png" type="image/x-icon" />
+        <link rel="apple-touch-icon" href="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1443/games/rooftop-snipers/img/thumb.png" type="image/x-icon" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -587,10 +598,10 @@
         <meta name="language" content="English" />
         <meta name="revisit-after" content="1 days" />
 
-        <link rel="stylesheet" href="TemplateData/style.css" />
-        <script src="TemplateData/UnityProgress.js"></script>
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1443/games/rooftop-snipers/TemplateData/style.css" />
+        <script src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1443/games/rooftop-snipers/TemplateData/UnityProgress.js"></script>
         <script type="application/javascript" src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0001/js/main.js"></script>
-        <script src="TemplateData/UnityLoader.js"></script>
+        <script src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1443/games/rooftop-snipers/TemplateData/UnityLoader.js"></script>
 
         <script>
             var gameInstance = UnityLoader.instantiate("gameContainer", "Build/rooftop-snipers.json", {

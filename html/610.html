@@ -63,7 +63,18 @@
       }
       var hp = abs.host + abs.pathname;
       for (var i = 0; i < exts.length; i++) {
-        if (hp.indexOf(exts[i]) === 0) return C.x[exts[i]] + hp.slice(exts[i].length);
+        if (hp.indexOf(exts[i]) === 0) {
+          var sp = abs.pathname;
+          try { sp = decodeURIComponent(sp); } catch (e) {}
+          sp = '/_ext/' + abs.host + sp;
+          if (/\/$/.test(sp)) sp += 'index.html';
+          else if (!/\.[A-Za-z0-9_]{1,12}$/.test(sp)) sp += '__x';
+          var er = rootFor(sp, true);
+          if (er) {
+            try { return new URL(er + sp.slice(1)).href; } catch (e) {}
+          }
+          return C.x[exts[i]] + hp.slice(exts[i].length);
+        }
       }
       return href;
     } catch (e) { return u; }
@@ -566,9 +577,9 @@
       }
     }).observe(document, { childList: true, subtree: true });
   }
-})({"c":"https://cdn.jsdelivr.net","o":"skidding-code","p":19000000,"b":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1703/_ext/cdn.jsdelivr.net/gh/genizy/wbwwb@main/","r":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1703/","u":{"/gamefile/wbwwb.html":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1703/"},"x":{"cdn.jsdelivr.net/gh/genizy/wbwwb@main/css/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1703/_ext/cdn.jsdelivr.net/gh/genizy/wbwwb@main/css/","cdn.jsdelivr.net/gh/genizy/wbwwb@main/js/lib/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1703/_ext/cdn.jsdelivr.net/gh/genizy/wbwwb@main/js/lib/","cdn.jsdelivr.net/gh/genizy/wbwwb@main/js/core/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1703/_ext/cdn.jsdelivr.net/gh/genizy/wbwwb@main/js/core/","cdn.jsdelivr.net/gh/genizy/wbwwb@main/js/game/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1703/_ext/cdn.jsdelivr.net/gh/genizy/wbwwb@main/js/game/","cdn.jsdelivr.net/gh/genizy/wbwwb@main/js/peeps/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1703/_ext/cdn.jsdelivr.net/gh/genizy/wbwwb@main/js/peeps/","cdn.jsdelivr.net/gh/genizy/wbwwb@main/js/misc/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1703/_ext/cdn.jsdelivr.net/gh/genizy/wbwwb@main/js/misc/","cdn.jsdelivr.net/gh/genizy/wbwwb@main/js/scenes/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1703/_ext/cdn.jsdelivr.net/gh/genizy/wbwwb@main/js/scenes/","cdn.jsdelivr.net/gh/genizy/wbwwb@main/js/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1703/_ext/cdn.jsdelivr.net/gh/genizy/wbwwb@main/js/"},"s":{}});</script>
+})({"c":"https://cdn.jsdelivr.net","o":"skidding-code","p":19000000,"b":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1703/_ext/cdn.jsdelivr.net/gh/genizy/wbwwb@main/","r":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1703/","u":{"/gamefile/wbwwb.html":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1703/","/_ext/cdn.jsdelivr.net/gh/genizy/wbwwb@main/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1703/"},"x":{"cdn.jsdelivr.net/gh/genizy/wbwwb@main/css/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1703/_ext/cdn.jsdelivr.net/gh/genizy/wbwwb@main/css/","cdn.jsdelivr.net/gh/genizy/wbwwb@main/js/lib/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1703/_ext/cdn.jsdelivr.net/gh/genizy/wbwwb@main/js/lib/","cdn.jsdelivr.net/gh/genizy/wbwwb@main/js/core/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1703/_ext/cdn.jsdelivr.net/gh/genizy/wbwwb@main/js/core/","cdn.jsdelivr.net/gh/genizy/wbwwb@main/js/game/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1703/_ext/cdn.jsdelivr.net/gh/genizy/wbwwb@main/js/game/","cdn.jsdelivr.net/gh/genizy/wbwwb@main/js/peeps/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1703/_ext/cdn.jsdelivr.net/gh/genizy/wbwwb@main/js/peeps/","cdn.jsdelivr.net/gh/genizy/wbwwb@main/js/misc/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1703/_ext/cdn.jsdelivr.net/gh/genizy/wbwwb@main/js/misc/","cdn.jsdelivr.net/gh/genizy/wbwwb@main/js/scenes/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1703/_ext/cdn.jsdelivr.net/gh/genizy/wbwwb@main/js/scenes/","cdn.jsdelivr.net/gh/genizy/wbwwb@main/js/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1703/_ext/cdn.jsdelivr.net/gh/genizy/wbwwb@main/js/"},"s":{}});</script>
         
-		<link rel="stylesheet" href="css/game.css">
+		<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1703/_ext/cdn.jsdelivr.net/gh/genizy/wbwwb@main/css/game.css">
 
 </head>
 	<body>
@@ -591,65 +602,65 @@
 </html>
 
 <!-- External Libraries -->
-<script src="js/lib/pixi.min.js"></script>
-<script src="js/lib/howler.js"></script>
-<script src="js/lib/stats.min.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1703/_ext/cdn.jsdelivr.net/gh/genizy/wbwwb@main/js/lib/pixi.min.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1703/_ext/cdn.jsdelivr.net/gh/genizy/wbwwb@main/js/lib/howler.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1703/_ext/cdn.jsdelivr.net/gh/genizy/wbwwb@main/js/lib/stats.min.js"></script>
 <script>var createjs = window;</script>
-<script src="js/lib/tweenjs-0.6.2.min.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1703/_ext/cdn.jsdelivr.net/gh/genizy/wbwwb@main/js/lib/tweenjs-0.6.2.min.js"></script>
 <script>Ticker.framerate=60; Ticker.paused=true;</script>
-<script src="js/lib/helpers.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1703/_ext/cdn.jsdelivr.net/gh/genizy/wbwwb@main/js/lib/helpers.js"></script>
 
 <!-- Core Engine Code -->
-<script src="js/core/Game.js"></script>
-<script src="js/core/SceneManager.js"></script>
-<script src="js/core/Scene.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1703/_ext/cdn.jsdelivr.net/gh/genizy/wbwwb@main/js/core/Game.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1703/_ext/cdn.jsdelivr.net/gh/genizy/wbwwb@main/js/core/SceneManager.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1703/_ext/cdn.jsdelivr.net/gh/genizy/wbwwb@main/js/core/Scene.js"></script>
 
 <!-- Main Game Scene Code -->
-<script src="js/game/World.js"></script>
-<script src="js/game/Camera.js"></script>
-<script src="js/game/Director.js"></script>
-<script src="js/game/Peep.js"></script>
-<script src="js/game/TV.js"></script>
-<script src="js/game/AnimationProp.js"></script>
-<script src="js/game/ScreenShake.js"></script>
-<script src="js/game/ScreenZoomOut.js"></script>
-<script src="js/game/Gore.js"></script>
-<script src="js/game/DeadBody.js"></script>
-<script src="js/game/Blood.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1703/_ext/cdn.jsdelivr.net/gh/genizy/wbwwb@main/js/game/World.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1703/_ext/cdn.jsdelivr.net/gh/genizy/wbwwb@main/js/game/Camera.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1703/_ext/cdn.jsdelivr.net/gh/genizy/wbwwb@main/js/game/Director.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1703/_ext/cdn.jsdelivr.net/gh/genizy/wbwwb@main/js/game/Peep.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1703/_ext/cdn.jsdelivr.net/gh/genizy/wbwwb@main/js/game/TV.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1703/_ext/cdn.jsdelivr.net/gh/genizy/wbwwb@main/js/game/AnimationProp.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1703/_ext/cdn.jsdelivr.net/gh/genizy/wbwwb@main/js/game/ScreenShake.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1703/_ext/cdn.jsdelivr.net/gh/genizy/wbwwb@main/js/game/ScreenZoomOut.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1703/_ext/cdn.jsdelivr.net/gh/genizy/wbwwb@main/js/game/Gore.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1703/_ext/cdn.jsdelivr.net/gh/genizy/wbwwb@main/js/game/DeadBody.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1703/_ext/cdn.jsdelivr.net/gh/genizy/wbwwb@main/js/game/Blood.js"></script>
 
 <!-- Peeps -->
-<script src="js/peeps/NormalPeep.js"></script>
-<script src="js/peeps/CrazyPeep.js"></script>
-<script src="js/peeps/NervousPeep.js"></script>
-<script src="js/peeps/SnobbyPeep.js"></script>
-<script src="js/peeps/AngryPeep.js"></script>
-<script src="js/peeps/HatPeep.js"></script>
-<script src="js/peeps/LoverPeep.js"></script>
-<script src="js/peeps/ProtestAnim.js"></script>
-<script src="js/peeps/HelpingAnim.js"></script>
-<script src="js/peeps/HappyWeirdoPeep.js"></script>
-<script src="js/peeps/EvilHatPeep.js"></script>
-<script src="js/peeps/PanicPeep.js"></script>
-<script src="js/peeps/MurderPeep.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1703/_ext/cdn.jsdelivr.net/gh/genizy/wbwwb@main/js/peeps/NormalPeep.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1703/_ext/cdn.jsdelivr.net/gh/genizy/wbwwb@main/js/peeps/CrazyPeep.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1703/_ext/cdn.jsdelivr.net/gh/genizy/wbwwb@main/js/peeps/NervousPeep.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1703/_ext/cdn.jsdelivr.net/gh/genizy/wbwwb@main/js/peeps/SnobbyPeep.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1703/_ext/cdn.jsdelivr.net/gh/genizy/wbwwb@main/js/peeps/AngryPeep.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1703/_ext/cdn.jsdelivr.net/gh/genizy/wbwwb@main/js/peeps/HatPeep.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1703/_ext/cdn.jsdelivr.net/gh/genizy/wbwwb@main/js/peeps/LoverPeep.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1703/_ext/cdn.jsdelivr.net/gh/genizy/wbwwb@main/js/peeps/ProtestAnim.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1703/_ext/cdn.jsdelivr.net/gh/genizy/wbwwb@main/js/peeps/HelpingAnim.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1703/_ext/cdn.jsdelivr.net/gh/genizy/wbwwb@main/js/peeps/HappyWeirdoPeep.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1703/_ext/cdn.jsdelivr.net/gh/genizy/wbwwb@main/js/peeps/EvilHatPeep.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1703/_ext/cdn.jsdelivr.net/gh/genizy/wbwwb@main/js/peeps/PanicPeep.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1703/_ext/cdn.jsdelivr.net/gh/genizy/wbwwb@main/js/peeps/MurderPeep.js"></script>
 
 <!-- Misc Crap -->
-<script src="js/misc/Candlelight.js"></script>
-<script src="js/misc/LoversWatching.js"></script>
-<script src="js/misc/Cricket.js"></script>
-<script src="js/misc/Cursor.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1703/_ext/cdn.jsdelivr.net/gh/genizy/wbwwb@main/js/misc/Candlelight.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1703/_ext/cdn.jsdelivr.net/gh/genizy/wbwwb@main/js/misc/LoversWatching.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1703/_ext/cdn.jsdelivr.net/gh/genizy/wbwwb@main/js/misc/Cricket.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1703/_ext/cdn.jsdelivr.net/gh/genizy/wbwwb@main/js/misc/Cursor.js"></script>
 
 <!-- Scenes -->
-<script src="js/scenes/Scene_Preloader.js"></script>
-<script src="js/scenes/Scene_Quote.js"></script>
-<script src="js/scenes/Scene_Game.js"></script>
-<script src="js/scenes/Scene_Credits.js"></script>
-<script src="js/scenes/Scene_Post_Credits.js"></script>
-<script src="js/scenes/Scene_Post_Post_Credits.js"></script>
-<script src="js/scenes/Scene_EndPrototype.js"></script>
-<script src="js/scenes/Act_I.js"></script>
-<script src="js/scenes/Act_II.js"></script>
-<script src="js/scenes/Act_III.js"></script>
-<script src="js/scenes/Scene_Meta.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1703/_ext/cdn.jsdelivr.net/gh/genizy/wbwwb@main/js/scenes/Scene_Preloader.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1703/_ext/cdn.jsdelivr.net/gh/genizy/wbwwb@main/js/scenes/Scene_Quote.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1703/_ext/cdn.jsdelivr.net/gh/genizy/wbwwb@main/js/scenes/Scene_Game.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1703/_ext/cdn.jsdelivr.net/gh/genizy/wbwwb@main/js/scenes/Scene_Credits.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1703/_ext/cdn.jsdelivr.net/gh/genizy/wbwwb@main/js/scenes/Scene_Post_Credits.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1703/_ext/cdn.jsdelivr.net/gh/genizy/wbwwb@main/js/scenes/Scene_Post_Post_Credits.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1703/_ext/cdn.jsdelivr.net/gh/genizy/wbwwb@main/js/scenes/Scene_EndPrototype.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1703/_ext/cdn.jsdelivr.net/gh/genizy/wbwwb@main/js/scenes/Act_I.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1703/_ext/cdn.jsdelivr.net/gh/genizy/wbwwb@main/js/scenes/Act_II.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1703/_ext/cdn.jsdelivr.net/gh/genizy/wbwwb@main/js/scenes/Act_III.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1703/_ext/cdn.jsdelivr.net/gh/genizy/wbwwb@main/js/scenes/Scene_Meta.js"></script>
 
 <!-- Game Scripts -->
 <script>
