@@ -1,0 +1,160 @@
+{
+	"chunks": [
+		{
+			"name": "audio",
+			"bytes": 2995464449,
+			"files": 4380,
+			"mount": "opfs",
+			"sha256": "21454c9d8367969e7a9b7c5d698146238dbcee66ec25526b6370afcf41d74667"
+		},
+		{
+			"name": "background",
+			"bytes": 360813966,
+			"files": 6802,
+			"mount": "opfs",
+			"sha256": "01803e4a266be4b9edf13a45a2bdd1ed7378e639a5a9baeccea6702372d16c02"
+		},
+		{
+			"name": "chp1",
+			"bytes": 486250984,
+			"files": 867,
+			"mount": "opfs",
+			"sha256": "042d7f762b83d7d37734014766b609169bc0f475027560baf64170ef385fbfd7"
+		},
+		{
+			"name": "chp10",
+			"bytes": 1231415,
+			"files": 1,
+			"mount": "memfs",
+			"sha256": "b33008b4268469cba402c8e0ed1cdc4a25d25678055f6c54e9aa9d8396dd8f48"
+		},
+		{
+			"name": "chp2",
+			"bytes": 163133063,
+			"files": 105,
+			"mount": "opfs",
+			"sha256": "9c5528a6c547017d769f15bdc3622a445763b83eb451bb4740e28a5d74deff78"
+		},
+		{
+			"name": "chp3",
+			"bytes": 170290572,
+			"files": 140,
+			"mount": "opfs",
+			"sha256": "140d55da14a474e358af5cd43734aeff6b30d877ad3d403407ba805489d75785"
+		},
+		{
+			"name": "chp4",
+			"bytes": 144909056,
+			"files": 99,
+			"mount": "opfs",
+			"sha256": "121bf40ab77bfb679665021d9401c3c101c877b518eef5229c37509c72cde1f2"
+		},
+		{
+			"name": "chp5",
+			"bytes": 368579220,
+			"files": 720,
+			"mount": "opfs",
+			"sha256": "6db2a99e1229472772faa9197cc8a8b77b569e74a689e58373008dbe3e119d5a"
+		},
+		{
+			"name": "chp6",
+			"bytes": 338140537,
+			"files": 840,
+			"mount": "opfs",
+			"sha256": "0c5a71399ed468e82e737c513656c9e972f31560476d09e0e0f65ed4d29553a5"
+		},
+		{
+			"name": "chp7",
+			"bytes": 189838796,
+			"files": 241,
+			"mount": "opfs",
+			"sha256": "0bf261313090adfd81168e8ce6e6bd4fcfd4d133b3e342d43f07c60943bed9f2"
+		},
+		{
+			"name": "chp8",
+			"bytes": 339734250,
+			"files": 238,
+			"mount": "opfs",
+			"sha256": "1a12d0d5c1747cdb14092d68b5eb92fb7fb97c140fb6aabaab8612fd635665fa"
+		},
+		{
+			"name": "chp9",
+			"bytes": 524831151,
+			"files": 450,
+			"mount": "opfs",
+			"sha256": "665abead19a2213de1bad424cedcec4845cfaf1bafe54f7668d5e7edf7eea723"
+		},
+		{
+			"name": "common",
+			"bytes": 1043806823,
+			"files": 6064,
+			"mount": "opfs",
+			"sha256": "9ab03065f35a765ab7a8437558a45e2defd25b7e39fc79fe0426cc7dfb669d21"
+		}
+	],
+	"maps": {
+		"sp_a1_intro1": 1,
+		"sp_a1_intro2": 1,
+		"sp_a1_intro3": 1,
+		"sp_a1_intro7": 1,
+		"sp_a1_intro4": 1,
+		"sp_a1_intro5": 1,
+		"sp_a1_intro6": 1,
+		"sp_a1_wakeup": 1,
+		"sp_a2_intro": 1,
+		"sp_a2_laser_intro": 2,
+		"sp_a2_laser_stairs": 2,
+		"sp_a2_dual_lasers": 2,
+		"sp_a2_laser_over_goo": 2,
+		"sp_a2_catapult_intro": 2,
+		"sp_a2_trust_fling": 2,
+		"sp_a2_pit_flings": 2,
+		"sp_a2_fizzler_intro": 2,
+		"sp_a2_sphere_peek": 3,
+		"sp_a2_ricochet": 3,
+		"sp_a2_bridge_intro": 3,
+		"sp_a2_bridge_the_gap": 3,
+		"sp_a2_turret_intro": 3,
+		"sp_a2_laser_relays": 3,
+		"sp_a2_turret_blocker": 3,
+		"sp_a2_laser_vs_turret": 3,
+		"sp_a2_pull_the_rug": 3,
+		"sp_a2_column_blocker": 4,
+		"sp_a2_laser_chaining": 4,
+		"sp_a2_triple_laser": 4,
+		"sp_a2_bts1": 4,
+		"sp_a2_bts2": 4,
+		"sp_a2_bts3": 5,
+		"sp_a2_bts4": 5,
+		"sp_a2_bts5": 5,
+		"sp_a2_bts6": 5,
+		"sp_a2_core": 5,
+		"sp_a3_00": 6,
+		"sp_a3_01": 6,
+		"sp_a3_03": 6,
+		"sp_a3_jump_intro": 6,
+		"sp_a3_bomb_flings": 6,
+		"sp_a3_crazy_box": 6,
+		"sp_a3_transition01": 6,
+		"sp_a3_speed_ramp": 7,
+		"sp_a3_speed_flings": 7,
+		"sp_a3_portal_intro": 7,
+		"sp_a3_end": 7,
+		"sp_a4_intro": 8,
+		"sp_a4_tb_intro": 8,
+		"sp_a4_tb_trust_drop": 8,
+		"sp_a4_tb_wall_button": 8,
+		"sp_a4_tb_polarity": 8,
+		"sp_a4_tb_catch": 8,
+		"sp_a4_stop_the_box": 8,
+		"sp_a4_laser_catapult": 8,
+		"sp_a4_laser_platform": 8,
+		"sp_a4_speed_tb_catch": 8,
+		"sp_a4_jump_polarity": 8,
+		"sp_a4_finale1": 9,
+		"sp_a4_finale2": 9,
+		"sp_a4_finale3": 9,
+		"sp_a4_finale4": 9,
+		"sp_a5_credits": 10
+	}
+}
