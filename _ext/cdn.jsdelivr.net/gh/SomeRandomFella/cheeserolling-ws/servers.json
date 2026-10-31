@@ -1,0 +1,6 @@
+{
+  "servers": [
+    "wss://cheeserollingws.loca.lt",
+    "wss://cheeserolling-ws.onrender.com"
+  ]
+}
