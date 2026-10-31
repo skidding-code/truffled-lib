@@ -344,6 +344,22 @@
 
   if (!IS_DOC) return;
 
+  try {
+    if (!G.dataLayer) G.dataLayer = [];
+    if (typeof G.gtag !== 'function') G.gtag = function () { G.dataLayer.push(arguments); };
+    if (typeof G.ga !== 'function') G.ga = function () {};
+    var par = G.parent;
+    if (par && par !== G) {
+      try { if (typeof par.maeExportApis_ !== 'function') par.maeExportApis_ = function () {}; } catch (e) {}
+    }
+    if (typeof G.maeExportApis_ !== 'function') G.maeExportApis_ = function () {};
+  } catch (e) {}
+  function corsMedia(el, u) {
+    try {
+      if (el.crossOrigin == null && typeof u === 'string' && u.indexOf(CDN + '/') === 0 && CDN !== G.location.origin) el.crossOrigin = 'anonymous';
+    } catch (e) {}
+  }
+
   try { shimSrc = String(document.currentScript && document.currentScript.textContent || ''); } catch (e) {}
   if (shimSrc) {
     var mm = /^\s*\(function \(C\)[\s\S]*\}\)\(/.exec(shimSrc);
@@ -403,6 +419,7 @@
           return;
         }
         if (special && special(el, m, function (x) { d.set.call(el, x); })) return;
+        if (prop === 'src' && (el.tagName === 'IMG' || el.tagName === 'VIDEO' || el.tagName === 'AUDIO')) corsMedia(el, m);
         return d.set.call(el, m);
       },
     });
