@@ -58,10 +58,10 @@ main{max-width:1400px;margin:0 auto;padding:16px}
 // games see this page's url (document.write keeps it); some "fix" a path ending in /index.html by navigating away
 try { if (/^https?:$/.test(location.protocol) && /\/index\.html$/.test(location.pathname)) history.replaceState(null, "", location.pathname.slice(0, -10) + location.search + location.hash); } catch (e) {}
 var CDN = "https://cdn.jsdelivr.net";
-// the library is published twice: the small `lib` tag (served from its own tarball) and `main`.
-// jsdelivr sometimes refuses main files with "package size exceeded" because the repo is big, so fall back.
-var LIB = CDN + "/gh/skidding-code/truffled-lib@lib";
-var LIB2 = CDN + "/gh/skidding-code/truffled-lib@main";
+// the library is published twice: `main` and the `lib` tag on the same commit. main is always current;
+// jsdelivr now and then refuses a main file with "package size exceeded" (the repo is big), then the tag serves it
+var LIB = CDN + "/gh/skidding-code/truffled-lib@main";
+var LIB2 = CDN + "/gh/skidding-code/truffled-lib@lib";
 var zonesURL = LIB + "/zones.json";
 var coverURL = LIB + "/covers";
 var htmlURL = LIB + "/html";

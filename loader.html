@@ -8,7 +8,7 @@ function get(ref) {
     return r.text();
   });
 }
-get("lib").catch(function () { return get("main"); })
+get("main").catch(function () { return get("lib"); })
   .then(function (h) { document.open(); document.write(h); document.close(); })
   .catch(function (e) { document.body.textContent = "failed to load: " + e.message; });
 </script>

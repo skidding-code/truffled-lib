@@ -512,6 +512,21 @@
     try { return new URL(u).origin === CDN; } catch (e) { return false; }
   }
 
+  // a .gz served without Content-Encoding (truffled serves them the same way) can't run as a cross-origin
+  // <script>: the browser blocks it. unzip it here and run the blob instead
+  function gzScript(m) {
+    return G.fetch(m).then(function (r) { return r.arrayBuffer(); }).then(function (ab) {
+      var b = new Uint8Array(ab, 0, Math.min(2, ab.byteLength));
+      var js = b[0] === 0x1f && b[1] === 0x8b && G.DecompressionStream
+        ? new Response(new Blob([ab]).stream().pipeThrough(new DecompressionStream('gzip'))).blob()
+        : Promise.resolve(new Blob([ab]));
+      return js.then(function (x) { return URL.createObjectURL(new Blob([x], { type: 'text/javascript' })); });
+    }).catch(function () { return m; });
+  }
+  function isGzScript(el, m) {
+    return el.tagName === 'SCRIPT' && typeof m === 'string' && /\.gz([?#]|$)/i.test(m) && cdnLike(m);
+  }
+
   function hookProp(proto, prop, special) {
     if (!proto) return;
     var d = Object.getOwnPropertyDescriptor(proto, prop);
@@ -529,6 +544,10 @@
           return;
         }
         if (special && special(el, m, function (x) { d.set.call(el, x); })) return;
+        if (prop === 'src' && isGzScript(el, m)) {
+          gzScript(m).then(function (u) { d.set.call(el, u); });
+          return;
+        }
         if (prop === 'src' && (el.tagName === 'IMG' || el.tagName === 'VIDEO' || el.tagName === 'AUDIO')) corsMedia(el, m);
         return d.set.call(el, m);
       },
@@ -570,6 +589,29 @@
     void svgHref;
   } catch (e) {}
 
+  // css added at runtime (@font-face via insertRule, FontFace, constructable sheets) resolves url() against the page base
+  function cssMap(t) {
+    return typeof t !== 'string' ? t : t.replace(/url\(\s*(["']?)([^"')]+)\1\s*\)/g, function (all, q, u) {
+      var m = map(u.trim());
+      return typeof m === 'string' ? 'url(' + q + m + q + ')' : all;
+    });
+  }
+  if (G.CSSStyleSheet) {
+    var CP = CSSStyleSheet.prototype;
+    ['insertRule', 'replace', 'replaceSync'].forEach(function (k) {
+      var o = CP[k];
+      if (o) CP[k] = function (t) { var a = Array.prototype.slice.call(arguments); a[0] = cssMap(t); return o.apply(this, a); };
+    });
+  }
+  if (G.FontFace) {
+    var OF = G.FontFace;
+    var NF = function FontFace(family, source, desc) {
+      return new OF(family, typeof source === 'string' ? cssMap(source) : source, desc);
+    };
+    NF.prototype = OF.prototype;
+    G.FontFace = NF;
+  }
+
   var oSetAttr = Element.prototype.setAttribute;
   var ATTRS = { src: 1, href: 1, data: 1, poster: 1, srcset: 1, 'xlink:href': 1 };
   Element.prototype.setAttribute = function (name, value) {
@@ -585,6 +627,11 @@
         return;
       }
       if (tag === 'IFRAME' && n === 'src' && iframeSpecial(this, m, function (x) { oSetAttr.call(this, name, x); }.bind(this))) return;
+      if (n === 'src' && isGzScript(this, m)) {
+        var se = this;
+        gzScript(m).then(function (u) { oSetAttr.call(se, name, u); });
+        return;
+      }
       return oSetAttr.call(this, name, m);
     }
     return oSetAttr.call(this, name, value);
