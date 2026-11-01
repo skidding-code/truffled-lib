@@ -320,6 +320,8 @@
       src.then(function (bu) {
         var a = s.a.slice();
         a[1] = bu;
+        // blob urls only answer GET; a HEAD still gets the joined file's headers this way
+        if (String(a[0]).toUpperCase() === 'HEAD') a[0] = 'GET';
         x.__tzs = null;
         oOpen.apply(x, a);
         s.h.forEach(function (h) { try { oSRH.call(x, h[0], h[1]); } catch (e) {} });
