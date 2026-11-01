@@ -55,6 +55,8 @@ main{max-width:1400px;margin:0 auto;padding:16px}
 <script>
 // everything stays in this function: #embed writes the game into this same window, so launcher globals would collide with the game's
 (function () {
+// games see this page's url (document.write keeps it); some "fix" a path ending in /index.html by navigating away
+try { if (/^https?:$/.test(location.protocol) && /\/index\.html$/.test(location.pathname)) history.replaceState(null, "", location.pathname.slice(0, -10) + location.search + location.hash); } catch (e) {}
 var CDN = "https://cdn.jsdelivr.net";
 // the library is published twice: the small `lib` tag (served from its own tarball) and `main`.
 // jsdelivr sometimes refuses main files with "package size exceeded" because the repo is big, so fall back.
@@ -173,6 +175,13 @@ function render() {
   rec.slice(0, 8).forEach(function (z) { r.appendChild(card(z)); });
 }
 function writeInto(doc, html) { doc.open(); doc.write(html); doc.close(); }
+function gameFrame() {
+  var f = document.createElement("iframe");
+  f.allow = "autoplay; fullscreen; gamepad; clipboard-read; clipboard-write; pointer-lock";
+  f.setAttribute("sandbox", "allow-scripts allow-same-origin allow-forms allow-modals allow-pointer-lock allow-popups allow-popups-to-escape-sandbox allow-downloads allow-presentation allow-orientation-lock");
+  f.setAttribute("allowfullscreen", "");
+  return f;
+}
 function openZone(z) {
   if (/^https?:/i.test(z.url)) { window.open(z.url, "_blank"); return; }
   cur = z;
@@ -182,10 +191,7 @@ function openZone(z) {
   $("vname").textContent = z.name;
   var box = $("vbox");
   box.textContent = "loading...";
-  var f = document.createElement("iframe");
-  f.allow = "autoplay; fullscreen; gamepad; clipboard-read; clipboard-write; pointer-lock";
-  f.setAttribute("sandbox", "allow-scripts allow-same-origin allow-forms allow-modals allow-pointer-lock allow-popups allow-popups-to-escape-sandbox allow-downloads allow-presentation allow-orientation-lock");
-  f.setAttribute("allowfullscreen", "");
+  var f = gameFrame();
   box.appendChild(f);
   $("viewer").classList.add("open");
   document.body.style.overflow = "hidden";
@@ -255,7 +261,17 @@ libGet(zonesURL).then(function (r) { return r.json(); }).then(function (j) {
   var id = new URLSearchParams(location.search).get("id");
   var z = id != null && zones.find(function (x) { return String(x.id) === String(id); });
   if (z && location.hash.indexOf("embed") >= 0 && !/^https?:/i.test(z.url)) {
-    getHtml(z).then(function (h) { writeInto(document, h); });
+    // the game gets a fresh about:blank frame like in the grid view: its own globals, and no launcher url in location
+    getHtml(z).then(function (h) {
+      document.title = z.name;
+      document.body.textContent = "";
+      document.body.style.cssText = "margin:0;height:100vh;overflow:hidden;background:#000";
+      var f = gameFrame();
+      f.style.cssText = "border:0;width:100%;height:100%;display:block";
+      document.body.appendChild(f);
+      writeInto(f.contentDocument, h);
+      f.focus();
+    });
     return;
   }
   render();

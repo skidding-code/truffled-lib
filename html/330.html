@@ -390,6 +390,20 @@
 
   if (!IS_DOC) return;
 
+  try { if (G.console && !console.logError) console.logError = console.error.bind(console); } catch (e) {}
+  // a service worker can't be registered from the cdn origin here; behave like a browser without one instead of throwing
+  try {
+    var SW = G.navigator && navigator.serviceWorker;
+    if (SW) {
+      var oReg = SW.register, oGet = SW.getRegistration, oGets = SW.getRegistrations;
+      SW.register = function (u, o) {
+        try { if (new URL(map(String(u)), base()).origin !== G.location.origin) return new Promise(function () {}); } catch (e) {}
+        return oReg.apply(SW, arguments);
+      };
+      SW.getRegistration = function () { return oGet.apply(SW, arguments).catch(function () { return undefined; }); };
+      SW.getRegistrations = function () { return oGets.apply(SW, arguments).catch(function () { return []; }); };
+    }
+  } catch (e) {}
   // the page lives in an about:blank frame, so urls resolved against the cdn base are cross-origin here
   ['pushState', 'replaceState'].forEach(function (k) {
     var H = G.History && G.History.prototype, o = H && H[k];
