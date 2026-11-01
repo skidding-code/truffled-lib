@@ -350,6 +350,13 @@
     G[k] = Wrapped;
   });
 
+  if (G.Worklet && G.Worklet.prototype.addModule) {
+    var oAM = G.Worklet.prototype.addModule;
+    G.Worklet.prototype.addModule = function (u, o) {
+      return oAM.call(this, typeof u === 'string' || u instanceof URL ? map(String(u)) : u, o);
+    };
+  }
+
   if (!IS_DOC && typeof G.importScripts === 'function') {
     var oIS = G.importScripts;
     G.importScripts = function () {

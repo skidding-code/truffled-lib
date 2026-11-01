@@ -350,6 +350,13 @@
     G[k] = Wrapped;
   });
 
+  if (G.Worklet && G.Worklet.prototype.addModule) {
+    var oAM = G.Worklet.prototype.addModule;
+    G.Worklet.prototype.addModule = function (u, o) {
+      return oAM.call(this, typeof u === 'string' || u instanceof URL ? map(String(u)) : u, o);
+    };
+  }
+
   if (!IS_DOC && typeof G.importScripts === 'function') {
     var oIS = G.importScripts;
     G.importScripts = function () {
@@ -586,7 +593,7 @@
       }
     }).observe(document, { childList: true, subtree: true });
   }
-})({"c":"https://cdn.jsdelivr.net","o":"skidding-code","p":19000000,"b":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1442/games/riddleschool/","r":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1442/","u":{"/games/riddleschool/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1442/","/js/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0001/"},"x":{},"s":{}});</script>
+})({"c":"https://cdn.jsdelivr.net","o":"skidding-code","p":19000000,"b":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1442/games/riddleschool/","r":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1442/","u":{"/games/riddleschool/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1442/","/gamefile/res1.html":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1401/","/js/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0001/","/_ext/cdn.jsdelivr.net/gh/genizy/emu@master/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0205/"},"x":{"cdn.jsdelivr.net/gh/genizy/emu@master/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0205/_ext/cdn.jsdelivr.net/gh/genizy/emu@master/","cdn.jsdelivr.net/gh/genizy/emu@master/cores/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0205/_ext/cdn.jsdelivr.net/gh/genizy/emu@master/cores/","cdn.jsdelivr.net/gh/genizy/emu@master/src/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0205/_ext/cdn.jsdelivr.net/gh/genizy/emu@master/src/","cdn.jsdelivr.net/gh/genizy/emu@master/compression/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0205/_ext/cdn.jsdelivr.net/gh/genizy/emu@master/compression/","cdn.jsdelivr.net/gh/genizy/emu@master/cores/reports/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0205/_ext/cdn.jsdelivr.net/gh/genizy/emu@master/cores/reports/"},"s":{}});</script>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Riddle School</title>
     <link rel="icon" type="image/x-icon" href="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1442/games/riddleschool/riddleschool.png" />

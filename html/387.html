@@ -350,6 +350,13 @@
     G[k] = Wrapped;
   });
 
+  if (G.Worklet && G.Worklet.prototype.addModule) {
+    var oAM = G.Worklet.prototype.addModule;
+    G.Worklet.prototype.addModule = function (u, o) {
+      return oAM.call(this, typeof u === 'string' || u instanceof URL ? map(String(u)) : u, o);
+    };
+  }
+
   if (!IS_DOC && typeof G.importScripts === 'function') {
     var oIS = G.importScripts;
     G.importScripts = function () {
@@ -586,7 +593,7 @@
       }
     }).observe(document, { childList: true, subtree: true });
   }
-})({"c":"https://cdn.jsdelivr.net","o":"skidding-code","p":19000000,"b":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1213/games/paintbog/","r":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1213/","u":{"/games/paintbog/Paint Gal Adventures.html":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1213/","/games/paintbog/Paint Gal Adventures.apple-touch-icon.png":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1213/","/games/paintbog/Paint Gal Adventures.icon.png":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1213/","/games/paintbog/Paint Gal Adventures.js":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1213/","/games/paintbog/Paint Gal Adventures.pck":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1214/","/games/paintbog/Paint Gal Adventures.wasm":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1215/"},"x":{},"s":{"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1214/games/paintbog/Paint%20Gal%20Adventures.pck":[5,"application/octet-stream",86498048,[[1,"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1214/games/paintbog/Paint%20Gal%20Adventures.pck"],[3,"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c2075/games/paintbog/Paint%20Gal%20Adventures.pck"],[5,"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c2076/games/paintbog/Paint%20Gal%20Adventures.pck"]]],"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1215/games/paintbog/Paint%20Gal%20Adventures.wasm":[2,"application/wasm",25658069]}});</script>
+})({"c":"https://cdn.jsdelivr.net","o":"skidding-code","p":19000000,"b":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1213/games/paintbog/","r":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1213/","u":{"/games/paintbog/Paint Gal Adventures.html":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1213/","/games/paintbog/Paint Gal Adventures.apple-touch-icon.png":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1213/","/games/paintbog/Paint Gal Adventures.audio.worklet.js":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1788/","/games/paintbog/Paint Gal Adventures.icon.png":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1213/","/games/paintbog/Paint Gal Adventures.js":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1213/","/games/paintbog/Paint Gal Adventures.pck":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1214/","/games/paintbog/Paint Gal Adventures.wasm":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1215/"},"x":{},"s":{"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1214/games/paintbog/Paint%20Gal%20Adventures.pck":[5,"application/octet-stream",86498048,[[1,"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1214/games/paintbog/Paint%20Gal%20Adventures.pck"],[3,"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c2075/games/paintbog/Paint%20Gal%20Adventures.pck"],[5,"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c2076/games/paintbog/Paint%20Gal%20Adventures.pck"]]],"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1215/games/paintbog/Paint%20Gal%20Adventures.wasm":[2,"application/wasm",25658069]}});</script>
 
 	<meta charset='utf-8' />
 	<meta name='viewport' content='width=device-width, user-scalable=no' />
