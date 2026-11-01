@@ -757,7 +757,7 @@
         async function run() {
             try {
                 setStatus('Loading .NET runtime...', 2);
-                const wasm = await eval('import("./_framework/dotnet.js")');
+                const wasm = await eval('import("https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0641/games/FEZ/_framework/dotnet.js")');
                 const dotnet = wasm.dotnet;
 
                 setStatus('Initializing runtime...', 8);
