@@ -53,6 +53,8 @@ main{max-width:1400px;margin:0 auto;padding:16px}
 <main><div id="msg">loading...</div><div id="recentWrap" hidden><div class="sec">recent</div><div class="grid" id="recent"></div></div><div class="sec" id="allSec" hidden>all</div><div class="grid" id="grid"></div></main>
 <div id="viewer"><div id="vbar"><button id="vclose">back</button><span id="vname"></span><button id="vreload">reload</button><button id="vblank">about:blank</button><button id="vdl">download</button><button id="vfull">fullscreen</button></div><div id="vbox"></div></div>
 <script>
+// everything stays in this function: #embed writes the game into this same window, so launcher globals would collide with the game's
+(function () {
 var CDN = "https://cdn.jsdelivr.net";
 // the library is published twice: the small `lib` tag (served from its own tarball) and `main`.
 // jsdelivr sometimes refuses main files with "package size exceeded" because the repo is big, so fall back.
@@ -232,8 +234,10 @@ $("vdl").onclick = function () {
 $("q").oninput = render;
 $("filter").onchange = render;
 $("sort").onchange = function () { store("zsort", $("sort").value); render(); };
-window.addEventListener("popstate", function () { if (!new URLSearchParams(location.search).get("id")) closeZone(); });
-document.addEventListener("keydown", function (e) { if (e.key === "Escape" && cur && !document.fullscreenElement) closeZone(); });
+if (location.hash.indexOf("embed") < 0) {
+  window.addEventListener("popstate", function () { if (!new URLSearchParams(location.search).get("id")) closeZone(); });
+  document.addEventListener("keydown", function (e) { if (e.key === "Escape" && cur && !document.fullscreenElement) closeZone(); });
+}
 try {
   if (!self.crossOriginIsolated && "serviceWorker" in navigator && /^https?:$/.test(location.protocol) && !sessionStorage.getItem("coiTried")) {
     sessionStorage.setItem("coiTried", "1");
@@ -257,6 +261,7 @@ libGet(zonesURL).then(function (r) { return r.json(); }).then(function (j) {
   render();
   if (z) openZone(z);
 }).catch(function (e) { $("msg").textContent = "failed to load zones: " + e.message; });
+})();
 </script>
 </body>
 </html>
