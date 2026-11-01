@@ -250,12 +250,16 @@ Commons, PO Box 1866, Mountain View, CA 94042, USA.
     XP.open = function (method, url) {
       var a = Array.prototype.slice.call(arguments);
       var m = map(url);
+      // deferred requests still open for real now: a reused xhr must leave DONE (games set responseType right after open)
+      var early = function (x) { try { var a0 = a.slice(); a0[1] = m; oOpen.apply(x, a0); } catch (e) {} };
       if (splitInfo(m) && a[2] !== false) {
         this.__tzs = { a: a, m: m, h: [] };
+        early(this);
         return;
       }
       if (a[2] !== false && C.o && String(method).toUpperCase() === 'GET' && typeof m === 'string' && m.indexOf(CDN + '/gh/' + C.o + '/') === 0) {
         this.__tzs = { a: a, m: m, h: [], r: 1 };
+        early(this);
         return;
       }
       this.__tzs = null;
