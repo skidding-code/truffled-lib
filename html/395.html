@@ -456,9 +456,21 @@
     }
     return URL.createObjectURL(new Blob(parts, { type: info[1] || 'text/javascript' }));
   }
+  function syncFetch(u) {
+    for (var t = 0; t < 8; t++) {
+      if (t) { var until = Date.now() + 1500 * t; while (Date.now() < until) {} }
+      try {
+        var x = new XMLHttpRequest();
+        oOpen.call(x, 'GET', u, false);
+        oSend.call(x);
+        if (x.status === 200) return URL.createObjectURL(new Blob([x.responseText], { type: 'text/javascript' }));
+      } catch (e) {}
+    }
+    return null;
+  }
   G.__tzw = function (pre, post, u) {
     var key = splitKey(u);
-    var bu = key ? syncMerge(key) : null;
+    var bu = key ? syncMerge(key) : syncFetch(u);
     if (bu) {
       blobUrls[key] = Promise.resolve(bu);
       document.write(pre + ' src="' + bu + '"' + post + '><\/script>');
@@ -466,7 +478,7 @@
     }
     var cur = document.currentScript, s = document.createElement('script');
     s.async = false;
-    (key ? mergeUrl(u) : Promise.resolve(u)).then(function (b) {
+    (key ? mergeUrl(u) : gzScript(u)).then(function (b) {
       oSetAttr.call(s, 'src', b);
       if (cur && cur.parentNode) cur.parentNode.insertBefore(s, cur.nextSibling);
       else document.head.appendChild(s);
@@ -520,8 +532,11 @@
       return js.then(function (x) { return URL.createObjectURL(new Blob([x], { type: 'text/javascript' })); });
     }).catch(function () { return m; });
   }
+  // jsdelivr labels anything but .js/.mjs (e.g. UnityProgress.javascript, .gz) with a non-script type + nosniff
   function isGzScript(el, m) {
-    return el.tagName === 'SCRIPT' && typeof m === 'string' && /\.gz([?#]|$)/i.test(m) && cdnLike(m);
+    if (el.tagName !== 'SCRIPT' || typeof m !== 'string' || !cdnLike(m)) return false;
+    var p = bare(m), x = /\.([A-Za-z0-9]{1,12})$/.exec(p.slice(p.lastIndexOf('/') + 1));
+    return !!x && !/^(m?js|cjs)$/i.test(x[1]);
   }
 
   function hookProp(proto, prop, special) {
