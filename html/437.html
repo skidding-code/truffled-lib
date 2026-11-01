@@ -50,15 +50,17 @@
         if (mm) {
           var rest = abs.pathname.slice(mm[0].length), dp = rest;
           try { dp = decodeURIComponent(rest); } catch (e) {}
+          if (/[^\/]\/$/.test(rest) && dp.indexOf('_ext/') !== 0) rest += 'index.html';
           var want = rootFor('/' + dp, true);
           if (want && want !== CDN + mm[0]) return want + rest + abs.search + abs.hash;
+          return CDN + mm[0] + rest + abs.search + abs.hash;
         }
         return href;
       }
       if ((abs.origin === CDN && !/^\/(gh|npm|combine|wp)\//.test(abs.pathname)) || /^(www\.)?truffled\.lol$/i.test(abs.hostname)) {
         var dpp = abs.pathname;
         try { dpp = decodeURIComponent(dpp); } catch (e) {}
-        return rootFor(dpp) + abs.pathname.slice(1) + abs.search + abs.hash;
+        return rootFor(dpp) + abs.pathname.slice(1) + (/[^\/]\/$/.test(abs.pathname) ? 'index.html' : '') + abs.search + abs.hash;
       }
       var hp = abs.host + abs.pathname;
       for (var i = 0; i < exts.length; i++) {
@@ -104,7 +106,7 @@
         if (!r.ok) throw new Error('part ' + u + ' ' + r.status);
         return r.arrayBuffer().then(function (ab) { return [ab, r.status]; });
       }).catch(function (e) {
-        if (++tries < 7) return new Promise(function (ok) { setTimeout(ok, 1200 * tries); }).then(go);
+        if (++tries < 11) return new Promise(function (ok) { setTimeout(ok, Math.min(1500 * tries, 6000)); }).then(go);
         throw e;
       });
     }
@@ -218,8 +220,8 @@
             var tries = 0, inp = input;
             var again = function () {
               return origFetch(typeof inp === 'string' ? inp : inp.clone ? inp.clone() : inp, init).then(function (r) {
-                if ((r.status === 403 || r.status === 429 || r.status >= 500) && ++tries < 7) {
-                  return new Promise(function (ok) { setTimeout(ok, 1200 * tries); }).then(again);
+                if ((r.status === 403 || r.status === 429 || r.status >= 500) && ++tries < 11) {
+                  return new Promise(function (ok) { setTimeout(ok, Math.min(1500 * tries, 6000)); }).then(again);
                 }
                 return r;
               });
@@ -267,8 +269,8 @@
         var tries = 0;
         var go = function () {
           return origFetch(s.m, { headers: hdr }).then(function (r) {
-            if ((r.status === 403 || r.status === 429 || r.status >= 500) && ++tries < 7) {
-              return new Promise(function (ok) { setTimeout(ok, 1200 * tries); }).then(go);
+            if ((r.status === 403 || r.status === 429 || r.status >= 500) && ++tries < 11) {
+              return new Promise(function (ok) { setTimeout(ok, Math.min(1500 * tries, 6000)); }).then(go);
             }
             return r;
           });
@@ -329,6 +331,14 @@
       : pre + 'importScripts(' + JSON.stringify(abs) + ');';
     return URL.createObjectURL(new Blob([body], { type: 'text/javascript' }));
   }
+  // workers built from blobs resolve relative urls against the page origin; run the shim in them too
+  function blobWorker(u, opts) {
+    var cfg = JSON.parse(JSON.stringify(C));
+    cfg.w = base();
+    var pre = '(' + shimSrc + ')(' + JSON.stringify(cfg) + ');';
+    var body = opts && opts.type === 'module' ? pre + 'import ' + JSON.stringify(u) + ';' : pre + 'importScripts(' + JSON.stringify(u) + ');';
+    return URL.createObjectURL(new Blob([body], { type: 'text/javascript' }));
+  }
   function needsWrap(u) {
     try {
       var abs = new URL(map(u), base());
@@ -341,6 +351,7 @@
     var Wrapped = function (url, opts) {
       var u = typeof url === 'string' || url instanceof URL ? String(url) : url;
       if (typeof u === 'string' && needsWrap(u)) u = workerBlob(u, opts);
+      else if (typeof u === 'string' && /^blob:/i.test(u) && shimSrc && IS_DOC) u = blobWorker(u, opts);
       return opts === undefined ? new W(u) : new W(u, opts);
     };
     Wrapped.prototype = W.prototype;
@@ -365,6 +376,16 @@
 
   if (!IS_DOC) return;
 
+  // the page lives in an about:blank frame, so urls resolved against the cdn base are cross-origin here
+  ['pushState', 'replaceState'].forEach(function (k) {
+    var H = G.History && G.History.prototype, o = H && H[k];
+    if (!o) return;
+    H[k] = function (st, t, u) {
+      try { return o.apply(this, arguments); } catch (e) {
+        if (arguments.length > 2) try { return o.call(this, st, t); } catch (e2) {}
+      }
+    };
+  });
   try {
     if (!G.dataLayer) G.dataLayer = [];
     if (typeof G.gtag !== 'function') G.gtag = function () { G.dataLayer.push(arguments); };
@@ -386,6 +407,45 @@
     var mm = /^\s*\(function \(C\)[\s\S]*\}\)\(/.exec(shimSrc);
     shimSrc = mm ? mm[0].replace(/\)\($/, '').replace(/^\s*\(/, '') : null;
   }
+
+  // build output: split static scripts arrive as __tzw(); join the parts synchronously so execution order holds
+  function syncMerge(key) {
+    var info = split[key], n = info[0], parts = [];
+    for (var i = 1; i <= n; i++) {
+      var x = null, ok = false;
+      for (var t = 0; t < 8 && !ok; t++) {
+        if (t) { var until = Date.now() + 1500 * t; while (Date.now() < until) {} }
+        try {
+          x = new XMLHttpRequest();
+          oOpen.call(x, 'GET', partUrl(key, i), false);
+          x.overrideMimeType('text/plain; charset=x-user-defined');
+          oSend.call(x);
+          ok = x.status === 200;
+        } catch (e) {}
+      }
+      if (!ok) return null;
+      var txt = x.responseText, a = new Uint8Array(txt.length);
+      for (var j = 0; j < txt.length; j++) a[j] = txt.charCodeAt(j) & 255;
+      parts.push(a);
+    }
+    return URL.createObjectURL(new Blob(parts, { type: info[1] || 'text/javascript' }));
+  }
+  G.__tzw = function (pre, post, u) {
+    var key = splitKey(u);
+    var bu = key ? syncMerge(key) : null;
+    if (bu) {
+      blobUrls[key] = Promise.resolve(bu);
+      document.write(pre + ' src="' + bu + '"' + post + '><\/script>');
+      return;
+    }
+    var cur = document.currentScript, s = document.createElement('script');
+    s.async = false;
+    (key ? mergeUrl(u) : Promise.resolve(u)).then(function (b) {
+      oSetAttr.call(s, 'src', b);
+      if (cur && cur.parentNode) cur.parentNode.insertBefore(s, cur.nextSibling);
+      else document.head.appendChild(s);
+    });
+  };
 
   function loadHtmlFrame(frame, url) {
     origFetch(url).then(function (r) { return r.text(); }).then(function (html) {
@@ -558,7 +618,7 @@
     var u = String(el[attr] || '');
     if (u.indexOf(CDN + '/gh/') !== 0) return;
     var n = el.__tzRetry || 0;
-    if (n >= 6) return;
+    if (n >= 9) return;
     setTimeout(function () {
       var v = u.replace(/([?&])tzr=\d+&?/, '$1').replace(/[?&]$/, '');
       v = v + (v.indexOf('?') >= 0 ? '&' : '?') + 'tzr=' + (n + 1);
@@ -575,7 +635,7 @@
         oSetAttr.call(el, attr, v);
         if (tag === 'SOURCE' && el.parentNode && el.parentNode.load) el.parentNode.load();
       }
-    }, 1200 * (n + 1));
+    }, Math.min(1500 * (n + 1), 6000));
   }, true);
 
   if (G.MutationObserver) {
@@ -593,4 +653,4 @@
   }
 })({"c":"https://cdn.jsdelivr.net","o":"skidding-code","p":19000000,"b":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1360/games/quakeii/","r":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1360/","u":{"/games/quakeii/index.html":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1360/","/games/quakeii/game_baseq2.wasm":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1358/","/games/quakeii/index.data":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1359/","/games/quakeii/index.js":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1360/","/games/quakeii/index.wasm":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1360/","/games/quakeii/ref_gl1.wasm":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1360/","/games/quakeii/ref_gles3.wasm":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1360/","/games/quakeii/ref_soft.wasm":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1360/"},"x":{},"s":{"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1359/games/quakeii/index.data":[11,"application/octet-stream",197826411,[[1,"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1359/games/quakeii/index.data"],[3,"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c2183/games/quakeii/index.data"],[5,"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c2184/games/quakeii/index.data"],[7,"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c2185/games/quakeii/index.data"],[9,"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c2186/games/quakeii/index.data"],[11,"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c2187/games/quakeii/index.data"]]]}});</script><meta charset=utf-8><meta content="text/html; charset=utf-8"http-equiv=Content-Type><title>Qwasm2</title><style>*{margin:0;padding:0}html,body{width:100%;height:100%;overflow:hidden;background-color:#000;color:#e0e0e0;font-family:Arial,Helvetica,sans-serif;font-size:16px}.emscripten{padding-right:0;margin-left:auto;margin-right:auto;display:block}textarea.emscripten{font-family:monospace;font-size:14px;width:calc(100% - 24px);height:calc(100vh - 24px);margin-top:8px;background-color:inherit;color:silver;border:1px solid #404040;resize:none;display:none;outline:0}div.emscripten{text-align:center}canvas.emscripten{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);max-width:100%;max-height:100%;border:0 none;background-color:#000;display:none;outline:0}.spinner{height:50px;width:50px;margin:0 auto;animation:rotation .8s linear infinite;border-left:10px solid #606020;border-right:10px solid #606020;border-bottom:10px solid #606020;border-top:10px solid #ffffa0;border-radius:100%;background-color:#202020}@keyframes rotation{from{transform:rotate(0)}to{transform:rotate(360deg)}}</style>
 
-</head><body><figure id=spinner style=overflow:visible><div class=spinner></div><center style=margin-top:.5em><strong>Qwasm2</strong></center></figure><div class=emscripten id=status>Downloading...</div><div class=emscripten><progress hidden id=progress max=100 value=0></progress></div><textarea class=emscripten id=output readonly></textarea><canvas class=emscripten id=canvas oncontextmenu=event.preventDefault() tabindex=-1></canvas><a hidden id=exportFile></a><script>var statusElement=document.getElementById("status"),progressElement=document.getElementById("progress"),spinnerElement=document.getElementById("spinner"),canvasElement=document.getElementById("canvas"),outputElement=document.getElementById("output"),exportElement=document.getElementById("exportFile");var Module={_canLockPointer:!0,print:(outputElement.value="",function(e){arguments.length>1&&(e=Array.prototype.slice.call(arguments).join(" ")),console.log(e),outputElement.value+=e+"\n",outputElement.scrollTop=outputElement.scrollHeight}),canvas:(canvasElement.addEventListener("webglcontextlost",(e=>{alert("WebGL context lost. You will need to reload the page."),e.preventDefault()}),!1),canvasElement),setStatus:e=>{if(Module.setStatus.last||(Module.setStatus.last={time:Date.now(),text:""}),e!==Module.setStatus.last.text){var t=e.match(/([^(]+)\((\d+(\.\d+)?)\/(\d+)\)/),n=Date.now();t&&n-Module.setStatus.last.time<30||(Module.setStatus.last.time=n,Module.setStatus.last.text=e,t?(e=t[1],progressElement.value=100*parseInt(t[2]),progressElement.max=100*parseInt(t[4]),progressElement.hidden=!1,spinnerElement.hidden=!1):(progressElement.value=null,progressElement.max=null,progressElement.hidden=!0,e||(spinnerElement.hidden=!0)),statusElement.innerHTML=e)}},hideConsole:()=>{outputElement.style.display="none",canvasElement.style.display="block",canvasElement.focus()},showConsole:()=>{canvasElement.style.display="none",outputElement.style.display="block",outputElement.scrollTop=outputElement.scrollHeight,outputElement.focus()},exportFile:e=>{try{const t=e.split("/"),n=new Uint8Array(FS.readFile(e)),o=new Blob([n],{type:"application/octet-stream"}),l=URL.createObjectURL(o);exportElement.href=l,exportElement.download=t[t.length-1],exportElement.click(),URL.revokeObjectURL(l)}catch(e){console.error("Error exporting file:",e)}},winResized:()=>{console.info("Detected window resize: "+canvasElement.width+"x"+canvasElement.height)},setGamma:e=>{e=Number(Number(e).toFixed(2)),console.info("Detected canvas gamma change: "+e),canvasElement.style.filter=e<0?null:"brightness("+2*e+")"},captureMouse:()=>{Module._canLockPointer&&!Module._attemptPointerLock()&&(Module._canLockPointer=!1,console.info("Delayed pointer lock requested."),document.addEventListener("keydown",Module._lockPointerOnKey))},_attemptPointerLock:()=>(null===document.pointerLockElement&&canvasElement.requestPointerLock(),null!==document.pointerLockElement),_lockPointerOnKey:e=>{("Escape"===e.key||Module._attemptPointerLock())&&(document.removeEventListener("keydown",Module._lockPointerOnKey),console.info("Delayed pointer lock complete."),Module._canLockPointer=!0)},totalDependencies:0,monitorRunDependencies:e=>{this.totalDependencies=Math.max(this.totalDependencies,e),Module.setStatus(e?"Preparing... ("+(this.totalDependencies-e)+"/"+this.totalDependencies+")":"All downloads complete.")},onRuntimeInitialized:()=>{outputElement.style.display="block"}};Module.arguments=window.location.search.length>1?window.location.search.substr(1).split("&"):[],Module.setStatus("Downloading..."),window.onerror=()=>{Module.setStatus("Exception thrown, see JavaScript console"),spinnerElement.style.display="none",Module.setStatus=e=>{e&&console.error("[post-exception status] "+e)}};window.addEventListener("resize",()=>{if(canvasElement.style.display!=="none"){Module.winResized&&Module.winResized()}})</script><script async src=index.js></script></body></html>
+</head><body><figure id=spinner style=overflow:visible><div class=spinner></div><center style=margin-top:.5em><strong>Qwasm2</strong></center></figure><div class=emscripten id=status>Downloading...</div><div class=emscripten><progress hidden id=progress max=100 value=0></progress></div><textarea class=emscripten id=output readonly></textarea><canvas class=emscripten id=canvas oncontextmenu=event.preventDefault() tabindex=-1></canvas><a hidden id=exportFile></a><script>var statusElement=document.getElementById("status"),progressElement=document.getElementById("progress"),spinnerElement=document.getElementById("spinner"),canvasElement=document.getElementById("canvas"),outputElement=document.getElementById("output"),exportElement=document.getElementById("exportFile");var Module={_canLockPointer:!0,print:(outputElement.value="",function(e){arguments.length>1&&(e=Array.prototype.slice.call(arguments).join(" ")),console.log(e),outputElement.value+=e+"\n",outputElement.scrollTop=outputElement.scrollHeight}),canvas:(canvasElement.addEventListener("webglcontextlost",(e=>{alert("WebGL context lost. You will need to reload the page."),e.preventDefault()}),!1),canvasElement),setStatus:e=>{if(Module.setStatus.last||(Module.setStatus.last={time:Date.now(),text:""}),e!==Module.setStatus.last.text){var t=e.match(/([^(]+)\((\d+(\.\d+)?)\/(\d+)\)/),n=Date.now();t&&n-Module.setStatus.last.time<30||(Module.setStatus.last.time=n,Module.setStatus.last.text=e,t?(e=t[1],progressElement.value=100*parseInt(t[2]),progressElement.max=100*parseInt(t[4]),progressElement.hidden=!1,spinnerElement.hidden=!1):(progressElement.value=null,progressElement.max=null,progressElement.hidden=!0,e||(spinnerElement.hidden=!0)),statusElement.innerHTML=e)}},hideConsole:()=>{outputElement.style.display="none",canvasElement.style.display="block",canvasElement.focus()},showConsole:()=>{canvasElement.style.display="none",outputElement.style.display="block",outputElement.scrollTop=outputElement.scrollHeight,outputElement.focus()},exportFile:e=>{try{const t=e.split("/"),n=new Uint8Array(FS.readFile(e)),o=new Blob([n],{type:"application/octet-stream"}),l=URL.createObjectURL(o);exportElement.href=l,exportElement.download=t[t.length-1],exportElement.click(),URL.revokeObjectURL(l)}catch(e){console.error("Error exporting file:",e)}},winResized:()=>{console.info("Detected window resize: "+canvasElement.width+"x"+canvasElement.height)},setGamma:e=>{e=Number(Number(e).toFixed(2)),console.info("Detected canvas gamma change: "+e),canvasElement.style.filter=e<0?null:"brightness("+2*e+")"},captureMouse:()=>{Module._canLockPointer&&!Module._attemptPointerLock()&&(Module._canLockPointer=!1,console.info("Delayed pointer lock requested."),document.addEventListener("keydown",Module._lockPointerOnKey))},_attemptPointerLock:()=>(null===document.pointerLockElement&&canvasElement.requestPointerLock(),null!==document.pointerLockElement),_lockPointerOnKey:e=>{("Escape"===e.key||Module._attemptPointerLock())&&(document.removeEventListener("keydown",Module._lockPointerOnKey),console.info("Delayed pointer lock complete."),Module._canLockPointer=!0)},totalDependencies:0,monitorRunDependencies:e=>{this.totalDependencies=Math.max(this.totalDependencies,e),Module.setStatus(e?"Preparing... ("+(this.totalDependencies-e)+"/"+this.totalDependencies+")":"All downloads complete.")},onRuntimeInitialized:()=>{outputElement.style.display="block"}};Module.arguments=window.location.search.length>1?window.location.search.substr(1).split("&"):[],Module.setStatus("Downloading..."),window.onerror=()=>{Module.setStatus("Exception thrown, see JavaScript console"),spinnerElement.style.display="none",Module.setStatus=e=>{e&&console.error("[post-exception status] "+e)}};window.addEventListener("resize",()=>{if(canvasElement.style.display!=="none"){Module.winResized&&Module.winResized()}})</script><script async src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1360/games/quakeii/index.js"></script></body></html>
