@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>zones</title>
+</head>
+<body style="background:#0d1117;color:#8b949e;font:14px system-ui,sans-serif;margin:0;padding:16px">
+<p id="t">loading...</p>
+<script><![CDATA[
+// jsdelivr serves .xhtml as a real page, so this one can install coi-sw.js on cdn.jsdelivr.net.
+// once it runs, the worker answers this same url with the launcher (or ?g=<id>: the game) as an
+// isolated html page, so SharedArrayBuffer works. this page only shows up on the first visit.
+(function () {
+  var t = document.getElementById('t');
+  var sw = navigator.serviceWorker;
+  var base = location.href.replace(/[?#].*$/, '').replace(/[^\/]*$/, '');
+  var key = 'tz-coi-reload';
+  var last = 0;
+  try { last = Number(sessionStorage.getItem(key)) || 0; } catch (e) {}
+  if (!sw) { t.textContent = 'this browser has service workers turned off (private window?), so games cannot start here.'; return; }
+  if (Date.now() - last < 15000) { t.textContent = 'the game page did not start. reload to try again.'; return; }
+  sw.register(base + 'coi-sw.js', { scope: base })
+    .then(function () { return sw.ready; })
+    .then(function () {
+      try { sessionStorage.setItem(key, String(Date.now())); } catch (e) {}
+      location.reload();
+    }, function (e) { t.textContent = 'could not start: ' + e.message; });
+})();
+]]></script>
+</body>
+</html>
