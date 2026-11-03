@@ -481,6 +481,16 @@
   "key": "games__beatblock"
  },
  {
+  "id": 58,
+  "name": "Bee Movie Game",
+  "cover": "https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@l001/covers/58.webp",
+  "url": "{HTML_URL}/58.html",
+  "special": [
+   "threads"
+  ],
+  "key": "games__beemovie"
+ },
+ {
   "id": 59,
   "name": "Bendy And The Ink Machine, Webport",
   "cover": "https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@l001/covers/59.webp",
@@ -1039,6 +1049,16 @@
   "key": "gamefile__daily"
  },
  {
+  "id": 128,
+  "name": "Danganronpa",
+  "cover": "https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@l001/covers/128.webp",
+  "url": "{HTML_URL}/128.html",
+  "special": [
+   "threads"
+  ],
+  "key": "games__danganronpa"
+ },
+ {
   "id": 129,
   "name": "DEAD PLATE, Webport",
   "cover": "https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@l001/covers/129.webp",
@@ -1136,6 +1156,16 @@
   "cover": "https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@l001/covers/140.webp",
   "url": "{HTML_URL}/140.html",
   "key": "gamefile__dm2"
+ },
+ {
+  "id": 141,
+  "name": "Dome Keeper, Webport",
+  "cover": "https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@l001/covers/141.webp",
+  "url": "{HTML_URL}/141.html",
+  "special": [
+   "threads"
+  ],
+  "key": "games__domekeeper"
  },
  {
   "id": 142,
@@ -2025,6 +2055,19 @@
   "key": "gamefile__gta3"
  },
  {
+  "id": 259,
+  "name": "GTA San Andreas",
+  "cover": "https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@l001/covers/259.webp",
+  "url": "{HTML_URL}/259.html",
+  "altNames": [
+   "Grand Theft Auto: San Andreas"
+  ],
+  "special": [
+   "threads"
+  ],
+  "key": "games__gtasan"
+ },
+ {
   "id": 260,
   "name": "GTA Vice City, Webport",
   "cover": "https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@l001/covers/260.webp",
@@ -2830,6 +2873,16 @@
   "key": "games__mcpe"
  },
  {
+  "id": 356,
+  "name": "Minecraft: Story Mode, Webport",
+  "cover": "https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@l005/covers/356.webp",
+  "url": "{HTML_URL}/356.html",
+  "special": [
+   "threads"
+  ],
+  "key": "games__mcsm"
+ },
+ {
   "id": 357,
   "name": "Minesweeper Mania",
   "cover": "https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@l005/covers/357.webp",
@@ -3133,6 +3186,16 @@
   "cover": "https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@l005/covers/397.webp",
   "url": "{HTML_URL}/397.html",
   "key": "games__paps"
+ },
+ {
+  "id": 398,
+  "name": "Parappa The Rapper 2",
+  "cover": "https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@l005/covers/398.webp",
+  "url": "{HTML_URL}/398.html",
+  "special": [
+   "threads"
+  ],
+  "key": "games__parappa2"
  },
  {
   "id": 399,
@@ -4142,6 +4205,16 @@
   "cover": "https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@l006/covers/521.webp",
   "url": "{HTML_URL}/521.html",
   "key": "gamefile__spelunky"
+ },
+ {
+  "id": 522,
+  "name": "Starbound, Webport",
+  "cover": "https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@l006/covers/522.webp",
+  "url": "{HTML_URL}/522.html",
+  "special": [
+   "threads"
+  ],
+  "key": "games__Starbound"
  },
  {
   "id": 523,
