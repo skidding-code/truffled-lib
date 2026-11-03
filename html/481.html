@@ -252,13 +252,41 @@
   if (G.XMLHttpRequest) {
     var XP = G.XMLHttpRequest.prototype;
     var oOpen = XP.open, oSend = XP.send, oSRH = XP.setRequestHeader;
+    var oStatus = Object.getOwnPropertyDescriptor(XP, 'status');
+    // a range answered from a blob url comes back 200; games that sent Range check for 206
+    function partial(x) {
+      if (!oStatus || !oStatus.get) return;
+      Object.defineProperty(x, 'status', { configurable: true, get: function () { var v = oStatus.get.call(this); return v === 200 ? 206 : v; } });
+      Object.defineProperty(x, 'statusText', { configurable: true, get: function () { return oStatus.get.call(this) === 200 ? 'Partial Content' : ''; } });
+    }
+    // sync reads of a split file (block readers in workers): fetch just the covered bytes of each part
+    function syncBytes(key, a, b) {
+      var out = [];
+      for (var i = Math.floor(a / PART); i <= Math.floor(b / PART); i++) {
+        var s = Math.max(a, i * PART) - i * PART, e = Math.min(b, (i + 1) * PART - 1) - i * PART, q = null;
+        for (var t = 0; t < 4; t++) {
+          q = new G.XMLHttpRequest();
+          oOpen.call(q, 'GET', partUrl(key, i + 1), false);
+          q.overrideMimeType('text/plain; charset=x-user-defined');
+          oSRH.call(q, 'Range', 'bytes=' + s + '-' + e);
+          try { oSend.call(q); } catch (err) { continue; }
+          if (q.status === 206 || q.status === 200) break;
+        }
+        if (!q || (q.status !== 206 && q.status !== 200)) throw new Error('part ' + partUrl(key, i + 1) + ' ' + (q && q.status));
+        var txt = q.responseText, off = q.status === 206 ? 0 : s, n = e - s + 1, u8 = new Uint8Array(n);
+        for (var j = 0; j < n; j++) u8[j] = txt.charCodeAt(off + j) & 255;
+        out.push(u8);
+      }
+      return new Blob(out, { type: split[key][1] || 'application/octet-stream' });
+    }
     XP.open = function (method, url) {
       var a = Array.prototype.slice.call(arguments);
       var m = map(url);
+      if (Object.prototype.hasOwnProperty.call(this, 'status')) { delete this.status; delete this.statusText; }
       // deferred requests still open for real now: a reused xhr must leave DONE (games set responseType right after open)
       var early = function (x) { try { var a0 = a.slice(); a0[1] = m; oOpen.apply(x, a0); } catch (e) {} };
-      if (splitInfo(m) && a[2] !== false) {
-        this.__tzs = { a: a, m: m, h: [] };
+      if (splitInfo(m)) {
+        this.__tzs = { a: a, m: m, h: [], y: a[2] === false };
         early(this);
         return;
       }
@@ -319,9 +347,20 @@
       var key = splitKey(s.m), rh = null;
       s.h.forEach(function (h) { if (String(h[0]).toLowerCase() === 'range') rh = h[1]; });
       var rg = rh && sizeOf(key) ? parseRange(rh, sizeOf(key)) : null;
-      var src = rg ? rangeBlob(key, rg[0], rg[1]).then(function (b) { return URL.createObjectURL(b); }) : mergeUrl(s.m);
       s.h = s.h.filter(function (h) { return String(h[0]).toLowerCase() !== 'range'; });
+      if (s.y) {
+        var sb = URL.createObjectURL(syncBytes(key, rg ? rg[0] : 0, rg ? rg[1] : sizeOf(key) - 1)), sa = s.a.slice();
+        sa[1] = sb;
+        if (String(sa[0]).toUpperCase() === 'HEAD') sa[0] = 'GET';
+        x.__tzs = null;
+        oOpen.apply(x, sa);
+        s.h.forEach(function (h) { try { oSRH.call(x, h[0], h[1]); } catch (e) {} });
+        if (rg) partial(x);
+        try { return oSend.call(x, body); } finally { URL.revokeObjectURL(sb); }
+      }
+      var src = rg ? rangeBlob(key, rg[0], rg[1]).then(function (b) { return URL.createObjectURL(b); }) : mergeUrl(s.m);
       src.then(function (bu) {
+        if (rg) partial(x);
         var a = s.a.slice();
         a[1] = bu;
         // blob urls only answer GET; a HEAD still gets the joined file's headers this way
