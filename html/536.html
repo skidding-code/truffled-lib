@@ -9,7 +9,9 @@
   var units = Object.keys(C.u || {}).sort(function (a, b) { return b.length - a.length; });
   var exts = Object.keys(C.x || {}).sort(function (a, b) { return b.length - a.length; });
   var split = C.s || {};
-  var hostDir = (function () {
+  // the folder of the page's own url: urls built from location land here and get mapped to the game's base.
+  // workers get the page's value passed in (their own location is a blob)
+  var hostDir = C.h || (function () {
     try {
       var h = String(G.location.href);
       if (/^(https?|file):/i.test(h)) return h.slice(0, h.lastIndexOf('/') + 1);
@@ -333,6 +335,7 @@
     var abs = new URL(m, base()).href;
     var cfg = JSON.parse(JSON.stringify(C));
     cfg.w = abs;
+    cfg.h = hostDir;
     var pre = shimSrc ? '(' + shimSrc + ')(' + JSON.stringify(cfg) + ');' : '';
     var body = opts && opts.type === 'module'
       ? pre + 'import ' + JSON.stringify(abs) + ';'
@@ -341,16 +344,27 @@
   }
   // workers built from blobs resolve relative urls against the page origin; run the shim in them too
   function blobWorker(u, opts) {
+    // pages often revoke the blob right after new Worker(), so copy its source in now instead of importing it later
+    var src = null;
+    try {
+      var x = new XMLHttpRequest();
+      oOpen.call(x, 'GET', u, false);
+      oSend.call(x);
+      if (x.status === 200 || x.status === 0) src = x.responseText;
+    } catch (e) {}
+    if (src == null) return u;
     var cfg = JSON.parse(JSON.stringify(C));
     cfg.w = base();
-    var pre = '(' + shimSrc + ')(' + JSON.stringify(cfg) + ');';
-    var body = opts && opts.type === 'module' ? pre + 'import ' + JSON.stringify(u) + ';' : pre + 'importScripts(' + JSON.stringify(u) + ');';
-    return URL.createObjectURL(new Blob([body], { type: 'text/javascript' }));
+    cfg.h = hostDir;
+    var pre = '(' + shimSrc + ')(' + JSON.stringify(cfg) + ');\n';
+    return URL.createObjectURL(new Blob([pre, src], { type: 'text/javascript' }));
   }
   function needsWrap(u) {
     try {
       var abs = new URL(map(u), base());
-      return abs.origin !== G.location.origin && abs.protocol !== 'blob:' && abs.protocol !== 'data:';
+      // same-origin ones too (game pages now run on cdn.jsdelivr.net): a worker without the shim can't map the
+      // location-relative urls the page hands it
+      return abs.protocol === 'http:' || abs.protocol === 'https:';
     } catch (e) { return false; }
   }
   ['Worker', 'SharedWorker'].forEach(function (k) {
@@ -735,7 +749,7 @@
       }
     }).observe(document, { childList: true, subtree: true });
   }
-})({"c":"https://cdn.jsdelivr.net","o":"skidding-code","p":19000000,"b":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1562/games/sms/","r":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1562/","u":{"/games/sms/index.html":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1562/","/games/sms/app.js":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1562/","/games/sms/audio-worklet.js":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1562/","/games/sms/disc-lite.iso":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1563/","/games/sms/import-worker.js":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1564/","/games/sms/isolation-sw.js":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1564/","/games/sms/sms-game.js":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1564/","/games/sms/sms-game.wasm":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1564/","/games/sms/sms.js":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1564/","/games/sms/sms.wasm":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1564/","/games/sms/zip.js":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1564/","/games/subway-surfers/img/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1558/"},"x":{},"s":{"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1563/games/sms/disc-lite.iso":[16,"application/octet-stream",301223808,[[1,"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1563/games/sms/disc-lite.iso"],[3,"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c2241/games/sms/disc-lite.iso"],[5,"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c2242/games/sms/disc-lite.iso"],[7,"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c2243/games/sms/disc-lite.iso"],[9,"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c2244/games/sms/disc-lite.iso"],[11,"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c2245/games/sms/disc-lite.iso"],[13,"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c2246/games/sms/disc-lite.iso"],[15,"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c2247/games/sms/disc-lite.iso"]]]}});</script>
+})({"c":"https://cdn.jsdelivr.net","o":"skidding-code","p":19000000,"b":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1562/games/sms/","r":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1562/","u":{"/games/sms/index.html":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1562/","/games/sms/app.js":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1562/","/games/sms/audio-worklet.js":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1562/","/games/sms/disc-lite.iso":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1563/","/games/sms/import-worker.js":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1564/","/games/sms/isolation-sw.js":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1564/","/games/sms/sms-game.js":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1564/","/games/sms/sms-game.wasm":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1564/","/games/sms/sms.js":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1564/","/games/sms/sms.wasm":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1564/","/games/sms/zip.js":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1564/","/games/stardew/ContentAudio.tar01":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1883/","/games/subway-surfers/img/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1558/"},"x":{},"s":{"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1563/games/sms/disc-lite.iso":[16,"application/octet-stream",301223808,[[1,"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1563/games/sms/disc-lite.iso"],[3,"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c2241/games/sms/disc-lite.iso"],[5,"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c2242/games/sms/disc-lite.iso"],[7,"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c2243/games/sms/disc-lite.iso"],[9,"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c2244/games/sms/disc-lite.iso"],[11,"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c2245/games/sms/disc-lite.iso"],[13,"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c2246/games/sms/disc-lite.iso"],[15,"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c2247/games/sms/disc-lite.iso"]]],"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1883/games/stardew/ContentAudio.tar01":[3,"application/octet-stream",41943040]}});</script>
 <meta charset="utf-8">
 
 <meta name="viewport" content="width=device-width, initial-scale=1">

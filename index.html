@@ -38,7 +38,7 @@ main{max-width:1400px;margin:0 auto;padding:16px}
 #msg{color:var(--dim);padding:40px;text-align:center}
 #note{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:#000;z-index:2}
 #note div{max-width:460px;padding:20px;background:var(--panel);border:1px solid var(--line);border-radius:10px;color:var(--text);line-height:1.5}
-#note button{margin-top:12px;background:#21262d;border:1px solid var(--line);color:var(--text);border-radius:7px;padding:6px 10px;font:inherit;cursor:pointer}
+#note a,#note button{display:inline-block;margin-top:12px;background:#21262d;border:1px solid var(--line);color:var(--text);border-radius:7px;padding:6px 10px;font:inherit;cursor:pointer;text-decoration:none}
 @media (max-width:600px){.grid{grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:8px}h1{font-size:16px}}
 </style>
 </head>
@@ -46,7 +46,7 @@ main{max-width:1400px;margin:0 auto;padding:16px}
 <header><div class="bar">
 <h1>zo<b>nes</b></h1>
 <input id="q" type="search" placeholder="search games" autocomplete="off">
-<select id="filter"><option value="all">all</option><option value="fav">favorites</option><option value="unity">unity</option><option value="proxy">proxy links</option><option value="threads">needs isolation</option></select>
+<select id="filter"><option value="all">all</option><option value="fav">favorites</option><option value="unity">unity</option><option value="proxy">proxy links</option><option value="threads">uses threads</option></select>
 <select id="sort"><option value="name">a-z</option><option value="id">newest first</option><option value="old">oldest first</option></select>
 <span id="count"></span>
 </div></header>
@@ -62,6 +62,9 @@ var CDN = "https://cdn.jsdelivr.net";
 // jsdelivr now and then refuses a main file with "package size exceeded" (the repo is big), then the tag serves it
 var LIB = CDN + "/gh/skidding-code/truffled-lib@main";
 var LIB2 = CDN + "/gh/skidding-code/truffled-lib@lib";
+// games that need SharedArrayBuffer run in an iframe of their page on cdn.jsdelivr.net: coi-sw.js (installed there
+// by index.xhtml) serves it cross-origin isolated, which works inside this page even when it is a local file
+var PLAY = CDN + "/gh/skidding-code/truffled-lib@coi3/index.xhtml";
 var zonesURL = LIB + "/zones.json";
 var coverURL = LIB + "/covers";
 var htmlURL = LIB + "/html";
@@ -69,6 +72,7 @@ var zones = [], cur = null;
 var $ = function (id) { return document.getElementById(id); };
 function store(k, v) { try { if (v === undefined) return JSON.parse(localStorage.getItem(k) || "null"); localStorage.setItem(k, JSON.stringify(v)); } catch (e) { return null; } }
 function zoneURL(u) { return String(u).replace("{COVER_URL}", coverURL).replace("{HTML_URL}", htmlURL); }
+function threaded(z) { return !!(z.special && z.special.indexOf("threads") >= 0); }
 function baseFor(url, html) {
   var dir = url.slice(0, url.lastIndexOf("/") + 1);
   var m = /<base\b[^>]*\bhref\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s>]+))/i.exec(html);
@@ -182,6 +186,24 @@ function gameFrame() {
   f.setAttribute("allowfullscreen", "");
   return f;
 }
+// threaded games: their own page, no sandbox (it installs a service worker), and allowed to be cross-origin isolated
+function threadFrame(z) {
+  var f = document.createElement("iframe");
+  f.allow = "cross-origin-isolated; autoplay; fullscreen; gamepad; clipboard-read; clipboard-write; pointer-lock";
+  f.setAttribute("allowfullscreen", "");
+  f.src = PLAY + "?g=" + z.id;
+  return f;
+}
+// a browser without Document-Isolation-Policy (firefox, safari) can only isolate the game as a whole tab
+window.addEventListener("message", function (e) {
+  if (!e.data || e.data.tz !== "no-coi" || !cur || document.getElementById("note")) return;
+  var n = document.createElement("div");
+  n.id = "note";
+  n.innerHTML = "<div>this game needs SharedArrayBuffer, which this browser only allows when the game has the whole tab.<br><a target=\"_blank\" rel=\"noopener\">open it in a new tab</a> <button>keep it here</button></div>";
+  n.querySelector("a").href = PLAY + "?g=" + cur.id;
+  n.querySelector("button").onclick = function () { n.remove(); };
+  ($("viewer").classList.contains("open") ? $("vbox") : document.body).appendChild(n);
+});
 function openZone(z) {
   if (/^https?:/i.test(z.url)) { window.open(z.url, "_blank"); return; }
   cur = z;
@@ -191,18 +213,16 @@ function openZone(z) {
   $("vname").textContent = z.name;
   var box = $("vbox");
   box.textContent = "loading...";
-  var f = gameFrame();
-  box.appendChild(f);
   $("viewer").classList.add("open");
   document.body.style.overflow = "hidden";
-  if (z.special && z.special.indexOf("threads") >= 0 && !self.crossOriginIsolated) {
-    var n = document.createElement("div");
-    n.id = "note";
-    n.innerHTML = "<div>this game uses threads (SharedArrayBuffer), which browsers only allow on cross-origin isolated pages. it can't run from a plain file or s3 page. host this launcher next to <b>coi-serviceworker.js</b> (any https static host) or with COOP/COEP headers to play it.<br><button>try anyway</button></div>";
-    n.querySelector("button").onclick = function () { n.remove(); };
-    box.appendChild(n);
-  }
   try { var u = new URL(location.href); u.searchParams.set("id", z.id); history.pushState(null, "", u.href); } catch (e) {}
+  if (threaded(z)) {
+    box.textContent = "";
+    box.appendChild(threadFrame(z));
+    return;
+  }
+  var f = gameFrame();
+  box.appendChild(f);
   getHtml(z).then(function (html) {
     if (cur !== z) return;
     writeInto(f.contentDocument, html);
@@ -221,6 +241,7 @@ $("vreload").onclick = function () { if (cur) openZone(cur); };
 $("vfull").onclick = function () { var f = $("vbox").querySelector("iframe"); if (f && f.requestFullscreen) f.requestFullscreen(); };
 $("vblank").onclick = function () {
   if (!cur) return;
+  if (threaded(cur)) { window.open(PLAY + "?g=" + cur.id, "_blank"); return; }
   var w = window.open("about:blank", "_blank");
   if (!w) return alert("popup blocked");
   getHtml(cur).then(function (h) { writeInto(w.document, h); });
@@ -244,15 +265,6 @@ if (location.hash.indexOf("embed") < 0) {
   window.addEventListener("popstate", function () { if (!new URLSearchParams(location.search).get("id")) closeZone(); });
   document.addEventListener("keydown", function (e) { if (e.key === "Escape" && cur && !document.fullscreenElement) closeZone(); });
 }
-try {
-  if (!self.crossOriginIsolated && "serviceWorker" in navigator && /^https?:$/.test(location.protocol) && !sessionStorage.getItem("coiTried")) {
-    sessionStorage.setItem("coiTried", "1");
-    fetch("coi-serviceworker.js", { method: "HEAD" }).then(function (r) {
-      if (!r.ok) return;
-      navigator.serviceWorker.register("coi-serviceworker.js").then(function () { location.reload(); });
-    }).catch(function () {});
-  }
-} catch (e) {}
 var savedSort = store("zsort");
 if (savedSort) $("sort").value = savedSort;
 libGet(zonesURL).then(function (r) { return r.json(); }).then(function (j) {
@@ -261,17 +273,15 @@ libGet(zonesURL).then(function (r) { return r.json(); }).then(function (j) {
   var id = new URLSearchParams(location.search).get("id");
   var z = id != null && zones.find(function (x) { return String(x.id) === String(id); });
   if (z && location.hash.indexOf("embed") >= 0 && !/^https?:/i.test(z.url)) {
-    // the game gets a fresh about:blank frame like in the grid view: its own globals, and no launcher url in location
-    getHtml(z).then(function (h) {
-      document.title = z.name;
-      document.body.textContent = "";
-      document.body.style.cssText = "margin:0;height:100vh;overflow:hidden;background:#000";
-      var f = gameFrame();
-      f.style.cssText = "border:0;width:100%;height:100%;display:block";
-      document.body.appendChild(f);
-      writeInto(f.contentDocument, h);
-      f.focus();
-    });
+    // the game gets a fresh frame filling the window: its own globals, and no launcher url in location
+    cur = z;
+    document.title = z.name;
+    document.body.textContent = "";
+    document.body.style.cssText = "margin:0;height:100vh;overflow:hidden;background:#000";
+    var f = threaded(z) ? threadFrame(z) : gameFrame();
+    f.style.cssText = "border:0;width:100%;height:100%;display:block";
+    document.body.appendChild(f);
+    if (!threaded(z)) getHtml(z).then(function (h) { writeInto(f.contentDocument, h); f.focus(); });
     return;
   }
   render();

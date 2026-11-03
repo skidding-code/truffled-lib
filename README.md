@@ -32,6 +32,11 @@ each page carries a `<base>` pointing at its folder in one of the chunk tags plu
 - wraps cross-origin and blob `Worker`/`SharedWorker` scripts in blob workers that carry the same runtime, and remaps `AudioWorklet` modules
 - loads nested `.html` pages (jsdelivr serves html as `text/plain`) by fetching and writing them into their frame
 
-## threaded games (removed)
+## threaded games (SharedArrayBuffer)
 
-games that need threads use SharedArrayBuffer (pthreads / threaded engines). browsers only allow that on cross-origin isolated pages, so they can't run from a plain file, s3 or about:blank launcher — the same limit gn-math has. threaded games were dropped from the catalog. `coi-serviceworker.js` is kept for anyone who re-adds one: host `index.html` next to `coi-serviceworker.js` on any https static host (github pages, cloudflare pages, ...): the launcher registers it once and reloads isolated. serving the launcher with `Cross-Origin-Opener-Policy: same-origin` + `Cross-Origin-Embedder-Policy: credentialless` works too.
+browsers only give a page `SharedArrayBuffer` when it is cross-origin isolated, which takes response headers that jsdelivr doesn't send (it also serves `.html` as `text/plain`). the `coi3` tag works around that on jsdelivr itself:
+
+- `index.xhtml`: jsdelivr serves `.xhtml` as a real page. on the first visit it installs `coi-sw.js`, a service worker on cdn.jsdelivr.net
+- `coi-sw.js` then answers `index.xhtml?g=<id>` with that game's page as `text/html`, adding `Document-Isolation-Policy` plus `Cross-Origin-Opener-Policy`/`Cross-Origin-Embedder-Policy`
+
+games tagged `threads` in `zones.json` open in an iframe of `https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@coi3/index.xhtml?g=<id>` (`allow="cross-origin-isolated"`). `Document-Isolation-Policy` isolates that iframe even when the page around it is a local file or any plain host (chrome). firefox and safari don't support it yet; there the launcher offers the same url in a new tab, where COOP/COEP isolate it. every other game loads like before: its html is fetched and written into an about:blank iframe.

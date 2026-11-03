@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en" data-gamepad="native"><base href="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0330/games/castle/"><script>(function (C) {
+<html lang="en" data-gamepad="native"><base href="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1844/games/castle/"><script>(function (C) {
   var G = typeof self !== 'undefined' ? self : this;
   if (G.__tz) return;
   var IS_DOC = typeof document !== 'undefined' && typeof Element !== 'undefined';
@@ -8,7 +8,9 @@
   var units = Object.keys(C.u || {}).sort(function (a, b) { return b.length - a.length; });
   var exts = Object.keys(C.x || {}).sort(function (a, b) { return b.length - a.length; });
   var split = C.s || {};
-  var hostDir = (function () {
+  // the folder of the page's own url: urls built from location land here and get mapped to the game's base.
+  // workers get the page's value passed in (their own location is a blob)
+  var hostDir = C.h || (function () {
     try {
       var h = String(G.location.href);
       if (/^(https?|file):/i.test(h)) return h.slice(0, h.lastIndexOf('/') + 1);
@@ -332,6 +334,7 @@
     var abs = new URL(m, base()).href;
     var cfg = JSON.parse(JSON.stringify(C));
     cfg.w = abs;
+    cfg.h = hostDir;
     var pre = shimSrc ? '(' + shimSrc + ')(' + JSON.stringify(cfg) + ');' : '';
     var body = opts && opts.type === 'module'
       ? pre + 'import ' + JSON.stringify(abs) + ';'
@@ -340,16 +343,27 @@
   }
   // workers built from blobs resolve relative urls against the page origin; run the shim in them too
   function blobWorker(u, opts) {
+    // pages often revoke the blob right after new Worker(), so copy its source in now instead of importing it later
+    var src = null;
+    try {
+      var x = new XMLHttpRequest();
+      oOpen.call(x, 'GET', u, false);
+      oSend.call(x);
+      if (x.status === 200 || x.status === 0) src = x.responseText;
+    } catch (e) {}
+    if (src == null) return u;
     var cfg = JSON.parse(JSON.stringify(C));
     cfg.w = base();
-    var pre = '(' + shimSrc + ')(' + JSON.stringify(cfg) + ');';
-    var body = opts && opts.type === 'module' ? pre + 'import ' + JSON.stringify(u) + ';' : pre + 'importScripts(' + JSON.stringify(u) + ');';
-    return URL.createObjectURL(new Blob([body], { type: 'text/javascript' }));
+    cfg.h = hostDir;
+    var pre = '(' + shimSrc + ')(' + JSON.stringify(cfg) + ');\n';
+    return URL.createObjectURL(new Blob([pre, src], { type: 'text/javascript' }));
   }
   function needsWrap(u) {
     try {
       var abs = new URL(map(u), base());
-      return abs.origin !== G.location.origin && abs.protocol !== 'blob:' && abs.protocol !== 'data:';
+      // same-origin ones too (game pages now run on cdn.jsdelivr.net): a worker without the shim can't map the
+      // location-relative urls the page hands it
+      return abs.protocol === 'http:' || abs.protocol === 'https:';
     } catch (e) { return false; }
   }
   ['Worker', 'SharedWorker'].forEach(function (k) {
@@ -451,9 +465,21 @@
     }
     return URL.createObjectURL(new Blob(parts, { type: info[1] || 'text/javascript' }));
   }
+  function syncFetch(u) {
+    for (var t = 0; t < 8; t++) {
+      if (t) { var until = Date.now() + 1500 * t; while (Date.now() < until) {} }
+      try {
+        var x = new XMLHttpRequest();
+        oOpen.call(x, 'GET', u, false);
+        oSend.call(x);
+        if (x.status === 200) return URL.createObjectURL(new Blob([x.responseText], { type: 'text/javascript' }));
+      } catch (e) {}
+    }
+    return null;
+  }
   G.__tzw = function (pre, post, u) {
     var key = splitKey(u);
-    var bu = key ? syncMerge(key) : null;
+    var bu = key ? syncMerge(key) : syncFetch(u);
     if (bu) {
       blobUrls[key] = Promise.resolve(bu);
       document.write(pre + ' src="' + bu + '"' + post + '><\/script>');
@@ -461,7 +487,7 @@
     }
     var cur = document.currentScript, s = document.createElement('script');
     s.async = false;
-    (key ? mergeUrl(u) : Promise.resolve(u)).then(function (b) {
+    (key ? mergeUrl(u) : gzScript(u)).then(function (b) {
       oSetAttr.call(s, 'src', b);
       if (cur && cur.parentNode) cur.parentNode.insertBefore(s, cur.nextSibling);
       else document.head.appendChild(s);
@@ -504,6 +530,24 @@
     try { return new URL(u).origin === CDN; } catch (e) { return false; }
   }
 
+  // a .gz served without Content-Encoding (truffled serves them the same way) can't run as a cross-origin
+  // <script>: the browser blocks it. unzip it here and run the blob instead
+  function gzScript(m) {
+    return G.fetch(m).then(function (r) { return r.arrayBuffer(); }).then(function (ab) {
+      var b = new Uint8Array(ab, 0, Math.min(2, ab.byteLength));
+      var js = b[0] === 0x1f && b[1] === 0x8b && G.DecompressionStream
+        ? new Response(new Blob([ab]).stream().pipeThrough(new DecompressionStream('gzip'))).blob()
+        : Promise.resolve(new Blob([ab]));
+      return js.then(function (x) { return URL.createObjectURL(new Blob([x], { type: 'text/javascript' })); });
+    }).catch(function () { return m; });
+  }
+  // jsdelivr labels anything but .js/.mjs (e.g. UnityProgress.javascript, .gz) with a non-script type + nosniff
+  function isGzScript(el, m) {
+    if (el.tagName !== 'SCRIPT' || typeof m !== 'string' || !cdnLike(m)) return false;
+    var p = bare(m), x = /\.([A-Za-z0-9]{1,12})$/.exec(p.slice(p.lastIndexOf('/') + 1));
+    return !!x && !/^(m?js|cjs)$/i.test(x[1]);
+  }
+
   function hookProp(proto, prop, special) {
     if (!proto) return;
     var d = Object.getOwnPropertyDescriptor(proto, prop);
@@ -521,6 +565,10 @@
           return;
         }
         if (special && special(el, m, function (x) { d.set.call(el, x); })) return;
+        if (prop === 'src' && isGzScript(el, m)) {
+          gzScript(m).then(function (u) { d.set.call(el, u); });
+          return;
+        }
         if (prop === 'src' && (el.tagName === 'IMG' || el.tagName === 'VIDEO' || el.tagName === 'AUDIO')) corsMedia(el, m);
         return d.set.call(el, m);
       },
@@ -562,6 +610,29 @@
     void svgHref;
   } catch (e) {}
 
+  // css added at runtime (@font-face via insertRule, FontFace, constructable sheets) resolves url() against the page base
+  function cssMap(t) {
+    return typeof t !== 'string' ? t : t.replace(/url\(\s*(["']?)([^"')]+)\1\s*\)/g, function (all, q, u) {
+      var m = map(u.trim());
+      return typeof m === 'string' ? 'url(' + q + m + q + ')' : all;
+    });
+  }
+  if (G.CSSStyleSheet) {
+    var CP = CSSStyleSheet.prototype;
+    ['insertRule', 'replace', 'replaceSync'].forEach(function (k) {
+      var o = CP[k];
+      if (o) CP[k] = function (t) { var a = Array.prototype.slice.call(arguments); a[0] = cssMap(t); return o.apply(this, a); };
+    });
+  }
+  if (G.FontFace) {
+    var OF = G.FontFace;
+    var NF = function FontFace(family, source, desc) {
+      return new OF(family, typeof source === 'string' ? cssMap(source) : source, desc);
+    };
+    NF.prototype = OF.prototype;
+    G.FontFace = NF;
+  }
+
   var oSetAttr = Element.prototype.setAttribute;
   var ATTRS = { src: 1, href: 1, data: 1, poster: 1, srcset: 1, 'xlink:href': 1 };
   Element.prototype.setAttribute = function (name, value) {
@@ -577,6 +648,11 @@
         return;
       }
       if (tag === 'IFRAME' && n === 'src' && iframeSpecial(this, m, function (x) { oSetAttr.call(this, name, x); }.bind(this))) return;
+      if (n === 'src' && isGzScript(this, m)) {
+        var se = this;
+        gzScript(m).then(function (u) { oSetAttr.call(se, name, u); });
+        return;
+      }
       return oSetAttr.call(this, name, m);
     }
     return oSetAttr.call(this, name, value);
@@ -672,7 +748,7 @@
       }
     }).observe(document, { childList: true, subtree: true });
   }
-})({"c":"https://cdn.jsdelivr.net","o":"skidding-code","p":19000000,"b":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0330/games/castle/","r":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0330/","u":{"/games/castle/index.html":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0330/","/games/castle/app.data":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0330/","/games/castle/app.js":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0330/","/games/castle/app.wasm":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0331/","/games/castle/ccnet.js":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0331/","/games/castle/data/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0331/","/games/castle/files.json":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0331/","/games/castle/gamepad.js":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0331/","/games/castle/lazyfs.js":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0331/","/games/castle/small.pack":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0332/"},"x":{},"s":{"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0332/games/castle/small.pack":[2,"application/octet-stream",26366006]}});</script><meta charset="utf-8">
+})({"c":"https://cdn.jsdelivr.net","o":"skidding-code","p":19000000,"b":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1844/games/castle/","r":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1844/","u":{"/games/castle/index.html":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1844/","/games/castle/app.data":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1844/","/games/castle/app.js":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1844/","/games/castle/app.wasm":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1844/","/games/castle/ccnet.js":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1844/","/games/castle/data/":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1845/","/games/castle/files.json":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1845/","/games/castle/gamepad.js":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1845/","/games/castle/lazyfs.js":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1845/","/games/castle/small.pack":"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1846/"},"x":{},"s":{"https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1846/games/castle/small.pack":[2,"application/octet-stream",26366006]}});</script><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Castle Crashers</title>
 <style>
@@ -688,10 +764,10 @@ canvas{position:fixed;inset:0;margin:auto;width:min(100vw,calc(100dvh*16/9));hei
 <canvas id="canvas" width="1280" height="720" tabindex="0"></canvas>
 <div id="note" hidden></div>
 <div id="loading"><div id="status">Loading...</div><div id="bar"><div id="fill"></div></div></div>
-<script src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0331/games/castle/lazyfs.js"></script>
-<script src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0331/games/castle/gamepad.js"></script>
-<script src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0331/games/castle/ccnet.js"></script>
-<script src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c0330/games/castle/app.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1845/games/castle/lazyfs.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1845/games/castle/gamepad.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1844/games/castle/ccnet.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@c1844/games/castle/app.js"></script>
 <script>
 const canvas = document.getElementById('canvas');
 const loading = document.getElementById('loading');

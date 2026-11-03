@@ -247,6 +247,19 @@
   "key": "games__AVHPort"
  },
  {
+  "id": 31,
+  "name": "Apotheon, Webport",
+  "cover": "https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@l001/covers/31.webp",
+  "url": "{HTML_URL}/31.html",
+  "altNames": [
+   "Apotheon"
+  ],
+  "special": [
+   "threads"
+  ],
+  "key": "games__Apotheon"
+ },
+ {
   "id": 32,
   "name": "Arthur's Nightmare, Webport",
   "cover": "https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@l001/covers/32.webp",
@@ -458,6 +471,16 @@
   "key": "games__basket-random"
  },
  {
+  "id": 57,
+  "name": "Beatblock, Webport",
+  "cover": "https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@l001/covers/57.webp",
+  "url": "{HTML_URL}/57.html",
+  "special": [
+   "threads"
+  ],
+  "key": "games__beatblock"
+ },
+ {
   "id": 59,
   "name": "Bendy And The Ink Machine, Webport",
   "cover": "https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@l001/covers/59.webp",
@@ -664,6 +687,16 @@
   "key": "gamefile__bbe"
  },
  {
+  "id": 85,
+  "name": "Call of Duty 4 Modern Warfare",
+  "cover": "https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@l001/covers/85.webp",
+  "url": "{HTML_URL}/85.html",
+  "special": [
+   "threads"
+  ],
+  "key": "games__cod4mw"
+ },
+ {
   "id": 86,
   "name": "Call of Duty Mobile",
   "cover": "https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@l006/covers/86.webp",
@@ -692,6 +725,16 @@
    "unity"
   ],
   "key": "gamefile__caseoh"
+ },
+ {
+  "id": 89,
+  "name": "Castle Crashers, Webport",
+  "cover": "https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@l001/covers/89.webp",
+  "url": "{HTML_URL}/89.html",
+  "special": [
+   "threads"
+  ],
+  "key": "games__castle"
  },
  {
   "id": 90,
@@ -1048,6 +1091,16 @@
    "Deltatraveler"
   ],
   "key": "gamefile__deltatr"
+ },
+ {
+  "id": 135,
+  "name": "Dewdrop Dynasty, Webport",
+  "cover": "https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@l001/covers/135.webp",
+  "url": "{HTML_URL}/135.html",
+  "special": [
+   "threads"
+  ],
+  "key": "games__dewdrop"
  },
  {
   "id": 136,
@@ -2946,6 +2999,16 @@
   "key": "gamefile__onshi"
  },
  {
+  "id": 379,
+  "name": "Osu!",
+  "cover": "https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@l005/covers/379.webp",
+  "url": "{HTML_URL}/379.html",
+  "special": [
+   "threads"
+  ],
+  "key": "games__osu"
+ },
+ {
   "id": 380,
   "name": "Overburden, Webport",
   "cover": "https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@l005/covers/380.webp",
@@ -3131,6 +3194,9 @@
   "name": "Peggle WoW Edition",
   "cover": "https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@l005/covers/406.webp",
   "url": "{HTML_URL}/406.html",
+  "special": [
+   "threads"
+  ],
   "key": "games__pegg__wow"
  },
  {
@@ -3170,6 +3236,9 @@
   "url": "{HTML_URL}/410.html",
   "altNames": [
    "Pikmin"
+  ],
+  "special": [
+   "threads"
   ],
   "key": "games__pikmin"
  },
@@ -3310,6 +3379,26 @@
   "cover": "https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@l006/covers/428.webp",
   "url": "{HTML_URL}/428.html",
   "key": "games__polytrack"
+ },
+ {
+  "id": 429,
+  "name": "Portal",
+  "cover": "https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@l006/covers/429.webp",
+  "url": "{HTML_URL}/429.html",
+  "special": [
+   "threads"
+  ],
+  "key": "games__portal"
+ },
+ {
+  "id": 430,
+  "name": "Portal 2",
+  "cover": "https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@l006/covers/430.webp",
+  "url": "{HTML_URL}/430.html",
+  "special": [
+   "threads"
+  ],
+  "key": "games__portal2__portal2"
  },
  {
   "id": 431,
@@ -3991,6 +4080,16 @@
   "key": "games__srb2"
  },
  {
+  "id": 515,
+  "name": "Sonic Robo Blast 2 KART",
+  "cover": "https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@l006/covers/515.webp",
+  "url": "{HTML_URL}/515.html",
+  "special": [
+   "threads"
+  ],
+  "key": "games__kart"
+ },
+ {
   "id": 516,
   "name": "Sonic World Next",
   "cover": "https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@l006/covers/516.webp",
@@ -4140,6 +4239,9 @@
   "name": "Super Mario Galaxy",
   "cover": "https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@l006/covers/534.webp",
   "url": "{HTML_URL}/534.html",
+  "special": [
+   "threads"
+  ],
   "key": "games__smg"
  },
  {
@@ -4156,6 +4258,9 @@
   "url": "{HTML_URL}/536.html",
   "altNames": [
    "Super Mario Sunshine"
+  ],
+  "special": [
+   "threads"
   ],
   "key": "games__sms"
  },
@@ -4209,6 +4314,16 @@
   "key": "gamefile__ssf2"
  },
  {
+  "id": 544,
+  "name": "Super Tux Kart",
+  "cover": "https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@l006/covers/544.webp",
+  "url": "{HTML_URL}/544.html",
+  "special": [
+   "threads"
+  ],
+  "key": "games__supertuxkart__SuperTuxKart"
+ },
+ {
   "id": 545,
   "name": "Survivor.io, Webport",
   "cover": "https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@l006/covers/545.webp",
@@ -4231,7 +4346,8 @@
   "cover": "https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@l006/covers/547.webp",
   "url": "{HTML_URL}/547.html",
   "special": [
-   "unity"
+   "unity",
+   "threads"
   ],
   "key": "games__tanukisunset"
  },
@@ -4358,6 +4474,16 @@
   "cover": "https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@l006/covers/563.webp",
   "url": "{HTML_URL}/563.html",
   "key": "gamefile__tloz"
+ },
+ {
+  "id": 564,
+  "name": "The Legend of Zelda: Twilight Princess",
+  "cover": "https://cdn.jsdelivr.net/gh/skidding-code/truffled-lib@l006/covers/564.webp",
+  "url": "{HTML_URL}/564.html",
+  "special": [
+   "threads"
+  ],
+  "key": "games__dusk"
  },
  {
   "id": 565,
