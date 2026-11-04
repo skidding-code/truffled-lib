@@ -114,10 +114,25 @@
     }
     return key + '.tzp' + i;
   }
-  function getPart(key, i, range) {
+  // jsdelivr gzips compressible parts and then applies Range to the gzip bytes, so parts are only ever fetched whole;
+  // range reads slice whole parts kept in a small lru
+  var partCache = new Map(), partLoads = {};
+  function cacheGet(k) { var v = partCache.get(k); if (v) { partCache.delete(k); partCache.set(k, v); } return v; }
+  function cachePut(k, ab) {
+    partCache.delete(k);
+    partCache.set(k, ab);
+    while (partCache.size > 4) partCache.delete(partCache.keys().next().value);
+  }
+  function wholePart(key, i) {
+    var k = key + '|' + i, hit = cacheGet(k);
+    if (hit) return Promise.resolve(hit);
+    if (!partLoads[k]) partLoads[k] = getPart(key, i).then(function (r) { delete partLoads[k]; cachePut(k, r[0]); return r[0]; }, function (e) { delete partLoads[k]; throw e; });
+    return partLoads[k];
+  }
+  function getPart(key, i) {
     var u = partUrl(key, i), tries = 0;
     function go() {
-      return origFetch(u, range ? { headers: { Range: range } } : undefined).then(function (r) {
+      return origFetch(u).then(function (r) {
         if (!r.ok) throw new Error('part ' + u + ' ' + r.status);
         return r.arrayBuffer().then(function (ab) { return [ab, r.status]; });
       }).catch(function (e) {
@@ -173,12 +188,31 @@
     for (var i = i0; i <= i1; i++) {
       (function (i) {
         var s = Math.max(a, i * PART) - i * PART, e = Math.min(b, (i + 1) * PART - 1) - i * PART;
-        jobs.push(getPart(key, i + 1, 'bytes=' + s + '-' + e).then(function (r) {
-          return r[1] === 206 ? r[0] : r[0].slice(s, e + 1);
-        }));
+        jobs.push(wholePart(key, i + 1).then(function (ab) { return new Uint8Array(ab, s, e - s + 1); }));
       })(i);
     }
     return Promise.all(jobs).then(function (bufs) { return new Blob(bufs, { type: split[key][1] || 'application/octet-stream' }); });
+  }
+  // a ranged fetch streams like a server would: big ranges (block downloaders) get bytes as each part lands.
+  // chunks are copies, so a reader that transfers them can't detach a cached part
+  function rangeStream(key, a, b) {
+    var i = Math.floor(a / PART), last = Math.floor(b / PART), ahead = [];
+    function fill() {
+      while (ahead.length < 3 && i <= last) {
+        (function (i) {
+          var s = Math.max(a, i * PART) - i * PART, e = Math.min(b, (i + 1) * PART - 1) - i * PART;
+          ahead.push(wholePart(key, i + 1).then(function (ab) { return new Uint8Array(ab.slice(s, e + 1)); }));
+        })(i++);
+      }
+    }
+    return new ReadableStream({
+      pull: function (ctrl) {
+        fill();
+        if (!ahead.length) { ctrl.close(); return; }
+        return ahead.shift().then(function (u8) { ctrl.enqueue(u8); fill(); });
+      },
+      cancel: function () { ahead = []; i = last + 1; }
+    });
   }
   function streamResponse(key) {
     var n = split[key][0], next = 1, ahead = [];
@@ -205,9 +239,7 @@
     }
     var rg = range && size ? parseRange(range, size) : null;
     if (rg) {
-      return rangeBlob(key, rg[0], rg[1]).then(function (b) {
-        return new Response(b, { status: 206, statusText: 'Partial Content', headers: { 'Content-Type': type, 'Content-Length': String(b.size), 'Content-Range': 'bytes ' + rg[0] + '-' + rg[1] + '/' + size, 'Accept-Ranges': 'bytes' } });
-      });
+      return Promise.resolve(new Response(rangeStream(key, rg[0], rg[1]), { status: 206, statusText: 'Partial Content', headers: { 'Content-Type': type, 'Content-Length': String(rg[1] - rg[0] + 1), 'Content-Range': 'bytes ' + rg[0] + '-' + rg[1] + '/' + size, 'Accept-Ranges': 'bytes' } }));
     }
     if (merged[key]) return merged[key].then(function (b) { return new Response(b, { status: 200, headers: { 'Content-Type': type, 'Content-Length': String(b.size) } }); });
     return Promise.resolve(streamResponse(key));
@@ -259,23 +291,32 @@
       Object.defineProperty(x, 'status', { configurable: true, get: function () { var v = oStatus.get.call(this); return v === 200 ? 206 : v; } });
       Object.defineProperty(x, 'statusText', { configurable: true, get: function () { return oStatus.get.call(this) === 200 ? 'Partial Content' : ''; } });
     }
-    // sync reads of a split file (block readers in workers): fetch just the covered bytes of each part
+    // sync reads of a split file (block readers in workers): whole parts through the same lru as the async reads
+    function syncPart(key, i) {
+      var k = key + '|' + i, ab = cacheGet(k), q = null;
+      for (var t = 0; t < 4 && !ab; t++) {
+        q = new G.XMLHttpRequest();
+        oOpen.call(q, 'GET', partUrl(key, i), false);
+        // a window can't set responseType on a sync xhr
+        if (G.document) q.overrideMimeType('text/plain; charset=x-user-defined'); else q.responseType = 'arraybuffer';
+        try { oSend.call(q); } catch (err) { continue; }
+        if (q.status !== 200) continue;
+        if (!G.document) ab = q.response;
+        else {
+          var txt = q.responseText, u8 = new Uint8Array(txt.length);
+          for (var j = 0; j < txt.length; j++) u8[j] = txt.charCodeAt(j) & 255;
+          ab = u8.buffer;
+        }
+        cachePut(k, ab);
+      }
+      if (!ab) throw new Error('part ' + partUrl(key, i) + ' ' + (q && q.status));
+      return ab;
+    }
     function syncBytes(key, a, b) {
       var out = [];
       for (var i = Math.floor(a / PART); i <= Math.floor(b / PART); i++) {
-        var s = Math.max(a, i * PART) - i * PART, e = Math.min(b, (i + 1) * PART - 1) - i * PART, q = null;
-        for (var t = 0; t < 4; t++) {
-          q = new G.XMLHttpRequest();
-          oOpen.call(q, 'GET', partUrl(key, i + 1), false);
-          q.overrideMimeType('text/plain; charset=x-user-defined');
-          oSRH.call(q, 'Range', 'bytes=' + s + '-' + e);
-          try { oSend.call(q); } catch (err) { continue; }
-          if (q.status === 206 || q.status === 200) break;
-        }
-        if (!q || (q.status !== 206 && q.status !== 200)) throw new Error('part ' + partUrl(key, i + 1) + ' ' + (q && q.status));
-        var txt = q.responseText, off = q.status === 206 ? 0 : s, n = e - s + 1, u8 = new Uint8Array(n);
-        for (var j = 0; j < n; j++) u8[j] = txt.charCodeAt(off + j) & 255;
-        out.push(u8);
+        var s = Math.max(a, i * PART) - i * PART, e = Math.min(b, (i + 1) * PART - 1) - i * PART;
+        out.push(new Uint8Array(syncPart(key, i + 1), s, e - s + 1));
       }
       return new Blob(out, { type: split[key][1] || 'application/octet-stream' });
     }
